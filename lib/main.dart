@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import 'package:scheduler/globalstate.dart';
 import 'package:scheduler/split.dart';
+import 'package:scheduler/data.dart';
 
 void main() {
+  print(Data<SummaryData>.fromJsonStr(Data.testDataSummaryView()).toString());
   runApp(const MyApp());
 }
 
@@ -37,20 +39,19 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text("Placeholder"),
-      ),
-      body: CrossSplit(
-        horizontalInitRatio: 0.25, 
-        horizontalGrabberSize: 60,
-        verticalInitRatio: 0.75, 
-        verticalGrabberSize: 30,
-        topLeft: Placeholder(color: Colors.yellow),
-        topRight: Placeholder(color: Colors.orange),
-        bottomLeft: Placeholder(color: Colors.purple),
-        bottomRight: Placeholder(color: Colors.brown),
-      )
-    ); 
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text("Placeholder"),
+        ),
+        body: CrossSplit(
+          horizontalInitRatio: 0.25,
+          horizontalGrabberSize: 60,
+          verticalInitRatio: 0.75,
+          verticalGrabberSize: 30,
+          topLeft: Placeholder(color: Colors.yellow),
+          topRight: Placeholder(color: Colors.orange),
+          bottomLeft: Placeholder(color: Colors.purple),
+          bottomRight: Placeholder(color: Colors.brown),
+        ));
   }
 }
