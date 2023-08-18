@@ -6,90 +6,69 @@ class Summary extends StatelessWidget {
 
   Summary(this.data);
 
+  Widget _getBar(BoxConstraints constraints, double height, double fraction,
+      Color color, String text) {
+    return SizedBox(
+        width: constraints.maxWidth,
+        height: height,
+        child: AnimatedFractionallySizedBox(
+          alignment: Alignment.topLeft,
+          duration: const Duration(seconds: 2),
+          curve: Curves.fastOutSlowIn,
+          widthFactor: fraction,
+          heightFactor: 1.0,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(color: color)),
+            child: Text(text),
+          ),
+        ));
+  }
+
+  double _getFraction(double totalTime, double itemTime) {
+    return 1.0 / totalTime * itemTime;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Placeholder();
+    double maxTime = 0;
+    for (var item in data.data) {
+      if (item.planed > maxTime) maxTime = item.planed;
+      if (item.recorded > maxTime) maxTime = item.recorded;
+    }
+
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      return DraggableScrollableSheet(
+        initialChildSize: 1.0,
+        minChildSize: 0.999999,
+        builder: (BuildContext context, ScrollController scrollController) {
+          return ListView.builder(
+            controller: scrollController,
+            itemCount: data.data.length,
+            itemBuilder: (BuildContext context, int index) {
+              // return ListTile(title: Text('Item $index'));
+              return Wrap(runSpacing: 3, children: [
+                _getBar(
+                    constraints,
+                    20,
+                    _getFraction(maxTime, data.data[index].recorded),
+                    Colors.blue,
+                    "${data.data[index].recorded}"),
+                _getBar(
+                    constraints,
+                    20,
+                    _getFraction(maxTime, data.data[index].planed),
+                    Colors.orange,
+                    "${data.data[index].recorded}"),
+                Container(color: Colors.grey, height: 3)
+              ]);
+            },
+          );
+        },
+      );
+    });
   }
 }
-
-// import 'package:flutter/material.dart';
-
-// /// Flutter code sample for [Table].
-
-// void main() => runApp(const TableExampleApp());
-
-// class TableExampleApp extends StatelessWidget {
-//   const TableExampleApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       home: Scaffold(
-//         appBar: AppBar(title: const Text('Table Sample')),
-//         body: const TableExample(),
-//       ),
-//     );
-//   }
-// }
-
-// class TableExample extends StatelessWidget {
-//   const TableExample({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Table(
-//       border: TableBorder.all(),
-//       columnWidths: const <int, TableColumnWidth>{
-//         0: IntrinsicColumnWidth(),
-//         1: FlexColumnWidth(),
-//         2: FixedColumnWidth(64),
-//       },
-//       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-//       children: <TableRow>[
-//         TableRow(
-//           children: <Widget>[
-//             Container(
-//               height: 32,
-//               color: Colors.green,
-//             ),
-//             TableCell(
-//               verticalAlignment: TableCellVerticalAlignment.top,
-//               child: Container(
-//                 height: 32,
-//                 width: 32,
-//                 color: Colors.red,
-//               ),
-//             ),
-//             Container(
-//               height: 64,
-//               color: Colors.blue,
-//             ),
-//           ],
-//         ),
-//         TableRow(
-//           decoration: const BoxDecoration(
-//             color: Colors.grey,
-//           ),
-//           children: <Widget>[
-//             Container(
-//               height: 64,
-//               width: 128,
-//               color: Colors.purple,
-//             ),
-//             Container(
-//               height: 32,
-//               color: Colors.yellow,
-//             ),
-//             Center(
-//               child: Container(
-//                 height: 32,
-//                 width: 32,
-//                 color: Colors.orange,
-//               ),
-//             ),
-//           ],
-//         ),
-//       ],
-//     );
-//   }
-// }
