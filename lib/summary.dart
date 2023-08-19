@@ -1,40 +1,84 @@
 import 'package:flutter/material.dart';
-import 'package:scheduler/data.dart';
+import 'package:scheduler/context.dart';
+import 'dart:math';
 
-class Summary extends StatelessWidget {
-  final Data<SummaryData> data;
+class SummaryEntry extends StatelessWidget {
+  final GlobalContext _globalContext;
 
-  Summary(this.data);
+  final double _maxWidth;
+  final double _maxTime;
+  final int _index;
 
-  Widget _getBar(BoxConstraints constraints, double height, double fraction,
-      Color color, String text) {
+  // final GlobalKey _key = GlobalKey();
+
+  SummaryEntry(this._globalContext, this._maxWidth, this._maxTime, this._index);
+
+  Widget _getBar(double height, double fraction, Color color, String text) {
     return SizedBox(
-        width: constraints.maxWidth,
+        width: _maxWidth,
         height: height,
-        child: AnimatedFractionallySizedBox(
-          alignment: Alignment.topLeft,
-          duration: const Duration(seconds: 2),
-          curve: Curves.fastOutSlowIn,
-          widthFactor: fraction,
-          heightFactor: 1.0,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(color: color)),
-            child: Text(text),
-          ),
+        child: Stack(
+          children: [
+            AnimatedFractionallySizedBox(
+              alignment: Alignment.topLeft,
+              duration: const Duration(seconds: 2),
+              curve: Curves.fastOutSlowIn,
+              widthFactor: Random().nextDouble(),
+              heightFactor: 1.0,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: color)),
+              ),
+            ),
+            Text(text),
+          ],
         ));
   }
 
   double _getFraction(double totalTime, double itemTime) {
-    return 1.0 / totalTime * itemTime;
+    double b = 0.01;
+    double m = (1.0 - b) / totalTime;
+    return m * itemTime + b;
   }
 
   @override
   Widget build(BuildContext context) {
+    // _globalContext.globalWidgetAccess[
+    //         "${(SummaryEntry).toString()}-${_data.summaryData.data[_index].subjectId}"] =
+    //     context;
+    // print(_globalContext.data.minSubjectTextHeight.toString());
+    return Wrap(children: [
+      if (_globalContext.showSubjectsInSummary)
+        Text(_globalContext.data.summaryData.data[_index].subject),
+      _getBar(
+          GlobalStyle.summaryEntryBarHeight,
+          _getFraction(
+              _maxTime, _globalContext.data.summaryData.data[_index].recorded),
+          Colors.blue,
+          "${_globalContext.data.summaryData.data[_index].recorded}"),
+      _getBar(
+          GlobalStyle.summaryEntryBarHeight,
+          _getFraction(
+              _maxTime, _globalContext.data.summaryData.data[_index].planed),
+          Colors.orange,
+          "${_globalContext.data.summaryData.data[_index].planed}"),
+      Container(
+          color: Colors.grey, height: GlobalStyle.horizontalGrayLineHeight)
+    ]);
+  }
+}
+
+class Summary extends StatelessWidget {
+  final GlobalContext _globalContext;
+
+  Summary(this._globalContext);
+
+  @override
+  Widget build(BuildContext context) {
     double maxTime = 0;
-    for (var item in data.data) {
+    for (var item in _globalContext.data.summaryData.data) {
       if (item.planed > maxTime) maxTime = item.planed;
       if (item.recorded > maxTime) maxTime = item.recorded;
     }
@@ -47,24 +91,14 @@ class Summary extends StatelessWidget {
         builder: (BuildContext context, ScrollController scrollController) {
           return ListView.builder(
             controller: scrollController,
-            itemCount: data.data.length,
+            itemCount: _globalContext.data.summaryData.data.length,
             itemBuilder: (BuildContext context, int index) {
-              // return ListTile(title: Text('Item $index'));
-              return Wrap(runSpacing: 3, children: [
-                _getBar(
-                    constraints,
-                    20,
-                    _getFraction(maxTime, data.data[index].recorded),
-                    Colors.blue,
-                    "${data.data[index].recorded}"),
-                _getBar(
-                    constraints,
-                    20,
-                    _getFraction(maxTime, data.data[index].planed),
-                    Colors.orange,
-                    "${data.data[index].recorded}"),
-                Container(color: Colors.grey, height: 3)
-              ]);
+              // print("$index $s");
+              Widget x = SummaryEntry(
+                  _globalContext, constraints.maxWidth, maxTime, index);
+              // _globalContext
+              //     .summaries[_data.summaryData.data[index].subjectId] = x;
+              return x;
             },
           );
         },

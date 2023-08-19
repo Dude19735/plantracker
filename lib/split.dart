@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:scheduler/context.dart';
 
 enum SplitDirection { vertical, horizontal }
 
@@ -35,7 +38,9 @@ class CrossSplit extends StatefulWidget {
   final Widget topRight;
   final Widget bottomRight;
 
-  CrossSplit(
+  final GlobalContext _globalContext;
+
+  CrossSplit(this._globalContext,
       {this.horizontalInitRatio = 0.75,
       this.horizontalGrabberSize = 30,
       this.verticalInitRatio = 0.75,
@@ -104,6 +109,11 @@ class _CrossSplit extends State<CrossSplit> {
           _tabbedCenter = false;
         }
       }
+
+      // we moved the thing => clear the width lists
+      for (var item in widget._globalContext.data.summaryData.data) {
+        widget._globalContext.data.minSubjectTextHeight[item.subjectId] = 0;
+      }
     });
     return true;
   }
@@ -122,12 +132,14 @@ class _CrossSplit extends State<CrossSplit> {
       child: Column(
         children: [
           Split(
+            widget._globalContext,
             "hAll",
             hRatio,
             SplitDirection.horizontal,
             color: Colors.green,
             topOrLeft: Row(children: [
               Split(
+                widget._globalContext,
                 "vTop",
                 vRatio,
                 SplitDirection.vertical,
@@ -137,7 +149,8 @@ class _CrossSplit extends State<CrossSplit> {
               )
             ]),
             bottomOrRight: Row(children: [
-              Split("vBottom", vRatio, SplitDirection.vertical,
+              Split(widget._globalContext, "vBottom", vRatio,
+                  SplitDirection.vertical,
                   color: Colors.blue,
                   topOrLeft: widget.bottomLeft,
                   bottomOrRight: widget.bottomRight)
@@ -158,7 +171,9 @@ class Split extends StatelessWidget {
   late final Widget topOrLeft;
   late final Widget bottomOrRight;
 
-  Split(this._name, this._ratio, this._direction,
+  final GlobalContext _globalContext;
+
+  Split(this._globalContext, this._name, this._ratio, this._direction,
       {this.color = Colors.grey,
       this.topOrLeft = const Placeholder(),
       this.bottomOrRight = const Placeholder()});
@@ -186,6 +201,19 @@ class Split extends StatelessWidget {
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         var sizes = getSizes(constraints);
+
+        if (sizes["sb1_w"] != null) {
+          for (var item in _globalContext.data.summaryData.data) {
+            double width = sizes["sb1_w"]! as double;
+            double oldHeight =
+                _globalContext.data.minSubjectTextHeight[item.subjectId]!;
+            double height =
+                GlobalContext.getTextHeight(item.subject, context, width);
+            _globalContext.data.minSubjectTextHeight[item.subjectId] =
+                max(oldHeight, height);
+          }
+        }
+
         return SizedBox(
             height: constraints.maxHeight,
             child: Flex(

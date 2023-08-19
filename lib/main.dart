@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scheduler/chart.dart';
+import 'package:scheduler/context.dart';
 
-import 'package:scheduler/globalstate.dart';
+import 'package:scheduler/global_state.dart';
 import 'package:scheduler/split.dart';
-import 'package:scheduler/data.dart';
 import 'package:scheduler/summary.dart';
-// import 'package:scheduler/chart.dart';
+import 'package:scheduler/time_table.dart';
 
 void main() {
   // print(Data<SummaryData>.fromJsonStr(Data.testDataSummaryView()).toString());
@@ -39,29 +38,32 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  GlobalContext globalContext = GlobalContext();
+
   @override
   Widget build(BuildContext context) {
+    globalContext.showSubjectsInSummary = true;
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: Text("Placeholder"),
         ),
-        body: CrossSplit(
+        body:
+            // LayoutBuilder(
+            //     builder: (BuildContext context, BoxConstraints constraints) {
+            //   GlobalData.getTextHeight(
+            //       data.summaryData.data[0].subject, context, constraints);
+            //   return
+            CrossSplit(
+          globalContext,
           horizontalInitRatio: 0.25,
           horizontalGrabberSize: 60,
           verticalInitRatio: 0.75,
           verticalGrabberSize: 30,
           topLeft: Placeholder(color: Colors.yellow),
           topRight: Placeholder(color: Colors.orange),
-          // bottomLeft: LineChartWidget([
-          //   PricePoint(x: 0.25, y: 0.5),
-          //   PricePoint(x: 0.3, y: 0.6),
-          //   PricePoint(x: 0.35, y: 0.8),
-          //   PricePoint(x: 0.4, y: 0.3)
-          // ]),
-          bottomLeft: Summary(
-              Data<SummaryData>.fromJsonStr(Data.testDataSummaryView())),
-          bottomRight: Placeholder(color: Colors.brown),
+          bottomLeft: Summary(globalContext),
+          bottomRight: TimeTable(globalContext),
         ));
   }
 }
