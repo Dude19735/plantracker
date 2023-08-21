@@ -3,8 +3,9 @@ import 'package:scheduler/context.dart';
 
 class TimeTable extends StatelessWidget {
   final GlobalContext _globalContext;
+  final ScrollController _scrollController;
 
-  TimeTable(this._globalContext);
+  TimeTable(this._globalContext, this._scrollController);
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class TimeTable extends StatelessWidget {
         minChildSize: 0.999999,
         builder: (BuildContext context, ScrollController scrollController) {
           return ListView.builder(
-            controller: scrollController,
+            controller: _scrollController,
             itemCount: _globalContext.data.summaryData.data.length,
             itemBuilder: (BuildContext context, int index) {
               int subjectId =

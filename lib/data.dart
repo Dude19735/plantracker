@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 
 class ColumnName {
   static const String date = "Date";
@@ -218,10 +217,17 @@ class GlobalData {
   late Data<SummaryData> summaryData;
   late Data<TimeTableData> timeTableData;
 
-  GlobalData(int date, int plusDays) {
+  DateTime date;
+  int minusDays;
+  int plusDays;
+
+  GlobalData(this.date, this.minusDays, this.plusDays) {
     summaryData = Data<SummaryData>.fromJsonStr(Data.testDataSummaryView());
     timeTableData =
         Data<TimeTableData>.fromJsonStr(Data.testDataTimeTableView());
+
+    summaryData.data.sort((a, b) => a.subject.compareTo(b.subject));
+    timeTableData.data.sort((a, b) => a.subject.compareTo(b.subject));
 
     for (var item in summaryData.data) {
       minSubjectTextHeight[item.subjectId] = 0;

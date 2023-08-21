@@ -39,6 +39,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   GlobalContext globalContext = GlobalContext();
+  ScrollController _summary = ScrollController();
+  ScrollController _timeTable = ScrollController();
+  double _summaryOffset = 0.0;
+  double _timeTableOffset = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -54,16 +58,30 @@ class _MyHomePageState extends State<MyHomePage> {
             //   GlobalData.getTextHeight(
             //       data.summaryData.data[0].subject, context, constraints);
             //   return
-            CrossSplit(
-          globalContext,
-          horizontalInitRatio: 0.25,
-          horizontalGrabberSize: 60,
-          verticalInitRatio: 0.75,
-          verticalGrabberSize: 30,
-          topLeft: Placeholder(color: Colors.yellow),
-          topRight: Placeholder(color: Colors.orange),
-          bottomLeft: Summary(globalContext),
-          bottomRight: TimeTable(globalContext),
-        ));
+            NotificationListener<ScrollNotification>(
+                onNotification: (ScrollNotification notification) {
+                  if (_summaryOffset != _summary.offset) {
+                    _timeTable.jumpTo(_summary.offset);
+                    _summaryOffset = _summary.offset;
+                    _timeTableOffset = _summary.offset;
+                  } else if (_timeTableOffset != _timeTable.offset) {
+                    _summary.jumpTo(_timeTable.offset);
+                    _summaryOffset = _timeTable.offset;
+                    _timeTableOffset = _timeTable.offset;
+                  }
+
+                  return true;
+                },
+                child: CrossSplit(
+                  globalContext,
+                  horizontalInitRatio: 0.25,
+                  horizontalGrabberSize: 60,
+                  verticalInitRatio: 0.75,
+                  verticalGrabberSize: 30,
+                  topLeft: Placeholder(color: Colors.yellow),
+                  topRight: Placeholder(color: Colors.orange),
+                  bottomLeft: Summary(globalContext, _summary),
+                  bottomRight: TimeTable(globalContext, _timeTable),
+                )));
   }
 }

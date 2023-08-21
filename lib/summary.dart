@@ -72,8 +72,9 @@ class SummaryEntry extends StatelessWidget {
 
 class Summary extends StatelessWidget {
   final GlobalContext _globalContext;
+  final ScrollController _scrollController;
 
-  Summary(this._globalContext);
+  Summary(this._globalContext, this._scrollController);
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +91,7 @@ class Summary extends StatelessWidget {
         minChildSize: 0.999999,
         builder: (BuildContext context, ScrollController scrollController) {
           return ListView.builder(
-            controller: scrollController,
+            controller: _scrollController,
             itemCount: _globalContext.data.summaryData.data.length,
             itemBuilder: (BuildContext context, int index) {
               // print("$index $s");

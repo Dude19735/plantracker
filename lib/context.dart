@@ -8,7 +8,7 @@ class GlobalStyle {
 
 class GlobalContext {
   bool showSubjectsInSummary = true;
-  GlobalData data = GlobalData(0, 0);
+  GlobalData data = GlobalData(DateTime.now(), 0, 0);
 
   static double getTextHeight(
       String text, BuildContext context, double maxWidth) {
