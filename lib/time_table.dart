@@ -7,9 +7,18 @@ class TimeTable extends StatelessWidget {
 
   TimeTable(this._globalContext, this._scrollController);
 
+  Widget _getRow(
+      BoxConstraints constraints, int numCells, double height, int index) {
+    return Container(
+        height: height,
+        width: constraints.maxWidth / numCells,
+        color: (index % 2 == 0) ? Colors.yellow : Colors.tealAccent);
+  }
+
   @override
   Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback((_) => _getSize());
+    int numCells =
+        1 + _globalContext.data.plusDays + _globalContext.data.minusDays;
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       return DraggableScrollableSheet(

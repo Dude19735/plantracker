@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheduler/context.dart';
+import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 
 import 'package:scheduler/global_state.dart';
 import 'package:scheduler/split.dart';
@@ -8,7 +9,6 @@ import 'package:scheduler/summary.dart';
 import 'package:scheduler/time_table.dart';
 
 void main() {
-  // print(Data<SummaryData>.fromJsonStr(Data.testDataSummaryView()).toString());
   runApp(const MyApp());
 }
 
@@ -39,10 +39,17 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   GlobalContext globalContext = GlobalContext();
-  ScrollController _summary = ScrollController();
-  ScrollController _timeTable = ScrollController();
-  double _summaryOffset = 0.0;
-  double _timeTableOffset = 0.0;
+  LinkedScrollControllerGroup _controllerGroup = LinkedScrollControllerGroup();
+  late ScrollController _summary;
+  late ScrollController _timeTable;
+  int _mouseInWidget = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    _summary = _controllerGroup.addAndGet();
+    _timeTable = _controllerGroup.addAndGet();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,36 +59,16 @@ class _MyHomePageState extends State<MyHomePage> {
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: Text("Placeholder"),
         ),
-        body:
-            // LayoutBuilder(
-            //     builder: (BuildContext context, BoxConstraints constraints) {
-            //   GlobalData.getTextHeight(
-            //       data.summaryData.data[0].subject, context, constraints);
-            //   return
-            NotificationListener<ScrollNotification>(
-                onNotification: (ScrollNotification notification) {
-                  if (_summaryOffset != _summary.offset) {
-                    _timeTable.jumpTo(_summary.offset);
-                    _summaryOffset = _summary.offset;
-                    _timeTableOffset = _summary.offset;
-                  } else if (_timeTableOffset != _timeTable.offset) {
-                    _summary.jumpTo(_timeTable.offset);
-                    _summaryOffset = _timeTable.offset;
-                    _timeTableOffset = _timeTable.offset;
-                  }
-
-                  return true;
-                },
-                child: CrossSplit(
-                  globalContext,
-                  horizontalInitRatio: 0.25,
-                  horizontalGrabberSize: 60,
-                  verticalInitRatio: 0.75,
-                  verticalGrabberSize: 30,
-                  topLeft: Placeholder(color: Colors.yellow),
-                  topRight: Placeholder(color: Colors.orange),
-                  bottomLeft: Summary(globalContext, _summary),
-                  bottomRight: TimeTable(globalContext, _timeTable),
-                )));
+        body: CrossSplit(
+          globalContext,
+          horizontalInitRatio: 0.25,
+          horizontalGrabberSize: 60,
+          verticalInitRatio: 0.75,
+          verticalGrabberSize: 30,
+          topLeft: Placeholder(color: Colors.yellow),
+          topRight: Placeholder(color: Colors.orange),
+          bottomLeft: Summary(globalContext, _summary),
+          bottomRight: TimeTable(globalContext, _timeTable),
+        ));
   }
 }

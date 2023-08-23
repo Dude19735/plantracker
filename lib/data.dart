@@ -217,9 +217,19 @@ class GlobalData {
   late Data<SummaryData> summaryData;
   late Data<TimeTableData> timeTableData;
 
-  DateTime date;
+  int date;
   int minusDays;
   int plusDays;
+
+  int _compareDate(int thisDate, int otherDate) {
+    if (thisDate < otherDate) {
+      return -1;
+    } else if (thisDate > otherDate) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
 
   GlobalData(this.date, this.minusDays, this.plusDays) {
     summaryData = Data<SummaryData>.fromJsonStr(Data.testDataSummaryView());
@@ -228,6 +238,7 @@ class GlobalData {
 
     summaryData.data.sort((a, b) => a.subject.compareTo(b.subject));
     timeTableData.data.sort((a, b) => a.subject.compareTo(b.subject));
+    timeTableData.data.sort((a, b) => _compareDate(a.date, b.date));
 
     for (var item in summaryData.data) {
       minSubjectTextHeight[item.subjectId] = 0;

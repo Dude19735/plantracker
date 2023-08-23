@@ -45,10 +45,6 @@ class SummaryEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // _globalContext.globalWidgetAccess[
-    //         "${(SummaryEntry).toString()}-${_data.summaryData.data[_index].subjectId}"] =
-    //     context;
-    // print(_globalContext.data.minSubjectTextHeight.toString());
     return Wrap(children: [
       if (_globalContext.showSubjectsInSummary)
         Text(_globalContext.data.summaryData.data[_index].subject),
@@ -94,11 +90,8 @@ class Summary extends StatelessWidget {
             controller: _scrollController,
             itemCount: _globalContext.data.summaryData.data.length,
             itemBuilder: (BuildContext context, int index) {
-              // print("$index $s");
               Widget x = SummaryEntry(
                   _globalContext, constraints.maxWidth, maxTime, index);
-              // _globalContext
-              //     .summaries[_data.summaryData.data[index].subjectId] = x;
               return x;
             },
           );
