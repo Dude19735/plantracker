@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         title: 'Namer App',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
         ),
         home: MyHomePage(),
       ),
@@ -53,7 +53,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    globalContext.showSubjectsInSummary = true;
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -61,12 +60,12 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: CrossSplit(
           globalContext,
-          horizontalInitRatio: 0.25,
-          horizontalGrabberSize: 60,
-          verticalInitRatio: 0.75,
-          verticalGrabberSize: 30,
-          topLeft: Placeholder(color: Colors.yellow),
-          topRight: Placeholder(color: Colors.orange),
+          horizontalInitRatio: GlobalStyle.horizontalInitRatio,
+          horizontalGrabberSize: GlobalStyle.horizontalGrabberSize,
+          verticalInitRatio: GlobalStyle.verticalInitRatio,
+          verticalGrabberSize: GlobalStyle.verticalGrabberSize,
+          topLeft: Placeholder(color: Colors.black12),
+          topRight: Placeholder(color: Colors.black12),
           bottomLeft: Summary(globalContext, _summary),
           bottomRight: TimeTable(globalContext, _timeTable),
         ));

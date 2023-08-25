@@ -41,10 +41,10 @@ class CrossSplit extends StatefulWidget {
   final GlobalContext _globalContext;
 
   CrossSplit(this._globalContext,
-      {this.horizontalInitRatio = 0.75,
-      this.horizontalGrabberSize = 30,
-      this.verticalInitRatio = 0.75,
-      this.verticalGrabberSize = 30,
+      {this.horizontalInitRatio = GlobalStyle.horizontalInitRatio,
+      this.horizontalGrabberSize = GlobalStyle.horizontalGrabberSize,
+      this.verticalInitRatio = GlobalStyle.verticalInitRatio,
+      this.verticalGrabberSize = GlobalStyle.verticalGrabberSize,
       this.topLeft = const Placeholder(),
       this.topRight = const Placeholder(),
       this.bottomLeft = const Placeholder(),
@@ -136,14 +136,14 @@ class _CrossSplit extends State<CrossSplit> {
             "hAll",
             hRatio,
             SplitDirection.horizontal,
-            color: Colors.green,
+            color: GlobalStyle.grabberColor,
             topOrLeft: Row(children: [
               Split(
                 widget._globalContext,
                 "vTop",
                 vRatio,
                 SplitDirection.vertical,
-                color: Colors.red,
+                color: GlobalStyle.grabberColor,
                 topOrLeft: widget.topLeft,
                 bottomOrRight: widget.topRight,
               )
@@ -151,7 +151,7 @@ class _CrossSplit extends State<CrossSplit> {
             bottomOrRight: Row(children: [
               Split(widget._globalContext, "vBottom", vRatio,
                   SplitDirection.vertical,
-                  color: Colors.blue,
+                  color: GlobalStyle.grabberColor,
                   topOrLeft: widget.bottomLeft,
                   bottomOrRight: widget.bottomRight)
             ]),
@@ -174,7 +174,7 @@ class Split extends StatelessWidget {
   final GlobalContext _globalContext;
 
   Split(this._globalContext, this._name, this._ratio, this._direction,
-      {this.color = Colors.grey,
+      {this.color = GlobalStyle.grabberColor,
       this.topOrLeft = const Placeholder(),
       this.bottomOrRight = const Placeholder()});
 
@@ -226,25 +226,28 @@ class Split extends StatelessWidget {
                   height: sizes["sb1_h"],
                   child: topOrLeft,
                 ),
-                GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    child: Container(
-                      height: _direction == SplitDirection.horizontal
-                          ? _ratio.grabSize
-                          : constraints.maxHeight,
-                      width: _direction == SplitDirection.horizontal
-                          ? constraints.maxWidth
-                          : _ratio.grabSize,
-                      color: color,
-                    ),
-                    onPanUpdate: (DragUpdateDetails details) {
-                      PanNotification(_name, details, constraints)
-                          .dispatch(context);
-                    },
-                    onTapDown: (TapDownDetails details) {
-                      StartNotification(_name, details, constraints)
-                          .dispatch(context);
-                    }),
+                MouseRegion(
+                  cursor: SystemMouseCursors.allScroll,
+                  child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      child: Container(
+                        height: _direction == SplitDirection.horizontal
+                            ? _ratio.grabSize
+                            : constraints.maxHeight,
+                        width: _direction == SplitDirection.horizontal
+                            ? constraints.maxWidth
+                            : _ratio.grabSize,
+                        color: color,
+                      ),
+                      onPanUpdate: (DragUpdateDetails details) {
+                        PanNotification(_name, details, constraints)
+                            .dispatch(context);
+                      },
+                      onTapDown: (TapDownDetails details) {
+                        StartNotification(_name, details, constraints)
+                            .dispatch(context);
+                      }),
+                ),
                 SizedBox(
                     width: sizes["sb2_w"],
                     height: sizes["sb2_h"],
