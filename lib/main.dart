@@ -7,6 +7,7 @@ import 'package:scheduler/global_state.dart';
 import 'package:scheduler/split.dart';
 import 'package:scheduler/summary.dart';
 import 'package:scheduler/time_table.dart';
+import 'package:scheduler/watch_manager.dart';
 
 void main() {
   runApp(const MyApp());
@@ -64,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
           horizontalGrabberSize: GlobalStyle.horizontalGrabberSize,
           verticalInitRatio: GlobalStyle.verticalInitRatio,
           verticalGrabberSize: GlobalStyle.verticalGrabberSize,
-          topLeft: Placeholder(color: Colors.black12),
+          topLeft: WatchManager(globalContext),
           topRight: Placeholder(color: Colors.black12),
           bottomLeft: Summary(globalContext, _summary),
           bottomRight: TimeTable(globalContext, _timeTable),

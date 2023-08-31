@@ -10,7 +10,7 @@ class GlobalStyle {
   static const double horizontalGrabberSize = 10;
   static const double verticalInitRatio = 0.75;
   static const double verticalGrabberSize = 10;
-  static const Color grabberColor = Colors.transparent;
+  static const Color grabberColor = Colors.green;
 
   // summary and time table card settings
   static const double cardMargin = 5.0;
@@ -19,7 +19,7 @@ class GlobalStyle {
   // background cards padding and color
   static const double globalCardPadding = 8.0;
   static const Color globalCardColor = Colors.black12;
-  static const double globalBorderRadius = 12.0;
+  static const double globalBorderRadius = 0.0;
 
   static Widget createShadowContainer(BuildContext context, Widget? child) {
     return Container(
