@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 
@@ -7,17 +8,24 @@ enum SplitDirection { vertical, horizontal }
 
 class SyncNotification extends Notification {}
 
+class HoverNotification extends SyncNotification {
+  final name;
+  final PointerHoverEvent details;
+  final BoxConstraints constraints;
+  HoverNotification(this.name, this.details, this.constraints);
+}
+
 class PanNotification extends SyncNotification {
-  late final String name;
-  late final DragUpdateDetails details;
-  late final BoxConstraints constraints;
+  final String name;
+  final DragUpdateDetails details;
+  final BoxConstraints constraints;
   PanNotification(this.name, this.details, this.constraints);
 }
 
 class StartNotification extends SyncNotification {
-  late final String name;
-  late final TapDownDetails details;
-  late final BoxConstraints constraints;
+  final String name;
+  final TapDownDetails details;
+  final BoxConstraints constraints;
   StartNotification(this.name, this.details, this.constraints);
 }
 
@@ -25,6 +33,11 @@ class Ratio {
   double ratio;
   double grabSize;
   Ratio(this.ratio, this.grabSize);
+}
+
+class DragCursor {
+  MouseCursor cursor;
+  DragCursor(this.cursor);
 }
 
 class CrossSplit extends StatefulWidget {
@@ -62,6 +75,8 @@ class _CrossSplit extends State<CrossSplit> {
   late final Ratio vRatio;
   late final Ratio hRatio;
 
+  late final DragCursor cursor;
+
   bool _tabbedCenter = false;
 
   void _vSync(PanNotification notification) {
@@ -84,6 +99,21 @@ class _CrossSplit extends State<CrossSplit> {
     }
   }
 
+  static bool _mouseInCenter(
+      Ratio vRatio, double width, double dx, String name) {
+    double x1 = vRatio.ratio * (width - vRatio.grabSize);
+    double x2 = vRatio.ratio * (width - vRatio.grabSize) + vRatio.grabSize;
+
+    // add the clockBarWidth because it's inside the same parent
+    double px = dx - GlobalStyle.clockBarWidth;
+
+    bool center = name.startsWith("h") && x1 <= px && px <= x2;
+
+    // print("$x1 $px $x2");
+
+    return center;
+  }
+
   bool onSync(SyncNotification notification) {
     setState(() {
       if (notification is PanNotification) {
@@ -96,17 +126,37 @@ class _CrossSplit extends State<CrossSplit> {
           _hSync(notification);
         }
       } else if (notification is StartNotification) {
-        double x1 = vRatio.ratio *
-            (notification.constraints.maxWidth - vRatio.grabSize);
-        double x2 = vRatio.ratio *
-                (notification.constraints.maxWidth - vRatio.grabSize) +
-            vRatio.grabSize;
-        double px = notification.details.globalPosition.dx;
+        // double x1 = vRatio.ratio *
+        //     (notification.constraints.maxWidth - vRatio.grabSize);
+        // double x2 = vRatio.ratio *
+        //         (notification.constraints.maxWidth - vRatio.grabSize) +
+        //     vRatio.grabSize;
 
-        if (notification.name.startsWith("h") && x1 <= px && px <= x2) {
+        // // add the clockBarWidth because it's inside the same parent
+        // double px =
+        //     notification.details.globalPosition.dx - GlobalStyle.clockBarWidth;
+        // // print("$x1 $x2 $px");
+        // if (notification.name.startsWith("h") && x1 <= px && px <= x2) {
+        if (_CrossSplit._mouseInCenter(
+            vRatio,
+            notification.constraints.maxWidth,
+            notification.details.globalPosition.dx,
+            notification.name)) {
           _tabbedCenter = true;
         } else {
           _tabbedCenter = false;
+        }
+      } else if (notification is HoverNotification) {
+        if (_CrossSplit._mouseInCenter(
+            vRatio,
+            notification.constraints.maxWidth,
+            notification.details.position.dx,
+            notification.name)) {
+          cursor.cursor = SystemMouseCursors.move;
+        } else if (notification.name.startsWith("v")) {
+          cursor.cursor = SystemMouseCursors.resizeColumn;
+        } else if (notification.name.startsWith("h")) {
+          cursor.cursor = SystemMouseCursors.resizeRow;
         }
       }
 
@@ -121,6 +171,7 @@ class _CrossSplit extends State<CrossSplit> {
   @override
   void initState() {
     super.initState();
+    cursor = DragCursor(SystemMouseCursors.allScroll);
     vRatio = Ratio(widget.horizontalInitRatio, widget.verticalGrabberSize);
     hRatio = Ratio(widget.verticalInitRatio, widget.horizontalGrabberSize);
   }
@@ -135,14 +186,15 @@ class _CrossSplit extends State<CrossSplit> {
             widget._globalContext,
             "hAll",
             hRatio,
-            SplitDirection.horizontal,
-            color: GlobalStyle.grabberColor,
+            SplitDirection.horizontal, cursor, //this,
+            color: Colors.red, // GlobalStyle.grabberColor,
             topOrLeft: Row(children: [
               Split(
                 widget._globalContext,
                 "vTop",
                 vRatio,
-                SplitDirection.vertical,
+                SplitDirection.vertical, cursor,
+                //this,
                 color: GlobalStyle.grabberColor,
                 topOrLeft: widget.topLeft,
                 bottomOrRight: widget.topRight,
@@ -150,7 +202,7 @@ class _CrossSplit extends State<CrossSplit> {
             ]),
             bottomOrRight: Row(children: [
               Split(widget._globalContext, "vBottom", vRatio,
-                  SplitDirection.vertical,
+                  SplitDirection.vertical, cursor, //this,
                   color: GlobalStyle.grabberColor,
                   topOrLeft: widget.bottomLeft,
                   bottomOrRight: widget.bottomRight)
@@ -166,6 +218,8 @@ class Split extends StatelessWidget {
   final SplitDirection _direction;
   final String _name;
   final Color color;
+  // final _CrossSplit _parent;
+  final DragCursor _cursor;
   late final Ratio _ratio;
 
   late final Widget topOrLeft;
@@ -173,7 +227,13 @@ class Split extends StatelessWidget {
 
   final GlobalContext _globalContext;
 
-  Split(this._globalContext, this._name, this._ratio, this._direction,
+  Split(
+      this._globalContext,
+      this._name,
+      this._ratio,
+      this._direction,
+      // this._parent,
+      this._cursor,
       {this.color = GlobalStyle.grabberColor,
       this.topOrLeft = const Placeholder(),
       this.bottomOrRight = const Placeholder()});
@@ -204,56 +264,73 @@ class Split extends StatelessWidget {
 
         if (sizes["sb1_w"] != null) {
           for (var item in _globalContext.data.summaryData.data) {
-            double width = sizes["sb1_w"]! as double;
+            double width = (sizes["sb1_w"]! as double) -
+                2 * GlobalStyle.cardPadding -
+                2 * GlobalStyle.cardMargin -
+                2 * GlobalStyle.globalCardPadding -
+                2 * GlobalStyle.globalCardMargin;
             double oldHeight =
                 _globalContext.data.minSubjectTextHeight[item.subjectId]!;
             double height =
-                GlobalContext.getTextHeight(item.subject, context, width);
+                GlobalStyle.getTextHeight(item.subject, context, width);
             _globalContext.data.minSubjectTextHeight[item.subjectId] =
                 max(oldHeight, height);
           }
         }
 
-        return SizedBox(
-            height: constraints.maxHeight,
-            child: Flex(
-              direction: _direction == SplitDirection.horizontal
-                  ? Axis.vertical
-                  : Axis.horizontal,
-              children: [
-                SizedBox(
-                  width: sizes["sb1_w"],
-                  height: sizes["sb1_h"],
-                  child: topOrLeft,
-                ),
-                MouseRegion(
-                  cursor: SystemMouseCursors.allScroll,
-                  child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      child: Container(
-                        height: _direction == SplitDirection.horizontal
-                            ? _ratio.grabSize
-                            : constraints.maxHeight,
-                        width: _direction == SplitDirection.horizontal
-                            ? constraints.maxWidth
-                            : _ratio.grabSize,
-                        color: color,
-                      ),
-                      onPanUpdate: (DragUpdateDetails details) {
-                        PanNotification(_name, details, constraints)
-                            .dispatch(context);
-                      },
-                      onTapDown: (TapDownDetails details) {
-                        StartNotification(_name, details, constraints)
-                            .dispatch(context);
-                      }),
-                ),
-                SizedBox(
-                    width: sizes["sb2_w"],
-                    height: sizes["sb2_h"],
-                    child: bottomOrRight)
-              ],
-            ));
+        return ClipRect(
+          child: SizedBox(
+              height: constraints.maxHeight,
+              child: Flex(
+                direction: _direction == SplitDirection.horizontal
+                    ? Axis.vertical
+                    : Axis.horizontal,
+                children: [
+                  SizedBox(
+                    width: sizes["sb1_w"],
+                    height: sizes["sb1_h"],
+                    child: topOrLeft,
+                  ),
+                  MouseRegion(
+                    cursor: _cursor.cursor,
+                    child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        child: Container(
+                          height: _direction == SplitDirection.horizontal
+                              ? _ratio.grabSize
+                              : constraints.maxHeight,
+                          width: _direction == SplitDirection.horizontal
+                              ? constraints.maxWidth
+                              : _ratio.grabSize,
+                          color: color,
+                        ),
+                        onPanUpdate: (DragUpdateDetails details) {
+                          PanNotification(_name, details, constraints)
+                              .dispatch(context);
+                        },
+                        onTapDown: (TapDownDetails details) {
+                          StartNotification(_name, details, constraints)
+                              .dispatch(context);
+                        }),
+                    onHover: (PointerHoverEvent details) {
+                      HoverNotification(_name, details, constraints)
+                          .dispatch(context);
+                      // print("${details.position.dx}");
+                      // if (_CrossSplit._mouseInCenter(_parent,
+                      //     constraints.maxWidth, details.position.dx, _name)) {
+                      //   // print("Center");
+                      // } else {
+                      //   // print("not center");
+                      // }
+                    },
+                  ),
+                  SizedBox(
+                      width: sizes["sb2_w"],
+                      height: sizes["sb2_h"],
+                      child: bottomOrRight)
+                ],
+              )),
+        );
       }),
     );
   }

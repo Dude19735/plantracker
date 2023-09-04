@@ -63,8 +63,9 @@ class TimeTable extends StatelessWidget {
     int numCells =
         1 + _globalContext.data.plusDays + _globalContext.data.minusDays;
     print(numCells);
-    return Card(
-      elevation: 0,
+    return Container(
+      // elevation: 0,
+      margin: EdgeInsets.all(GlobalStyle.globalCardMargin),
       color: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.all(GlobalStyle.globalCardPadding),

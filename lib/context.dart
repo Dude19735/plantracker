@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/data.dart';
 
+class GlobalSettings {
+  // timer settings
+  static const int initialCountdownInterval = 10;
+}
+
 class GlobalStyle {
+  // layout settings
+  static const double appBarHeight = 45;
+  static const double clockBarWidth = 120;
+  static const double subjectSelectorHeight = 45;
   static const double horizontalGrayLineHeight = 3;
   static const double summaryEntryBarHeight = 20;
 
@@ -13,11 +22,12 @@ class GlobalStyle {
   static const Color grabberColor = Colors.green;
 
   // summary and time table card settings
-  static const double cardMargin = 5.0;
-  static const double cardPadding = 5.0;
+  static const double cardMargin = 5.0; //5.0;
+  static const double cardPadding = 5.0; //5.0;
 
   // background cards padding and color
-  static const double globalCardPadding = 8.0;
+  static const double globalCardMargin = 3.0;
+  static const double globalCardPadding = 8.0; //8.0;
   static const Color globalCardColor = Colors.black12;
   static const double globalBorderRadius = 0.0;
 
@@ -50,11 +60,6 @@ class GlobalStyle {
         ),
         child: child);
   }
-}
-
-class GlobalContext {
-  bool showSubjectsInSummary = true;
-  GlobalData data = GlobalData(dateToInt(DateTime.now()), 0, 7);
 
   static int dateToInt(DateTime date) {
     int res = date.year * 10000 + date.month * 100 + date.day;
@@ -78,4 +83,9 @@ class GlobalContext {
     // print("$numLines, ${numLines * textPainter.height}: $text");
     return numLines * textPainter.height;
   }
+}
+
+class GlobalContext {
+  bool showSubjectsInSummary = true;
+  GlobalData data = GlobalData(GlobalStyle.dateToInt(DateTime.now()), 0, 7);
 }

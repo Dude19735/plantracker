@@ -82,8 +82,9 @@ class Summary extends StatelessWidget {
       if (item.recorded > maxTime) maxTime = item.recorded;
     }
 
-    return Card(
-      elevation: 0,
+    return Container(
+      // elevation: 0,
+      margin: EdgeInsets.all(GlobalStyle.globalCardMargin),
       color: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.all(GlobalStyle.globalCardPadding),

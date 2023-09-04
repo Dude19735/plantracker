@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/work_button.dart';
@@ -17,10 +19,59 @@ class _WatchManager extends State<WatchManager>
     with SingleTickerProviderStateMixin {
   late Animation<double> animation;
   late AnimationController controller;
+  late WatchState watchState;
+  bool active = false;
+
+  // late Stream<void> stream;
+
+  // void watchTimeout() {
+  //   // callback function
+  //   // Do some work.
+  //   watchState.update();
+  // }
+
+  Timer _watchTimeout([int milliseconds = 1000]) =>
+      Timer(Duration(milliseconds: milliseconds), () {
+        setState(() {
+          watchState.update();
+          if (active) {
+            _watchTimeout();
+          }
+        });
+      });
+
+  // void start() {
+  //   _active = true;
+  //   _watchTimeout();
+  // }
+
+  // void stop() {
+  //   _active = false;
+  // }
+
+  // void _update() {
+  //   time = DateTime.now();
+  //   if (_active) {
+  //     // print("watch timeout");
+  //     _watchTimeout();
+  //   }
+  // }
 
   @override
   void initState() {
     super.initState();
+    watchState = WatchState();
+    active = true;
+    _watchTimeout();
+    // watchState.start();
+    // stream = Stream.periodic(const Duration(seconds: 1), (count) {
+    //   //return true if the time now is after set time
+    //   if (DateTime.now().isAfter(watchState.time)) {
+    //     print("update watch");
+    //     watchState.update();
+    //   }
+    // });
+
     controller =
         AnimationController(duration: const Duration(seconds: 2), vsync: this);
     animation = Tween<double>(begin: 0, end: 300).animate(controller)
@@ -40,58 +91,76 @@ class _WatchManager extends State<WatchManager>
 
   @override
   Widget build(BuildContext context) {
-    const double num = 4;
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-      // print(
-      //     "maxWidth: ${constraints.maxWidth}, maxHeight: ${constraints.maxHeight}");
-      double watchSize = min(constraints.maxWidth, constraints.maxHeight / 2);
-      return Padding(
+    const double num = 7;
+    return Padding(
         padding: const EdgeInsets.all(GlobalStyle.cardPadding),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(bottom: watchSize / 2),
+              padding: EdgeInsets.only(bottom: GlobalStyle.clockBarWidth / 2),
               child: Container(
-                  width: min((constraints.maxHeight - watchSize) / num,
-                      constraints.maxWidth / 5),
-                  height: min((constraints.maxHeight - watchSize) / num,
-                      constraints.maxWidth / 5),
+                  width: GlobalStyle.clockBarWidth,
+                  height: GlobalStyle.clockBarWidth,
                   color: Colors.red),
             ),
-            CustomPaint(painter: WatchPainter(watchSize)),
+            CustomPaint(
+                painter: WatchPainter(GlobalStyle.clockBarWidth, watchState)),
             Padding(
-              padding: EdgeInsets.only(top: watchSize / 2),
+              padding: EdgeInsets.only(top: GlobalStyle.clockBarWidth / 2),
               child: Container(
-                  width: constraints.maxWidth,
-                  height: 0.8 * (constraints.maxHeight - watchSize) / num,
+                  width: GlobalStyle.clockBarWidth,
+                  height: GlobalStyle.subjectSelectorHeight,
                   color: Colors.amber,
                   child: SubjectDropdown(widget._globalContext)),
             ),
             Padding(
               padding: const EdgeInsets.only(top: GlobalStyle.cardPadding),
               child: Container(
-                  width: constraints.maxWidth,
-                  height: 1.2 * (constraints.maxHeight - watchSize) / num,
+                  width: GlobalStyle.clockBarWidth,
                   color: Colors.blue,
-                  child: Row(
+                  child: Column(
                     children: [
-                      WorkButton(widget._globalContext, WorkButtonType.red),
-                      WorkButton(widget._globalContext, WorkButtonType.blue),
+                      WorkButton(widget._globalContext, WorkButtonType.red,
+                          GlobalStyle.clockBarWidth, GlobalStyle.clockBarWidth),
+                      WorkButton(widget._globalContext, WorkButtonType.blue,
+                          GlobalStyle.clockBarWidth, GlobalStyle.clockBarWidth)
                     ],
                   )),
             )
           ],
-        ),
-      );
-    });
+        ));
+  }
+}
+
+class WatchState {
+  int seconds = GlobalSettings.initialCountdownInterval;
+
+  void update() {
+    if (seconds <= GlobalSettings.initialCountdownInterval) {
+      seconds--;
+      if (seconds < 0) {
+        seconds = GlobalSettings.initialCountdownInterval + 1;
+      }
+    } else {
+      seconds++;
+    }
+  }
+
+  @override
+  String toString() {
+    int minss = seconds % 3600;
+    int hours = (seconds - minss) ~/ 3600;
+    int secss = minss % 60;
+    int minutes = (minss - secss) ~/ 60;
+    return "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${secss.toString().padLeft(2, '0')}";
   }
 }
 
 class WatchPainter extends CustomPainter {
   final double _size;
-  WatchPainter(this._size);
+  final WatchState _watchState;
+  WatchPainter(this._size, this._watchState);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -112,8 +181,29 @@ class WatchPainter extends CustomPainter {
         _size / 2 - GlobalStyle.cardPadding * 2, painter);
     canvas.drawArc(Rect.fromCenter(center: Offset(0, 0), width: s, height: s),
         0, pi / 4, false, painter2);
+
+    final textStyle = TextStyle(
+      color: Colors.black,
+      fontSize: 15,
+    );
+    final textSpan = TextSpan(
+      text: _watchState.toString(),
+      style: textStyle,
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout(
+      minWidth: 0,
+      maxWidth: GlobalStyle.clockBarWidth,
+    );
+    final xCenter = (size.width - textPainter.width) / 2;
+    final yCenter = (size.height - textPainter.height) / 2;
+    final offset = Offset(xCenter, yCenter);
+    textPainter.paint(canvas, offset);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
