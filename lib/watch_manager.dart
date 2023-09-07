@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
@@ -22,65 +23,37 @@ class _WatchManager extends State<WatchManager>
   late WatchState watchState;
   bool active = false;
 
-  // late Stream<void> stream;
-
-  // void watchTimeout() {
-  //   // callback function
-  //   // Do some work.
-  //   watchState.update();
-  // }
-
-  Timer _watchTimeout([int milliseconds = 1000]) =>
-      Timer(Duration(milliseconds: milliseconds), () {
-        setState(() {
-          watchState.update();
-          if (active) {
-            _watchTimeout();
-          }
-        });
+  Timer _watchTimeout([int milliseconds = 1000]) {
+    watchState.update();
+    controller.reset();
+    controller.forward();
+    return Timer(Duration(milliseconds: milliseconds), () {
+      setState(() {
+        if (active) {
+          _watchTimeout();
+        }
       });
-
-  // void start() {
-  //   _active = true;
-  //   _watchTimeout();
-  // }
-
-  // void stop() {
-  //   _active = false;
-  // }
-
-  // void _update() {
-  //   time = DateTime.now();
-  //   if (_active) {
-  //     // print("watch timeout");
-  //     _watchTimeout();
-  //   }
-  // }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     watchState = WatchState();
-    active = true;
-    _watchTimeout();
-    // watchState.start();
-    // stream = Stream.periodic(const Duration(seconds: 1), (count) {
-    //   //return true if the time now is after set time
-    //   if (DateTime.now().isAfter(watchState.time)) {
-    //     print("update watch");
-    //     watchState.update();
-    //   }
+
+    // run the animation shit
+    controller = AnimationController(
+        duration: const Duration(milliseconds: 950), vsync: this);
+    animation = Tween<double>(begin: 0, end: 1).animate(controller)
+      ..addListener(() {
+        setState(() {});
+      });
+    // ..addStatusListener((status) {
+    //   if (status == AnimationStatus.completed) {}
     // });
 
-    controller =
-        AnimationController(duration: const Duration(seconds: 2), vsync: this);
-    animation = Tween<double>(begin: 0, end: 300).animate(controller)
-      ..addListener(() {
-        setState(() {
-          // print("set state");
-        });
-      });
-    controller.forward();
+    active = true;
+    _watchTimeout();
   }
 
   @override
@@ -91,60 +64,69 @@ class _WatchManager extends State<WatchManager>
 
   @override
   Widget build(BuildContext context) {
-    const double num = 7;
-    return Padding(
-        padding: const EdgeInsets.all(GlobalStyle.cardPadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(bottom: GlobalStyle.clockBarWidth / 2),
-              child: Container(
-                  width: GlobalStyle.clockBarWidth,
-                  height: GlobalStyle.clockBarWidth,
-                  color: Colors.red),
-            ),
+    const double clockPadding = 15;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Container(
+            width: GlobalStyle.clockBarWidth,
+            height: GlobalStyle.clockBarWidth,
+            color: Colors.red),
+        Container(height: GlobalStyle.globalCardPadding),
+        GlobalStyle.createShadowContainer(
+            context,
             CustomPaint(
-                painter: WatchPainter(GlobalStyle.clockBarWidth, watchState)),
-            Padding(
-              padding: EdgeInsets.only(top: GlobalStyle.clockBarWidth / 2),
-              child: Container(
-                  width: GlobalStyle.clockBarWidth,
-                  height: GlobalStyle.subjectSelectorHeight,
-                  color: Colors.amber,
-                  child: SubjectDropdown(widget._globalContext)),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: GlobalStyle.cardPadding),
-              child: Container(
-                  width: GlobalStyle.clockBarWidth,
-                  color: Colors.blue,
-                  child: Column(
-                    children: [
-                      WorkButton(widget._globalContext, WorkButtonType.red,
-                          GlobalStyle.clockBarWidth, GlobalStyle.clockBarWidth),
-                      WorkButton(widget._globalContext, WorkButtonType.blue,
-                          GlobalStyle.clockBarWidth, GlobalStyle.clockBarWidth)
-                    ],
-                  )),
-            )
-          ],
-        ));
+                painter: WatchPainter(GlobalStyle.clockBarWidth - clockPadding,
+                    watchState, watchState.getArc(animation))),
+            margin: 0.0,
+            borderRadius: GlobalStyle.clockBarWidth / 2,
+            width: GlobalStyle.clockBarWidth - clockPadding,
+            height: GlobalStyle.clockBarWidth - clockPadding),
+        Container(height: GlobalStyle.globalCardPadding),
+        GlobalStyle.createShadowContainer(
+            context, SubjectDropdown(widget._globalContext),
+            margin: 0.0,
+            width: GlobalStyle.clockBarWidth - clockPadding,
+            height: GlobalStyle.clockBarWidth / 3),
+        Container(height: GlobalStyle.globalCardPadding),
+        GlobalStyle.createShadowContainer(
+            context, WorkButton(widget._globalContext),
+            margin: 0.0,
+            width: GlobalStyle.clockBarWidth - clockPadding,
+            height: GlobalStyle.clockBarWidth * 1.5),
+      ],
+    );
   }
 }
 
+enum WatchStateState { warmUp, goGoGo }
+
 class WatchState {
-  int seconds = GlobalSettings.initialCountdownInterval;
+  WatchStateState state = WatchStateState.warmUp;
+  int seconds = GlobalSettings.initialWorkCountdownInterval;
 
   void update() {
-    if (seconds <= GlobalSettings.initialCountdownInterval) {
+    if (seconds <= GlobalSettings.initialWorkCountdownInterval) {
       seconds--;
       if (seconds < 0) {
-        seconds = GlobalSettings.initialCountdownInterval + 1;
+        seconds = GlobalSettings.initialWorkCountdownInterval + 1;
+        state = WatchStateState.goGoGo;
       }
     } else {
       seconds++;
     }
+  }
+
+  double getArc(Animation animation) {
+    return (seconds + exp(-6 * animation.value)) *
+        2.0 *
+        pi /
+        GlobalSettings.initialWorkCountdownInterval;
+  }
+
+  void reset() {
+    state = WatchStateState.warmUp;
+    seconds = GlobalSettings.initialWorkCountdownInterval;
   }
 
   @override
@@ -158,34 +140,45 @@ class WatchState {
 }
 
 class WatchPainter extends CustomPainter {
+  final double _arcRadius;
   final double _size;
   final WatchState _watchState;
-  WatchPainter(this._size, this._watchState);
+  final double strokeWidth = 15;
+  final double fontSize = 17;
+
+  Paint backgroundPainter = Paint();
+  Paint redCirclePainter = Paint();
+
+  WatchPainter(this._size, this._watchState, this._arcRadius) {
+    backgroundPainter.color = Colors.white;
+    backgroundPainter.style = PaintingStyle.fill;
+    backgroundPainter.strokeWidth = 1;
+
+    redCirclePainter.color = Colors.red;
+    redCirclePainter.style = PaintingStyle.stroke;
+    redCirclePainter.strokeWidth = strokeWidth;
+    redCirclePainter.strokeCap = StrokeCap.round;
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint painter = Paint();
-    painter.color = Colors.greenAccent;
-    painter.style = PaintingStyle.fill;
-    painter.strokeWidth = 1;
+    final double s = _size - strokeWidth;
 
-    const double strokeWidth = 10;
-    Paint painter2 = Paint();
-    painter2.color = Colors.cyan;
-    painter2.style = PaintingStyle.stroke;
-    painter2.strokeWidth = strokeWidth;
-    painter2.strokeCap = StrokeCap.round;
+    // var path = Path();
+    // path.addOval(Rect.fromCircle(
+    //     center: Offset(size.width / 2, size.height / 2),
+    //     radius: _size / 2 - GlobalStyle.cardPadding * 2));
+    // canvas.drawShadow(path, Colors.black, 10, true);
+    // canvas.drawPath(path, backgroundPainter);
 
-    double s = _size - 2 * (GlobalStyle.cardPadding + strokeWidth);
-    canvas.drawCircle(Offset(size.width / 2, size.height / 2),
-        _size / 2 - GlobalStyle.cardPadding * 2, painter);
-    canvas.drawArc(Rect.fromCenter(center: Offset(0, 0), width: s, height: s),
-        0, pi / 4, false, painter2);
+    Offset off = Offset(_size / 2, _size / 2);
+    canvas.drawArc(Rect.fromCenter(center: off, width: s, height: s), 0,
+        _arcRadius, false, redCirclePainter);
+
+    // canvas.drawShadow(path, color, elevation, transparentOccluder)
 
     final textStyle = TextStyle(
-      color: Colors.black,
-      fontSize: 15,
-    );
+        color: Colors.black, fontSize: fontSize, fontWeight: FontWeight.bold);
     final textSpan = TextSpan(
       text: _watchState.toString(),
       style: textStyle,
@@ -198,12 +191,15 @@ class WatchPainter extends CustomPainter {
       minWidth: 0,
       maxWidth: GlobalStyle.clockBarWidth,
     );
-    final xCenter = (size.width - textPainter.width) / 2;
-    final yCenter = (size.height - textPainter.height) / 2;
-    final offset = Offset(xCenter, yCenter);
-    textPainter.paint(canvas, offset);
+
+    Offset off2 = Offset(
+      // Do calculations here:
+      (size.width - textPainter.width) * 0.5,
+      (size.height - textPainter.height) * 0.5,
+    );
+    textPainter.paint(canvas, off2);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
