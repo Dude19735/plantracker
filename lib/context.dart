@@ -3,7 +3,8 @@ import 'package:scheduler/data.dart';
 
 class GlobalSettings {
   // timer settings
-  static const int initialCountdownInterval = 10;
+  static const int initialWorkCountdownInterval = 10;
+  static const int initialBreakCountdownInterval = 5;
 }
 
 class GlobalStyle {
@@ -31,18 +32,25 @@ class GlobalStyle {
   static const Color globalCardColor = Colors.black12;
   static const double globalBorderRadius = 0.0;
 
-  static Widget createShadowContainer(BuildContext context, Widget? child) {
+  static Widget createShadowContainer(BuildContext context, Widget? child,
+      {margin = GlobalStyle.cardMargin,
+      borderRadius = GlobalStyle.globalBorderRadius,
+      width,
+      height,
+      color = Colors.white}) {
     return Container(
-        margin: EdgeInsets.all(GlobalStyle.cardMargin),
+        width: width,
+        height: height,
+        margin: EdgeInsets.all(margin),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: color,
           border: Border(
               left: BorderSide.none,
               right: BorderSide.none,
               top: BorderSide.none,
               bottom: BorderSide.none),
-          borderRadius: BorderRadius.circular(
-              GlobalStyle.globalBorderRadius), //border corner radius
+          borderRadius:
+              BorderRadius.circular(borderRadius), //border corner radius
           boxShadow: [
             BoxShadow(
               color: Theme.of(context)
