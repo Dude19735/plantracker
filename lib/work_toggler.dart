@@ -1,4 +1,3 @@
-// ignore_for_file: sort_child_properties_last
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -10,15 +9,6 @@ enum _WorkTogglerState {
   retractLR,
   retractRL
 }
-
-// class WorkSyncNotification extends Notification {}
-
-// class _DragNotification extends WorkSyncNotification {
-//   final double size;
-//   final _WorkTogglerState state;
-//   final DragUpdateDetails details;
-//   _DragNotification(this.state, this.size, this.details);
-// }
 
 class WorkToggler extends StatefulWidget {
   final int _animTimeMS;
@@ -54,16 +44,12 @@ class _WorkToggler extends State<WorkToggler>
           if (_controller.status == AnimationStatus.completed) {
             if (_state == _WorkTogglerState.contractLR) {
               _state = _WorkTogglerState.slideRL;
-              // print("state1: $_state");
             } else if (_state == _WorkTogglerState.contractRL) {
               _state = _WorkTogglerState.slideLR;
-              // print("state2: $_state");
             } else if (_state == _WorkTogglerState.retractLR) {
               _state = _WorkTogglerState.slideLR;
-              // print("state5: $_state");
             } else if (_state == _WorkTogglerState.retractRL) {
               _state = _WorkTogglerState.slideRL;
-              // print("state6: $_state");
             }
             _controller.reset();
           }
@@ -105,7 +91,6 @@ class _WorkToggler extends State<WorkToggler>
           _ratio = _tempRatio - _f(_tempRatio, _animation.value, -6, minRatio);
         }
 
-        // print(_f(_animation.value, -6, minRatio));
         return GestureDetector(
           child: FractionallySizedBox(
             alignment: _alignment,
@@ -129,33 +114,27 @@ class _WorkToggler extends State<WorkToggler>
                 _alignment = Alignment.topRight;
                 _controller.forward();
                 _state = _WorkTogglerState.contractLR;
-                // print("state3: $_state");
               } else if (_state == _WorkTogglerState.slideRL) {
                 _alignment = Alignment.topLeft;
                 _controller.forward();
                 _state = _WorkTogglerState.contractRL;
-                // print("state4: $_state");
               }
             } else {
               if (_state == _WorkTogglerState.slideLR) {
                 _controller.forward();
                 _tempRatio = _ratio;
                 _state = _WorkTogglerState.retractLR;
-                // print("state7: $_state");
               } else if (_state == _WorkTogglerState.slideRL) {
                 _controller.forward();
                 _tempRatio = _ratio;
                 _state = _WorkTogglerState.retractRL;
-                // print("state8: $_state");
               }
             }
           },
           onPanUpdate: (DragUpdateDetails details) {
             if (!_checkValidForInteraction()) {
-              // print("invalid ${details.localPosition.dx}");
               return;
             }
-            // print("valid ${details.localPosition.dx}");
             setState(() {
               double size = constraints.maxWidth;
               double dd = details.localPosition.dx;
