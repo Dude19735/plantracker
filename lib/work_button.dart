@@ -1,3 +1,4 @@
+// import 'animated_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -83,7 +84,13 @@ class _WorkButton extends State<WorkButton> {
                           semanticsLabel: 'Label')),
                 )
               ]),
-            )
+            ),
+            // AnimatedToggle(120, 60, const ["OFF", " ON "],
+            //     buttonColor: Theme.of(context).colorScheme.primary,
+            //     buttonTextColor: Theme.of(context).colorScheme.background,
+            //     backgroundColor: Colors.transparent,
+            //     textColor: Theme.of(context).textTheme.titleSmall!.color!,
+            //     forcedPosition: true)
           ],
         ),
       )
@@ -103,25 +110,52 @@ class _WorkBreakSlider extends State<WorkBreakSlider> {
 
   @override
   Widget build(BuildContext context) {
-    return RotatedBox(
-      quarterTurns: 1,
-      child: SliderTheme(
-        data: SliderTheme.of(context).copyWith(
-            thumbShape: RoundSliderThumbShape(
-          enabledThumbRadius: 7.0,
-          pressedElevation: 4.0,
-        )),
-        child: Slider(
-            value: _currentSliderValue,
-            max: 1,
-            divisions: 1,
-            label: _currentSliderValue.round().toString(),
-            onChanged: (double value) {
-              setState(() {
-                _currentSliderValue = value;
-              });
-            }),
-      ),
-    );
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      return Padding(
+        padding: EdgeInsets.only(top: 0, bottom: 0),
+        child: RotatedBox(
+          quarterTurns: 1,
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+                thumbShape: RoundSliderThumbShape(),
+                trackHeight: 3,
+                trackShape: CustomTrackShape(),
+                disabledActiveTickMarkColor: Colors.transparent,
+                inactiveTickMarkColor: Colors.transparent),
+            child: Slider(
+                value: _currentSliderValue,
+                max: 1,
+                divisions: 1,
+                onChanged: (double value) {
+                  setState(() {
+                    if (value == 1) {
+                    } else if (value == 0) {}
+                    _currentSliderValue = value;
+                  });
+                }),
+          ),
+        ),
+      );
+    });
+  }
+}
+
+class CustomTrackShape extends RoundedRectSliderTrackShape {
+  const CustomTrackShape();
+
+  @override
+  Rect getPreferredRect({
+    required RenderBox parentBox,
+    Offset offset = Offset.zero,
+    required SliderThemeData sliderTheme,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+  }) {
+    final trackHeight = sliderTheme.trackHeight;
+    final trackLeft = offset.dx;
+    final trackTop = offset.dy + (parentBox.size.height - trackHeight!) / 2;
+    final trackWidth = parentBox.size.width;
+    return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
   }
 }
