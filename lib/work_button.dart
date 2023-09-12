@@ -51,6 +51,8 @@ class _WorkButton extends State<WorkButton> {
                         print("R");
                       },
                       minSliderRatio: 0.5,
+                      restingColorL: GlobalStyle.markerRed,
+                      restingColorR: GlobalStyle.markerBlue,
                     ))),
           ],
         ),
