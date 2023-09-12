@@ -129,46 +129,47 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               Expanded(
-                  child: Row(
-                children: [
-                  Container(width: 100),
-                  RotatedBox(
-                    quarterTurns: 1,
-                    child: GlobalStyle.createShadowContainer(
-                        context,
-                        WorkToggler(() {
-                          print("L");
-                        }, () {
-                          print("R");
-                        }, 500, Colors.orange, Colors.red),
-                        width: 300.0,
-                        height: 50.0,
-                        margin: 0.0),
-                  ),
-                ],
-              )
-                  //     Row(
-                  //   children: [
-                  //     SizedBox(
-                  //         width: GlobalStyle.clockBarWidth,
-                  //         child: WatchManager(globalContext)),
-                  //     Expanded(
-                  //       child: CrossSplit(
-                  //         globalContext,
-                  //         horizontalInitRatio: GlobalStyle.horizontalInitRatio,
-                  //         horizontalGrabberSize:
-                  //             GlobalStyle.horizontalGrabberSize,
-                  //         verticalInitRatio: GlobalStyle.verticalInitRatio,
-                  //         verticalGrabberSize: GlobalStyle.verticalGrabberSize,
-                  //         topLeft: Placeholder(color: Colors.black12),
-                  //         topRight: Placeholder(color: Colors.black12),
-                  //         bottomLeft: Summary(globalContext, _summary),
-                  //         bottomRight: TimeTable(globalContext, _timeTable),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                  ),
+                child:
+                    //     Row(
+                    //   children: [
+                    //     Container(width: 100),
+                    //     RotatedBox(
+                    //       quarterTurns: 1,
+                    //       child: GlobalStyle.createShadowContainer(
+                    //           context,
+                    //           WorkToggler(() {
+                    //             print("L");
+                    //           }, () {
+                    //             print("R");
+                    //           }, 500, Colors.orange, Colors.red),
+                    //           width: 300.0,
+                    //           height: 50.0,
+                    //           margin: 0.0),
+                    //     ),
+                    //   ],
+                    // )
+                    Row(
+                  children: [
+                    SizedBox(
+                        width: GlobalStyle.clockBarWidth,
+                        child: WatchManager(globalContext)),
+                    Expanded(
+                      child: CrossSplit(
+                        globalContext,
+                        horizontalInitRatio: GlobalStyle.horizontalInitRatio,
+                        horizontalGrabberSize:
+                            GlobalStyle.horizontalGrabberSize,
+                        verticalInitRatio: GlobalStyle.verticalInitRatio,
+                        verticalGrabberSize: GlobalStyle.verticalGrabberSize,
+                        topLeft: Placeholder(color: Colors.black12),
+                        topRight: Placeholder(color: Colors.black12),
+                        bottomLeft: Summary(globalContext, _summary),
+                        bottomRight: TimeTable(globalContext, _timeTable),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           const DragToResizeArea(

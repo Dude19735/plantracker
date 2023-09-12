@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:scheduler/work_toggler.dart';
 import 'dart:math';
 
 /// Flutter code sample for [IconButton].
@@ -19,18 +20,18 @@ class WorkButton extends StatefulWidget {
 }
 
 class _WorkButton extends State<WorkButton> {
-  Widget _getButton(BoxConstraints constraints) {
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: () {},
-        child: SvgPicture.asset(widget._label,
-            width: constraints.maxHeight,
-            height: constraints.maxWidth,
-            semanticsLabel: 'Label'),
-      ),
-    );
-  }
+  // Widget _getButton(BoxConstraints constraints) {
+  //   return Material(
+  //     type: MaterialType.transparency,
+  //     child: InkWell(
+  //       onTap: () {},
+  //       child: SvgPicture.asset(widget._label,
+  //           width: constraints.maxHeight,
+  //           height: constraints.maxWidth,
+  //           semanticsLabel: 'Label'),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -40,12 +41,17 @@ class _WorkButton extends State<WorkButton> {
         child: Column(
           children: [
             Expanded(
-              child: Row(
-                children: [
-                  Expanded(child: WorkBreakSlider()),
-                ],
-              ),
-            ),
+                child: RotatedBox(
+                    quarterTurns: 1,
+                    child: WorkToggler(
+                      onHitL: () {
+                        print("L");
+                      },
+                      onHitR: () {
+                        print("R");
+                      },
+                      minSliderRatio: 0.5,
+                    ))),
           ],
         ),
       ),

@@ -11,14 +11,20 @@ enum _WorkTogglerState {
 }
 
 class WorkToggler extends StatefulWidget {
-  final int _animTimeMS;
-  final Color _restingColor;
-  final Color _activatedColor;
-  final void Function() _onHitL;
-  final void Function() _onHitR;
+  final void Function() onHitL;
+  final void Function() onHitR;
+  final Color restingColor;
+  final Color activatedColor;
+  final int animTimeMS;
+  final double minSliderRatio;
 
-  const WorkToggler(this._onHitL, this._onHitR, this._animTimeMS,
-      this._restingColor, this._activatedColor);
+  const WorkToggler(
+      {required this.onHitL,
+      required this.onHitR,
+      this.restingColor = Colors.orange,
+      this.activatedColor = Colors.red,
+      this.animTimeMS = 500,
+      this.minSliderRatio = -1.0});
 
   @override
   State<WorkToggler> createState() => _WorkToggler();
@@ -42,7 +48,7 @@ class _WorkToggler extends State<WorkToggler>
   void initState() {
     super.initState();
     _controller = AnimationController(
-        duration: Duration(milliseconds: widget._animTimeMS), vsync: this);
+        duration: Duration(milliseconds: widget.animTimeMS), vsync: this);
     _animation = Tween<double>(begin: 0, end: 1).animate(_controller)
       ..addListener(() {
         setState(() {
@@ -100,7 +106,11 @@ class _WorkToggler extends State<WorkToggler>
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         double minRatio = 0.0;
-        minRatio = 1 / constraints.maxWidth * constraints.maxHeight;
+        if (widget.minSliderRatio < 0) {
+          minRatio = 1 / constraints.maxWidth * constraints.maxHeight;
+        } else {
+          minRatio = widget.minSliderRatio;
+        }
 
         if (_state == _WorkTogglerState.slideLR && _ratio < minRatio) {
           _ratio = minRatio;
@@ -119,8 +129,7 @@ class _WorkToggler extends State<WorkToggler>
             heightFactor: 1.0,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                  color:
-                      _c(widget._restingColor, widget._activatedColor, _ratio),
+                  color: _c(widget.restingColor, widget.activatedColor, _ratio),
                   borderRadius: BorderRadius.circular(5)),
             ),
           ),
@@ -135,12 +144,12 @@ class _WorkToggler extends State<WorkToggler>
                 _alignment = Alignment.topRight;
                 _controller.forward();
                 _state = _WorkTogglerState.contractLR;
-                widget._onHitR();
+                widget.onHitR();
               } else if (_state == _WorkTogglerState.slideRL) {
                 _alignment = Alignment.topLeft;
                 _controller.forward();
                 _state = _WorkTogglerState.contractRL;
-                widget._onHitL();
+                widget.onHitL();
               }
             } else {
               if (_state == _WorkTogglerState.slideLR) {
