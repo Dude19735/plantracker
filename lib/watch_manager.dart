@@ -82,7 +82,7 @@ class _WatchManager extends State<WatchManager>
                 restingColorL: GlobalStyle.markerRed,
                 restingColorR: GlobalStyle.markerRed,
                 handleRadius: 15.0,
-                iconAssetStr: "lib/img/dismiss.svg"),
+                iconAssetStr: ["lib/img/dismiss.svg", "lib/img/dismiss.svg"]),
             width: GlobalStyle.clockBarWidth - clockPadding,
             height: 30.0,
             color: Colors.transparent),

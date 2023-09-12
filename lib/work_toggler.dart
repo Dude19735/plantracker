@@ -21,8 +21,8 @@ class WorkToggler extends StatefulWidget {
   final Color restingColorR;
   final int animTimeMS;
   final double minSliderRatio;
-  final IconData? icon;
-  final String? iconAssetStr;
+  final List<IconData>? icon;
+  final List<String>? iconAssetStr;
   final double handleRadius;
 
   const WorkToggler(
@@ -64,6 +64,14 @@ class _WorkToggler extends State<WorkToggler>
           "<<< At most one of [icon] and [iconAssetStr] can be non null! >>>");
     }
 
+    if (widget.icon != null && widget.icon!.length != 2) {
+      throw Exception("<<< Two Icons in a List are required! >>>");
+    }
+
+    if (widget.iconAssetStr != null && widget.iconAssetStr!.length != 2) {
+      throw Exception("<<< Two Assets in a List are required! >>>");
+    }
+
     super.initState();
     _controller = AnimationController(
         duration: Duration(milliseconds: widget.animTimeMS), vsync: this);
@@ -78,7 +86,7 @@ class _WorkToggler extends State<WorkToggler>
             } else if (_state == _WorkTogglerState.contractRL ||
                 _state == _WorkTogglerState.retractLR) {
               _state = _WorkTogglerState.slideLR;
-              _iconAlignment = Alignment.centerLeft;
+              _iconAlignment = Alignment.centerRight;
             }
             _controller.reset();
           }
@@ -90,6 +98,16 @@ class _WorkToggler extends State<WorkToggler>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  int _getStateIndex() {
+    if (_state == _WorkTogglerState.slideLR ||
+        _state == _WorkTogglerState.contractLR ||
+        _state == _WorkTogglerState.retractLR) {
+      return 0;
+    } else {
+      return 1;
+    }
   }
 
   Color _c(Color color1, Color color2, double ratio, double minRatio) {
@@ -140,10 +158,17 @@ class _WorkToggler extends State<WorkToggler>
     if (widget.icon != null) {
       return Align(
         alignment: _iconAlignment,
-        child: Icon(widget.icon),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 3.0, right: 3.0),
+          child: Icon(
+            widget.icon![_getStateIndex()],
+            color: Colors.black54,
+          ),
+        ),
       );
     } else if (widget.iconAssetStr != null) {
-      return SvgPicture.asset(widget.iconAssetStr!, alignment: _iconAlignment);
+      return SvgPicture.asset(widget.iconAssetStr![_getStateIndex()],
+          alignment: _iconAlignment);
     }
 
     return null;

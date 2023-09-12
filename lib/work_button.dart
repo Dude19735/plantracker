@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:scheduler/work_toggler.dart';
-import 'dart:math';
 
 /// Flutter code sample for [IconButton].
 
@@ -50,6 +49,10 @@ class _WorkButton extends State<WorkButton> {
                       onHitR: () {
                         print("R");
                       },
+                      icon: [
+                        Icons.keyboard_double_arrow_right_outlined,
+                        Icons.keyboard_double_arrow_left_outlined
+                      ],
                       minSliderRatio: 0.5,
                       restingColorL: GlobalStyle.markerRed,
                       restingColorR: GlobalStyle.markerBlue,
@@ -93,12 +96,6 @@ class _WorkButton extends State<WorkButton> {
                 )
               ]),
             ),
-            // AnimatedToggle(120, 60, const ["OFF", " ON "],
-            //     buttonColor: Theme.of(context).colorScheme.primary,
-            //     buttonTextColor: Theme.of(context).colorScheme.background,
-            //     backgroundColor: Colors.transparent,
-            //     textColor: Theme.of(context).textTheme.titleSmall!.color!,
-            //     forcedPosition: true)
           ],
         ),
       )
