@@ -69,6 +69,7 @@ flutter:
     - lib/img/clock_red.svg
     - lib/img/clock_blue.svg
     - lib/img/dismiss.svg
+    - lib/img/title_clock.svg
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
