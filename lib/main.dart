@@ -135,12 +135,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   RotatedBox(
                     quarterTurns: 1,
                     child: GlobalStyle.createShadowContainer(
-                        context, WorkToggler(500),
-                        width: 300.0, height: 50.0, margin: 0.0),
+                        context,
+                        WorkToggler(() {
+                          print("L");
+                        }, () {
+                          print("R");
+                        }, 500, Colors.orange, Colors.red),
+                        width: 300.0,
+                        height: 50.0,
+                        margin: 0.0),
                   ),
-                  Container(width: 100),
-                  GlobalStyle.createShadowContainer(context, WorkToggler(500),
-                      width: 300.0, height: 50.0, margin: 0.0),
                 ],
               )
                   //     Row(

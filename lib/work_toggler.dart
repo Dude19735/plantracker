@@ -12,8 +12,13 @@ enum _WorkTogglerState {
 
 class WorkToggler extends StatefulWidget {
   final int _animTimeMS;
+  final Color _restingColor;
+  final Color _activatedColor;
+  final void Function() _onHitL;
+  final void Function() _onHitR;
 
-  const WorkToggler(this._animTimeMS);
+  const WorkToggler(this._onHitL, this._onHitR, this._animTimeMS,
+      this._restingColor, this._activatedColor);
 
   @override
   State<WorkToggler> createState() => _WorkToggler();
@@ -42,14 +47,12 @@ class _WorkToggler extends State<WorkToggler>
       ..addListener(() {
         setState(() {
           if (_controller.status == AnimationStatus.completed) {
-            if (_state == _WorkTogglerState.contractLR) {
+            if (_state == _WorkTogglerState.contractLR ||
+                _state == _WorkTogglerState.retractRL) {
               _state = _WorkTogglerState.slideRL;
-            } else if (_state == _WorkTogglerState.contractRL) {
+            } else if (_state == _WorkTogglerState.contractRL ||
+                _state == _WorkTogglerState.retractLR) {
               _state = _WorkTogglerState.slideLR;
-            } else if (_state == _WorkTogglerState.retractLR) {
-              _state = _WorkTogglerState.slideLR;
-            } else if (_state == _WorkTogglerState.retractRL) {
-              _state = _WorkTogglerState.slideRL;
             }
             _controller.reset();
           }
@@ -61,6 +64,24 @@ class _WorkToggler extends State<WorkToggler>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Color _c(Color color1, Color color2, double ratio) {
+    int r1 = color1.red;
+    int g1 = color1.green;
+    int b1 = color1.blue;
+
+    int r2 = color2.red;
+    int g2 = color2.green;
+    int b2 = color2.blue;
+
+    double s = 4;
+    double val = 1 - (exp(s * ratio) - 1) * (1 / (exp(s) - 1));
+    return Color.fromARGB(
+        255,
+        (val * r1 + (1 - val) * r2).round(),
+        (val * g1 + (1 - val) * g2).round(),
+        (val * b1 + (1 - val) * b2).round());
   }
 
   double _f(double maxVal, double x, double slope, double minRatio) {
@@ -98,9 +119,9 @@ class _WorkToggler extends State<WorkToggler>
             heightFactor: 1.0,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                  color: Colors.deepOrangeAccent,
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(color: Colors.greenAccent)),
+                  color:
+                      _c(widget._restingColor, widget._activatedColor, _ratio),
+                  borderRadius: BorderRadius.circular(5)),
             ),
           ),
           onTapDown: (TapDownDetails details) {
@@ -114,10 +135,12 @@ class _WorkToggler extends State<WorkToggler>
                 _alignment = Alignment.topRight;
                 _controller.forward();
                 _state = _WorkTogglerState.contractLR;
+                widget._onHitR();
               } else if (_state == _WorkTogglerState.slideRL) {
                 _alignment = Alignment.topLeft;
                 _controller.forward();
                 _state = _WorkTogglerState.contractRL;
+                widget._onHitL();
               }
             } else {
               if (_state == _WorkTogglerState.slideLR) {
