@@ -15,6 +15,10 @@ class GlobalStyle {
   static const double horizontalGrayLineHeight = 3;
   static const double summaryEntryBarHeight = 20;
 
+  // marker colors
+  static const Color markerBlue = Color.fromARGB(255, 48, 110, 176);
+  static const Color markerRed = Color.fromARGB(255, 176, 48, 48);
+
   // grabber
   static const double horizontalInitRatio = 0.25;
   static const double horizontalGrabberSize = 10;
