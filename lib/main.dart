@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:scheduler/context.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
@@ -12,7 +13,6 @@ import 'package:scheduler/split.dart';
 import 'package:scheduler/summary.dart';
 import 'package:scheduler/time_table.dart';
 import 'package:scheduler/watch_manager.dart';
-import 'package:scheduler/work_toggler.dart';
 
 Future<void> main() async {
   const String title = "Dell Power Manager by VA";
@@ -112,59 +112,85 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    double appBarHeight = GlobalStyle.appBarHeight;
     return Scaffold(
       // As per https://github.com/foamify/rounded_corner_example
       body: Stack(
         children: [
           Column(
             children: [
-              SizedBox(
-                width: double.infinity,
-                height: appBarHeight,
-                child: WindowCaption(
-                  backgroundColor: Colors.transparent,
-                  brightness: Theme.of(context).brightness,
-                  title: Text("lol"),
-                ),
-              ),
               Expanded(
-                child:
-                    //     Row(
-                    //   children: [
-                    //     Container(width: 100),
-                    //     RotatedBox(
-                    //       quarterTurns: 1,
-                    //       child: GlobalStyle.createShadowContainer(
-                    //           context,
-                    //           WorkToggler(() {
-                    //             print("L");
-                    //           }, () {
-                    //             print("R");
-                    //           }, 500, Colors.orange, Colors.red),
-                    //           width: 300.0,
-                    //           height: 50.0,
-                    //           margin: 0.0),
-                    //     ),
-                    //   ],
-                    // )
-                    Row(
+                child: Row(
                   children: [
-                    SizedBox(
-                        width: GlobalStyle.clockBarWidth,
-                        child: WatchManager(globalContext)),
+                    Column(
+                      children: [
+                        SizedBox(
+                            width: GlobalStyle.clockBarWidth,
+                            height: GlobalStyle.appBarHeight,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: SvgPicture.asset(
+                                "lib/img/title_clock.svg",
+                                alignment: Alignment.centerLeft,
+                              ),
+                            )),
+                        SizedBox(
+                            width: GlobalStyle.clockBarWidth,
+                            child: WatchManager(globalContext)),
+                      ],
+                    ),
                     Expanded(
-                      child: CrossSplit(
-                        globalContext,
-                        horizontalInitRatio: GlobalStyle.horizontalInitRatio,
-                        horizontalGrabberSize:
-                            GlobalStyle.horizontalGrabberSize,
-                        verticalInitRatio: GlobalStyle.verticalInitRatio,
-                        verticalGrabberSize: GlobalStyle.verticalGrabberSize,
-                        topLeft: Placeholder(color: Colors.black12),
-                        topRight: Placeholder(color: Colors.black12),
-                        bottomLeft: Summary(globalContext, _summary),
-                        bottomRight: TimeTable(globalContext, _timeTable),
+                      child: Column(
+                        children: [
+                          Stack(
+                            children: [
+                              SizedBox(
+                                width: double.infinity,
+                                height: GlobalStyle.appBarHeight,
+                                child: WindowCaption(
+                                    backgroundColor: Colors.transparent,
+                                    brightness: Theme.of(context).brightness),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: [
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          print("b1");
+                                        },
+                                        child: Text("b1")),
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          print("b2");
+                                        },
+                                        child: Text("b2")),
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          print("b3");
+                                        },
+                                        child: Text("b3"))
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                          Expanded(
+                            child: CrossSplit(
+                              globalContext,
+                              horizontalInitRatio:
+                                  GlobalStyle.horizontalInitRatio,
+                              horizontalGrabberSize:
+                                  GlobalStyle.horizontalGrabberSize,
+                              verticalInitRatio: GlobalStyle.verticalInitRatio,
+                              verticalGrabberSize:
+                                  GlobalStyle.verticalGrabberSize,
+                              topLeft: Placeholder(color: Colors.black12),
+                              topRight: Placeholder(color: Colors.black12),
+                              bottomLeft: Summary(globalContext, _summary),
+                              bottomRight: TimeTable(globalContext, _timeTable),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -188,29 +214,5 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
-
-    // return Scaffold(
-    // appBar: AppBar(
-    //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-    //   title: Text("Placeholder"),
-    // ),
-    //     body: Row(
-    //   children: [
-    //     SizedBox(width: 200, child: WatchManager(globalContext)),
-    //     Expanded(
-    //       child: CrossSplit(
-    //         globalContext,
-    //         horizontalInitRatio: GlobalStyle.horizontalInitRatio,
-    //         horizontalGrabberSize: GlobalStyle.horizontalGrabberSize,
-    //         verticalInitRatio: GlobalStyle.verticalInitRatio,
-    //         verticalGrabberSize: GlobalStyle.verticalGrabberSize,
-    //         topLeft: Placeholder(color: Colors.black12),
-    //         topRight: Placeholder(color: Colors.black12),
-    //         bottomLeft: Summary(globalContext, _summary),
-    //         bottomRight: TimeTable(globalContext, _timeTable),
-    //       ),
-    //     ),
-    //   ],
-    // ));
   }
 }
