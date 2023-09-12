@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/work_button.dart';
 import 'package:scheduler/subject_dropdown.dart';
+import 'package:scheduler/work_toggler.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math';
 
 class WatchManager extends StatefulWidget {
@@ -68,10 +70,22 @@ class _WatchManager extends State<WatchManager>
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Container(
-            width: GlobalStyle.clockBarWidth,
-            height: GlobalStyle.clockBarWidth,
-            color: Colors.red),
+        GlobalStyle.createShadowContainer(
+            context,
+            WorkToggler(
+                onHitL: () {
+                  print("L");
+                },
+                onHitR: () {
+                  print("R");
+                },
+                restingColorL: GlobalStyle.markerRed,
+                restingColorR: GlobalStyle.markerRed,
+                handleRadius: 15.0,
+                iconAssetStr: "lib/img/dismiss.svg"),
+            width: GlobalStyle.clockBarWidth - clockPadding,
+            height: 30.0,
+            color: Colors.transparent),
         Container(height: GlobalStyle.globalCardPadding),
         GlobalStyle.createShadowContainer(
             context,
@@ -154,7 +168,7 @@ class WatchPainter extends CustomPainter {
     backgroundPainter.style = PaintingStyle.fill;
     backgroundPainter.strokeWidth = 1;
 
-    redCirclePainter.color = Colors.red;
+    redCirclePainter.color = GlobalStyle.markerRed;
     redCirclePainter.style = PaintingStyle.stroke;
     redCirclePainter.strokeWidth = strokeWidth;
     redCirclePainter.strokeCap = StrokeCap.round;
