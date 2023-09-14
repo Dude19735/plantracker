@@ -7,6 +7,7 @@ import 'package:scheduler/work_button.dart';
 import 'package:scheduler/subject_dropdown.dart';
 import 'package:scheduler/work_toggler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:scheduler/work_stop_button.dart';
 import 'dart:math';
 
 class WatchManager extends StatefulWidget {
@@ -67,6 +68,7 @@ class _WatchManager extends State<WatchManager>
   @override
   Widget build(BuildContext context) {
     const double clockPadding = 15;
+    const double radius = 5.0;
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -100,12 +102,21 @@ class _WatchManager extends State<WatchManager>
         GlobalStyle.createShadowContainer(
             context, SubjectDropdown(widget._globalContext),
             margin: 0.0,
+            borderRadius: radius,
             width: GlobalStyle.clockBarWidth - clockPadding,
             height: GlobalStyle.clockBarWidth / 3),
         Container(height: GlobalStyle.globalCardPadding),
         GlobalStyle.createShadowContainer(
+            context, WorkStopButton(widget._globalContext),
+            margin: 0.0,
+            borderRadius: radius,
+            width: GlobalStyle.clockBarWidth - clockPadding,
+            height: 0.5 * (GlobalStyle.clockBarWidth - clockPadding)),
+        Container(height: GlobalStyle.globalCardPadding),
+        GlobalStyle.createShadowContainer(
             context, WorkButton(widget._globalContext),
             margin: 0.0,
+            borderRadius: radius,
             width: GlobalStyle.clockBarWidth - clockPadding,
             height: GlobalStyle.clockBarWidth * 1.5),
       ],
