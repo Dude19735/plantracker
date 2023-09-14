@@ -315,13 +315,6 @@ class Split extends StatelessWidget {
                     onHover: (PointerHoverEvent details) {
                       HoverNotification(_name, details, constraints)
                           .dispatch(context);
-                      // print("${details.position.dx}");
-                      // if (_CrossSplit._mouseInCenter(_parent,
-                      //     constraints.maxWidth, details.position.dx, _name)) {
-                      //   // print("Center");
-                      // } else {
-                      //   // print("not center");
-                      // }
                     },
                   ),
                   SizedBox(
