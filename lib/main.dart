@@ -96,12 +96,14 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
   GlobalContext globalContext = GlobalContext();
   LinkedScrollControllerGroup _controllerGroup = LinkedScrollControllerGroup();
   late ScrollController _summary;
   late ScrollController _timeTable;
   int _mouseInWidget = -1;
+  late final TabController _controller;
 
   @override
   void initState() {
@@ -112,15 +114,37 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _controller = TabController(vsync: this, length: 3);
+
+    var split = CrossSplit(
+      globalContext,
+      horizontalInitRatio: GlobalStyle.horizontalInitRatio,
+      horizontalGrabberSize: GlobalStyle.horizontalGrabberSize,
+      verticalInitRatio: GlobalStyle.verticalInitRatio,
+      verticalGrabberSize: GlobalStyle.verticalGrabberSize,
+      topLeft: Placeholder(color: Colors.black12),
+      topRight: Placeholder(color: Colors.black12),
+      bottomLeft: Summary(globalContext, _summary),
+      bottomRight: TimeTable(globalContext, _timeTable),
+    );
+
     return Scaffold(
       // As per https://github.com/foamify/rounded_corner_example
-      body: Stack(
-        children: [
-          Column(
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          return Stack(
             children: [
-              Expanded(
-                child: Row(
-                  children: [
+              SizedBox(
+                width: double.infinity,
+                height: GlobalStyle.appBarHeight,
+                child: WindowCaption(
+                    backgroundColor: Colors.transparent,
+                    brightness: Theme.of(context).brightness),
+              ),
+              Column(
+                children: [
+                  Expanded(
+                      child: Row(children: [
                     Column(
                       children: [
                         SizedBox(
@@ -138,80 +162,81 @@ class _MyHomePageState extends State<MyHomePage> {
                             child: WatchManager(globalContext)),
                       ],
                     ),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Stack(
-                            children: [
-                              SizedBox(
-                                width: double.infinity,
-                                height: GlobalStyle.appBarHeight,
-                                child: WindowCaption(
-                                    backgroundColor: Colors.transparent,
-                                    brightness: Theme.of(context).brightness),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    ElevatedButton(
-                                        onPressed: () {
-                                          print("b1");
-                                        },
-                                        child: Text("b1")),
-                                    ElevatedButton(
-                                        onPressed: () {
-                                          print("b2");
-                                        },
-                                        child: Text("b2")),
-                                    ElevatedButton(
-                                        onPressed: () {
-                                          print("b3");
-                                        },
-                                        child: Text("b3"))
-                                  ],
+                    Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Container(
+                            margin: EdgeInsets.only(
+                                right: constraints.maxWidth -
+                                    GlobalStyle.clockBarWidth -
+                                    3 * GlobalStyle.tabBarTabWidth),
+                            height: GlobalStyle.appBarHeight,
+                            child: TabBar(
+                              padding: EdgeInsets.zero,
+                              labelPadding: EdgeInsets.zero,
+                              controller: _controller,
+                              isScrollable: true,
+                              tabs: [
+                                SizedBox(
+                                  width: GlobalStyle.tabBarTabWidth,
+                                  child: Tab(
+                                    icon: Icon(Icons.school),
+                                  ),
                                 ),
-                              )
-                            ],
-                          ),
-                          Expanded(
-                            child: CrossSplit(
-                              globalContext,
-                              horizontalInitRatio:
-                                  GlobalStyle.horizontalInitRatio,
-                              horizontalGrabberSize:
-                                  GlobalStyle.horizontalGrabberSize,
-                              verticalInitRatio: GlobalStyle.verticalInitRatio,
-                              verticalGrabberSize:
-                                  GlobalStyle.verticalGrabberSize,
-                              topLeft: Placeholder(color: Colors.black12),
-                              topRight: Placeholder(color: Colors.black12),
-                              bottomLeft: Summary(globalContext, _summary),
-                              bottomRight: TimeTable(globalContext, _timeTable),
+                                SizedBox(
+                                  width: GlobalStyle.tabBarTabWidth,
+                                  child: Tab(
+                                    icon: Icon(Icons.menu_book),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: GlobalStyle.tabBarTabWidth,
+                                  child: Tab(
+                                    icon: Icon(Icons.settings),
+                                  ),
+                                )
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: SizedBox(
+                              width: constraints.maxWidth -
+                                  GlobalStyle.clockBarWidth,
+                              child: TabBarView(
+                                  controller: _controller,
+                                  children: [
+                                    split,
+                                    Container(color: Colors.amber),
+                                    Container(color: Colors.blue)
+                                  ]),
+                            ),
+                          ),
+                        )
+                      ],
                     ),
-                  ],
-                ),
+                  ])),
+                ],
+              ),
+              const DragToResizeArea(
+                enableResizeEdges: [
+                  ResizeEdge.topLeft,
+                  ResizeEdge.top,
+                  ResizeEdge.topRight,
+                  ResizeEdge.left,
+                  ResizeEdge.right,
+                  ResizeEdge.bottomLeft,
+                  ResizeEdge.bottomLeft,
+                  ResizeEdge.bottomRight,
+                ],
+                child: SizedBox(),
               ),
             ],
-          ),
-          const DragToResizeArea(
-            enableResizeEdges: [
-              ResizeEdge.topLeft,
-              ResizeEdge.top,
-              ResizeEdge.topRight,
-              ResizeEdge.left,
-              ResizeEdge.right,
-              ResizeEdge.bottomLeft,
-              ResizeEdge.bottomLeft,
-              ResizeEdge.bottomRight,
-            ],
-            child: SizedBox(),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

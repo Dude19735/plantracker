@@ -14,6 +14,7 @@ class GlobalStyle {
   static const double subjectSelectorHeight = 45;
   static const double horizontalGrayLineHeight = 3;
   static const double summaryEntryBarHeight = 20;
+  static const double tabBarTabWidth = 70.0;
 
   // marker colors
   static const Color markerBlue = Color.fromARGB(255, 48, 110, 176);
