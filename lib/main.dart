@@ -13,6 +13,7 @@ import 'package:scheduler/split.dart';
 import 'package:scheduler/summary.dart';
 import 'package:scheduler/time_table.dart';
 import 'package:scheduler/watch_manager.dart';
+import 'package:scheduler/work_schedule.dart';
 
 Future<void> main() async {
   const String title = "Dell Power Manager by VA";
@@ -39,24 +40,6 @@ Future<void> main() async {
 
   runApp(const MyApp());
 }
-
-// Future<void> main() async {
-//   const Size minSize = Size(1280, 800);
-//   const Size currentSize = minSize;
-
-//   WidgetsFlutterBinding.ensureInitialized();
-//   WindowManager.instance.ensureInitialized();
-
-//   WindowOptions windowOptions = const WindowOptions(
-//     size: currentSize,
-//     minimumSize: minSize,
-//   );
-//   windowManager.waitUntilReadyToShow(windowOptions, () async {
-//     windowManager.show();
-//   });
-
-//   runApp(const MyApp());
-// }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
