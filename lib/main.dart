@@ -91,14 +91,13 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void initState() {
     super.initState();
+    _controller = TabController(vsync: this, length: 3);
     _summary = _controllerGroup.addAndGet();
     _timeTable = _controllerGroup.addAndGet();
   }
 
   @override
   Widget build(BuildContext context) {
-    _controller = TabController(vsync: this, length: 3);
-
     var split = CrossSplit(
       globalContext,
       horizontalInitRatio: GlobalStyle.horizontalInitRatio,
@@ -106,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage>
       verticalInitRatio: GlobalStyle.verticalInitRatio,
       verticalGrabberSize: GlobalStyle.verticalGrabberSize,
       topLeft: Placeholder(color: Colors.black12),
-      topRight: Placeholder(color: Colors.black12),
+      topRight: WorkSchedule(globalContext),
       bottomLeft: Summary(globalContext, _summary),
       bottomRight: TimeTable(globalContext, _timeTable),
     );
