@@ -40,6 +40,9 @@ dependencies:
   flutter_svg: ^2.0.7
   window_manager: ^0.3.6
   flutter_acrylic: ^1.1.3
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
 dev_dependencies:
   flutter_test:

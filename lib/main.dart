@@ -7,6 +7,7 @@ import 'package:scheduler/context.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:scheduler/global_state.dart';
 import 'package:scheduler/split.dart';
@@ -51,6 +52,16 @@ class MyApp extends StatelessWidget {
       create: (context) => GlobalState(),
       child: MaterialApp(
         title: 'Namer App',
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: [
+          Locale('en', 'GB'),
+          Locale('de', 'CH'),
+          Locale('fr', 'CH'),
+        ],
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(

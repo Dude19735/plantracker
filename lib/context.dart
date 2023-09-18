@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/data.dart';
 
+class CurrentConfig {
+  static String currentLocale = 'en-GB';
+}
+
 class GlobalSettings {
   // timer settings
   static const int initialWorkCountdownInterval = 10;
   static const int initialBreakCountdownInterval = 5;
+
+  static final DateTime earliestDate = DateTime(2022);
+  static final DateTime latestDate = DateTime(2100);
+
+  static const Map<String, Locale> locals = {
+    "en-GB": Locale('en', 'GB'),
+    "de-CH": Locale('de', 'CH'),
+    "fr-CH": Locale('fr', 'CH')
+  };
 }
 
 class GlobalStyle {
@@ -36,6 +49,9 @@ class GlobalStyle {
   static const double globalCardPadding = 8.0; //8.0;
   static const Color globalCardColor = Colors.black12;
   static const double globalBorderRadius = 0.0;
+
+  // Datepicker box
+  static const double dateTimeButtonRadius = 5.0;
 
   static Widget createShadowContainer(BuildContext context, Widget? child,
       {margin = GlobalStyle.cardMargin,
