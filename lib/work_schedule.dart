@@ -19,6 +19,8 @@ class WorkSchedule extends StatefulWidget {
 
 class _WorkSchedule extends State<WorkSchedule>
     with SingleTickerProviderStateMixin {
+  late DateTime _fromDate;
+  late DateTime _toDate;
   // List<bool> _isDisabled = [false, true, false];
 
   // void _onTap() {
@@ -30,8 +32,82 @@ class _WorkSchedule extends State<WorkSchedule>
   //   }
   // }
 
+//   void main() {
+//   final date = DateTime.parse('2019-10-08 15:43:03.887');
+
+//   print('Date: $date');
+//   print('Start of week: ${getDate(date.subtract(Duration(days: date.weekday - 1)))}');
+//   print('End of week: ${getDate(date.add(Duration(days: DateTime.daysPerWeek - date.weekday)))}');
+// }
+
+// DateTime getDate(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  DateTime _getLastMonday(DateTime date) {
+    return date.subtract(Duration(days: date.weekday - 1));
+  }
+
+  DateTime _getNextSunday(DateTime date) {
+    return date.add(Duration(days: 7 - date.weekday % 7));
+  }
+
+  String _getFormatedDateTime(DateTime date) {
+    return "${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}";
+  }
+
+  Widget _getCalendarButton(DateTime date) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.grab,
+      child: GestureDetector(
+        onTap: () {
+          Future<DateTime?> res = showDatePicker(
+              context: context,
+              initialDate: _fromDate,
+              firstDate: GlobalSettings.earliestDate,
+              lastDate: _toDate,
+              locale: GlobalSettings.locals[CurrentConfig.currentLocale]);
+
+          res.then((value) => {
+                if (value != null)
+                  {
+                    setState(() {
+                      _fromDate = value;
+                    })
+                  }
+              });
+        },
+        child: Placeholder(),
+      ),
+      onHover: (details) {},
+    );
+  }
+
+// label: Text(_getFormatedDateTime(_fromDate)),
+//                       onPressed: () {
+//                         Future<DateTime?> res = showDatePicker(
+//                             context: context,
+//                             initialDate: _fromDate,
+//                             firstDate: GlobalSettings.earliestDate,
+//                             lastDate: _toDate,
+//                             locale: GlobalSettings
+//                                 .locals[CurrentConfig.currentLocale]);
+
+//                         res.then((value) => {
+//                               if (value != null)
+//                                 {
+//                                   setState(() {
+//                                     _fromDate = value;
+//                                   })
+//                                 }
+//                             });
+//                       },
+//                       icon: Icon(Icons.calendar_month_outlined))
+
   @override
   void initState() {
+    super.initState();
+
+    _fromDate = _getLastMonday(DateTime.now());
+    _toDate = _getNextSunday(DateTime.now());
     // _controller.addListener(_onTap);
   }
 
@@ -47,39 +123,120 @@ class _WorkSchedule extends State<WorkSchedule>
             direction: Axis.horizontal,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(onPressed: () {}, icon: Icon(Icons.chevron_left)),
-              Spacer(),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                    border: Border.all(),
-                    borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                child: IconButton(
-                    onPressed: () {
-                      showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100));
-                    },
-                    icon: Icon(Icons.calendar_month_outlined)),
-              ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                    border: Border.all(),
-                    borderRadius: BorderRadius.all(Radius.circular(5.0))),
-                child: IconButton(
-                    onPressed: () {
-                      showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100));
-                    },
-                    icon: Icon(Icons.calendar_month_outlined)),
-              ),
+              IconButton(
+                  onPressed: () {
+                    setState(() {
+                      Duration d = _toDate.difference(_fromDate);
+                      _fromDate = _fromDate.subtract(d);
+                      _toDate = _toDate.subtract(d);
+                    });
+                  },
+                  icon: Icon(Icons.chevron_left)),
               Spacer(),
               IconButton(
-                onPressed: () {},
+                  onPressed: () {
+                    setState(() {
+                      _fromDate = _fromDate.subtract(Duration(days: 1));
+                    });
+                  },
+                  icon: Icon(Icons.remove)),
+              GlobalStyle.createShadowContainer(
+                  context, //_getCalendarButton(_fromDate),
+                  ElevatedButton.icon(
+                      label: Text(_getFormatedDateTime(_fromDate)),
+                      onPressed: () {
+                        Future<DateTime?> res = showDatePicker(
+                            context: context,
+                            initialDate: _fromDate,
+                            firstDate: GlobalSettings.earliestDate,
+                            lastDate: _toDate,
+                            locale: GlobalSettings
+                                .locals[CurrentConfig.currentLocale]);
+
+                        res.then((value) => {
+                              if (value != null)
+                                {
+                                  setState(() {
+                                    _fromDate = value;
+                                  })
+                                }
+                            });
+                      },
+                      icon: Icon(Icons.calendar_month_outlined)),
+                  margin: 5.0,
+                  borderRadius: 5.0,
+                  width: 200.0),
+              IconButton(
+                  onPressed: () {
+                    setState(() {
+                      if (_fromDate.compareTo(_toDate) < 0) {
+                        _fromDate = _fromDate.add(Duration(days: 1));
+                      }
+                    });
+                  },
+                  icon: Icon(
+                    Icons.add,
+                    color: (_fromDate.compareTo(_toDate) < 0
+                        ? Colors.black
+                        : Colors.black12),
+                  )),
+              SizedBox(
+                width: 100,
+              ),
+              IconButton(
+                  onPressed: () {
+                    setState(() {
+                      if (_toDate.compareTo(_fromDate) > 0) {
+                        _toDate = _toDate.subtract(Duration(days: 1));
+                      }
+                    });
+                  },
+                  icon: Icon(
+                    Icons.remove,
+                    color: (_toDate.compareTo(_fromDate) > 0
+                        ? Colors.black
+                        : Colors.black12),
+                  )),
+              SizedBox(
+                width: 200,
+                child: ElevatedButton.icon(
+                    label: Text(_getFormatedDateTime(_toDate)),
+                    onPressed: () {
+                      Future<DateTime?> res = showDatePicker(
+                          context: context,
+                          initialDate: _toDate,
+                          firstDate: _fromDate,
+                          lastDate: GlobalSettings.latestDate,
+                          locale: GlobalSettings
+                              .locals[CurrentConfig.currentLocale]);
+
+                      res.then((value) => {
+                            if (value != null)
+                              {
+                                setState(() {
+                                  _toDate = value;
+                                })
+                              }
+                          });
+                    },
+                    icon: Icon(Icons.calendar_month_outlined)),
+              ),
+              IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _toDate = _toDate.add(Duration(days: 1));
+                    });
+                  },
+                  icon: Icon(Icons.add)),
+              Spacer(),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    Duration d = _toDate.difference(_fromDate);
+                    _fromDate = _fromDate.add(d);
+                    _toDate = _toDate.add(d);
+                  });
+                },
                 icon: Icon(Icons.chevron_right),
               ),
             ],
