@@ -7,7 +7,6 @@ class CurrentConfig {
   // schedule widget configs
   static int scheduleHourOffset = 5; // start at 5am
   static int scheduleBoxRangeS = 60 * 15; // 15 mins schedule box size
-  static int scheduleCrossAxisBoxCount = 7;
 }
 
 class GlobalSettings {
