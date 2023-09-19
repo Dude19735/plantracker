@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
+import 'package:scheduler/data.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'dart:math';
 
 class WorkScheduleInnerView extends StatefulWidget {
   final GlobalContext _globalContext;
 
-  WorkScheduleInnerView(this._globalContext);
+  final int _days;
+  WorkScheduleInnerView(this._globalContext, this._days);
+
+  static of(BuildContext context, {bool root = false}) => root
+      ? context.findRootAncestorStateOfType<_WorkScheduleInnerView>()
+      : context.findAncestorStateOfType<_WorkScheduleInnerView>();
 
   // @override
   // Widget build(BuildContext context) {
@@ -31,47 +38,46 @@ class WorkScheduleInnerView extends StatefulWidget {
 
 class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     with SingleTickerProviderStateMixin {
-  late final TabController _controller;
+  late int _days;
+
+  late Data<SchedulePlanData> _data;
+
+  // Future<Data<SchedulePlanData>> _load(DateTime fromDate, DateTime toDate) async {
+
+  // }
+
+  @override
+  void initState() {
+    super.initState();
+    _days = widget._days;
+
+    // load data async...
+  }
 
   @override
   Widget build(BuildContext context) {
-    final int childCount = (CurrentConfig.scheduleCrossAxisBoxCount *
-            (86400 / CurrentConfig.scheduleBoxRangeS))
-        .round();
-
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        return SingleChildScrollView(
-            child: Container(
-                margin: const EdgeInsets.all(GlobalStyle.globalCardMargin),
-                width: constraints.maxWidth,
-                height: GlobalStyle.scheduleBoxHeightPx * 96 +
-                    2 *
-                        (GlobalStyle.globalCardPadding +
-                            GlobalStyle.globalCardMargin),
-                child: Padding(
+        return Stack(children: [
+          SingleChildScrollView(
+              child: Container(
+                  margin: const EdgeInsets.all(GlobalStyle.globalCardMargin),
+                  width: constraints.maxWidth,
+                  height: GlobalStyle.scheduleBoxHeightPx * 96 +
+                      2 *
+                          (GlobalStyle.globalCardPadding +
+                              GlobalStyle.globalCardMargin),
+                  child: Padding(
                     padding: EdgeInsets.all(GlobalStyle.globalCardPadding),
                     child: GlobalStyle.createShadowContainer(
-                        context, CustomPaint(painter: _GridPainter()))
-                    // child: CustomPaint(
-                    //   painter: _GridPainter(constraints.maxWidth - 2 * padding),
-                    // ),
-                    )));
-        // return GridView.count(
-        //   crossAxisCount: CurrentConfig.scheduleCrossAxisBoxCount,
-        //   mainAxisSpacing: 3,
-        //   crossAxisSpacing: 3,
-        //   childAspectRatio:
-        //       (constraints.maxWidth / CurrentConfig.scheduleCrossAxisBoxCount) /
-        //           CurrentConfig.scheduleBoxHeightPx,
-        //   children: [
-        //     for (int i = 0; i < childCount; ++i)
-        //       Container(
-        //           padding: const EdgeInsets.all(4.0),
-        //           color: Colors.blueGrey,
-        //           child: Text(i.toString())),
-        //   ],
-        // );
+                        context, CustomPaint(painter: _GridPainter())),
+                  ))),
+          Container(
+              color: Colors.black12.withAlpha(125),
+              child: Center(
+                  child: LoadingAnimationWidget.newtonCradle(
+                      color: Colors.white, size: 200.0)))
+        ]);
       },
     );
   }
@@ -96,7 +102,7 @@ class _GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    int ccsbx = CurrentConfig.scheduleCrossAxisBoxCount;
+    int ccsbx = 7;
     double boxWidth =
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
             ccsbx;
