@@ -1,10 +1,8 @@
-// import 'animated_toggle.dart';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:scheduler/work_toggler.dart';
+import 'package:scheduler/wodk_schedule_inner_view.dart';
 
 /// Flutter code sample for [IconButton].
 
@@ -21,26 +19,6 @@ class _WorkSchedule extends State<WorkSchedule>
     with SingleTickerProviderStateMixin {
   late DateTime _fromDate;
   late DateTime _toDate;
-  // List<bool> _isDisabled = [false, true, false];
-
-  // void _onTap() {
-  //   if (_isDisabled[_controller.index]) {
-  //     int index = _controller.previousIndex;
-  //     setState(() {
-  //       _controller.index = index;
-  //     });
-  //   }
-  // }
-
-//   void main() {
-//   final date = DateTime.parse('2019-10-08 15:43:03.887');
-
-//   print('Date: $date');
-//   print('Start of week: ${getDate(date.subtract(Duration(days: date.weekday - 1)))}');
-//   print('End of week: ${getDate(date.add(Duration(days: DateTime.daysPerWeek - date.weekday)))}');
-// }
-
-// DateTime getDate(DateTime d) => DateTime(d.year, d.month, d.day);
 
   DateTime _getLastMonday(DateTime date) {
     return date.subtract(Duration(days: date.weekday - 1));
@@ -81,27 +59,6 @@ class _WorkSchedule extends State<WorkSchedule>
     );
   }
 
-// label: Text(_getFormatedDateTime(_fromDate)),
-//                       onPressed: () {
-//                         Future<DateTime?> res = showDatePicker(
-//                             context: context,
-//                             initialDate: _fromDate,
-//                             firstDate: GlobalSettings.earliestDate,
-//                             lastDate: _toDate,
-//                             locale: GlobalSettings
-//                                 .locals[CurrentConfig.currentLocale]);
-
-//                         res.then((value) => {
-//                               if (value != null)
-//                                 {
-//                                   setState(() {
-//                                     _fromDate = value;
-//                                   })
-//                                 }
-//                             });
-//                       },
-//                       icon: Icon(Icons.calendar_month_outlined))
-
   @override
   void initState() {
     super.initState();
@@ -140,32 +97,31 @@ class _WorkSchedule extends State<WorkSchedule>
                     });
                   },
                   icon: Icon(Icons.remove)),
-              GlobalStyle.createShadowContainer(
-                  context, //_getCalendarButton(_fromDate),
-                  ElevatedButton.icon(
-                      label: Text(_getFormatedDateTime(_fromDate)),
-                      onPressed: () {
-                        Future<DateTime?> res = showDatePicker(
-                            context: context,
-                            initialDate: _fromDate,
-                            firstDate: GlobalSettings.earliestDate,
-                            lastDate: _toDate,
-                            locale: GlobalSettings
-                                .locals[CurrentConfig.currentLocale]);
+              SizedBox(
+                width: 150,
+                child: ElevatedButton.icon(
+                    label: Text(_getFormatedDateTime(_fromDate)),
+                    style: ElevatedButton.styleFrom(elevation: 0),
+                    onPressed: () {
+                      Future<DateTime?> res = showDatePicker(
+                          context: context,
+                          initialDate: _fromDate,
+                          firstDate: GlobalSettings.earliestDate,
+                          lastDate: _toDate,
+                          locale: GlobalSettings
+                              .locals[CurrentConfig.currentLocale]);
 
-                        res.then((value) => {
-                              if (value != null)
-                                {
-                                  setState(() {
-                                    _fromDate = value;
-                                  })
-                                }
-                            });
-                      },
-                      icon: Icon(Icons.calendar_month_outlined)),
-                  margin: 5.0,
-                  borderRadius: 5.0,
-                  width: 200.0),
+                      res.then((value) => {
+                            if (value != null)
+                              {
+                                setState(() {
+                                  _fromDate = value;
+                                })
+                              }
+                          });
+                    },
+                    icon: Icon(Icons.calendar_month_outlined)),
+              ),
               IconButton(
                   onPressed: () {
                     setState(() {
@@ -198,9 +154,10 @@ class _WorkSchedule extends State<WorkSchedule>
                         : Colors.black12),
                   )),
               SizedBox(
-                width: 200,
+                width: 150,
                 child: ElevatedButton.icon(
                     label: Text(_getFormatedDateTime(_toDate)),
+                    style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
                           context: context,
@@ -242,6 +199,7 @@ class _WorkSchedule extends State<WorkSchedule>
             ],
           ),
         ),
+        Expanded(child: WorkScheduleInnerView(widget._globalContext))
       ],
     );
   }

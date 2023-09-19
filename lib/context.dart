@@ -3,6 +3,11 @@ import 'package:scheduler/data.dart';
 
 class CurrentConfig {
   static String currentLocale = 'en-GB';
+
+  // schedule widget configs
+  static int scheduleHourOffset = 5; // start at 5am
+  static int scheduleBoxRangeS = 60 * 15; // 15 mins schedule box size
+  static int scheduleCrossAxisBoxCount = 7;
 }
 
 class GlobalSettings {
@@ -28,6 +33,12 @@ class GlobalStyle {
   static const double horizontalGrayLineHeight = 3;
   static const double summaryEntryBarHeight = 20;
   static const double tabBarTabWidth = 70.0;
+
+  // schedule colors and paint settings
+  static const Color scheduleGridColorBox = Colors.black12;
+  static const Color scheduleGridColorFullHour = Colors.black54;
+  static const double scheduleGridStrokeWidth = 1.0;
+  static int scheduleBoxHeightPx = 30; // height of a schedule box in pixel
 
   // marker colors
   static const Color markerBlue = Color.fromARGB(255, 48, 110, 176);
