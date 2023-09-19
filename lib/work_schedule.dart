@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:scheduler/work_toggler.dart';
-import 'package:scheduler/wodk_schedule_inner_view.dart';
+import 'package:scheduler/data_utils.dart';
+import 'package:scheduler/work_schedule_inner_view.dart';
 
 /// Flutter code sample for [IconButton].
 
@@ -19,52 +18,45 @@ class _WorkSchedule extends State<WorkSchedule>
     with SingleTickerProviderStateMixin {
   late DateTime _fromDate;
   late DateTime _toDate;
+  late Widget _workScheduleInnerView;
 
-  DateTime _getLastMonday(DateTime date) {
-    return date.subtract(Duration(days: date.weekday - 1));
-  }
+  // Widget _getCalendarButton(DateTime date) {
+  //   return MouseRegion(
+  //     cursor: SystemMouseCursors.grab,
+  //     child: GestureDetector(
+  //       onTap: () {
+  //         Future<DateTime?> res = showDatePicker(
+  //             context: context,
+  //             initialDate: _fromDate,
+  //             firstDate: GlobalSettings.earliestDate,
+  //             lastDate: _toDate,
+  //             locale: GlobalSettings.locals[CurrentConfig.currentLocale]);
 
-  DateTime _getNextSunday(DateTime date) {
-    return date.add(Duration(days: 7 - date.weekday % 7));
-  }
-
-  String _getFormatedDateTime(DateTime date) {
-    return "${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}";
-  }
-
-  Widget _getCalendarButton(DateTime date) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.grab,
-      child: GestureDetector(
-        onTap: () {
-          Future<DateTime?> res = showDatePicker(
-              context: context,
-              initialDate: _fromDate,
-              firstDate: GlobalSettings.earliestDate,
-              lastDate: _toDate,
-              locale: GlobalSettings.locals[CurrentConfig.currentLocale]);
-
-          res.then((value) => {
-                if (value != null)
-                  {
-                    setState(() {
-                      _fromDate = value;
-                    })
-                  }
-              });
-        },
-        child: Placeholder(),
-      ),
-      onHover: (details) {},
-    );
-  }
+  //         res.then((value) => {
+  //               if (value != null)
+  //                 {
+  //                   setState(() {
+  //                     _fromDate = value;
+  //                   })
+  //                 }
+  //             });
+  //       },
+  //       child: Placeholder(),
+  //     ),
+  //     onHover: (details) {},
+  //   );
+  // }
 
   @override
   void initState() {
     super.initState();
 
-    _fromDate = _getLastMonday(DateTime.now());
-    _toDate = _getNextSunday(DateTime.now());
+    _fromDate = DataUtils.getLastMonday(DateTime.now());
+    _toDate = DataUtils.getNextSunday(DateTime.now());
+
+    _workScheduleInnerView = WorkScheduleInnerView(
+        widget._globalContext, _toDate.difference(_fromDate).inDays);
+    // WorkScheduleInnerView.of(context)
     // _controller.addListener(_onTap);
   }
 
@@ -100,7 +92,7 @@ class _WorkSchedule extends State<WorkSchedule>
               SizedBox(
                 width: 150,
                 child: ElevatedButton.icon(
-                    label: Text(_getFormatedDateTime(_fromDate)),
+                    label: Text(DataUtils.getFormatedDateTime(_fromDate)),
                     style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
@@ -156,7 +148,7 @@ class _WorkSchedule extends State<WorkSchedule>
               SizedBox(
                 width: 150,
                 child: ElevatedButton.icon(
-                    label: Text(_getFormatedDateTime(_toDate)),
+                    label: Text(DataUtils.getFormatedDateTime(_toDate)),
                     style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
@@ -199,7 +191,7 @@ class _WorkSchedule extends State<WorkSchedule>
             ],
           ),
         ),
-        Expanded(child: WorkScheduleInnerView(widget._globalContext))
+        Expanded(child: _workScheduleInnerView)
       ],
     );
   }
