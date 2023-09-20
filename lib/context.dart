@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/data.dart';
+import 'package:scheduler/data_utils.dart';
 
 class CurrentConfig {
   static String currentLocale = 'en-GB';
@@ -126,5 +127,6 @@ class GlobalStyle {
 
 class GlobalContext {
   bool showSubjectsInSummary = true;
-  GlobalData data = GlobalData(GlobalStyle.dateToInt(DateTime.now()), 0, 7);
+  GlobalData data = GlobalData(DataUtils.getLastMonday(DateTime.now()),
+      DataUtils.getNextSunday(DateTime.now()));
 }

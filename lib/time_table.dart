@@ -60,8 +60,7 @@ class TimeTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int numCells =
-        1 + _globalContext.data.plusDays + _globalContext.data.minusDays;
+    int numCells = _globalContext.data.dateRange();
     print(numCells);
     return Container(
       // elevation: 0,
