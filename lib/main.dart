@@ -16,8 +16,13 @@ import 'package:scheduler/time_table.dart';
 import 'package:scheduler/watch_manager.dart';
 import 'package:scheduler/work_schedule.dart';
 
+import 'package:scheduler/sqlite_test.dart';
+
 Future<void> main() async {
-  const String title = "Dell Power Manager by VA";
+  // var d = DatabaseHelper();
+  // await d.init();
+
+  const String title = "Just something...";
   const Size minSize = Size(1280, 720);
   const Size currentSize = Size(1280, 720);
 
