@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
+import 'package:scheduler/data.dart';
 import 'dart:math';
 
 class SummaryEntry extends StatelessWidget {
@@ -23,7 +24,7 @@ class SummaryEntry extends StatelessWidget {
               alignment: Alignment.topLeft,
               duration: const Duration(seconds: 2),
               curve: Curves.fastOutSlowIn,
-              widthFactor: Random().nextDouble(),
+              widthFactor: fraction,
               heightFactor: 1.0,
               child: DecoratedBox(
                 decoration: BoxDecoration(
@@ -45,23 +46,21 @@ class SummaryEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var data = _globalContext.data.summaryData[GlobalDataFrame.current]!.data;
     Widget child = Padding(
       padding: const EdgeInsets.all(GlobalStyle.cardPadding),
       child: Wrap(children: [
-        if (_globalContext.showSubjectsInSummary)
-          Text(_globalContext.data.summaryData.data[_index].subject),
+        if (_globalContext.showSubjectsInSummary) Text(data[_index].subject),
         _getBar(
             GlobalStyle.summaryEntryBarHeight,
-            _getFraction(_maxTime,
-                _globalContext.data.summaryData.data[_index].recorded),
+            _getFraction(_maxTime, data[_index].recorded),
             Colors.blue,
-            "${_globalContext.data.summaryData.data[_index].recorded}"),
+            "${data[_index].recorded}"),
         _getBar(
             GlobalStyle.summaryEntryBarHeight,
-            _getFraction(
-                _maxTime, _globalContext.data.summaryData.data[_index].planed),
+            _getFraction(_maxTime, data[_index].planed),
             Colors.orange,
-            "${_globalContext.data.summaryData.data[_index].planed}"),
+            "${data[_index].planed}"),
       ]),
     );
     return GlobalStyle.createShadowContainer(context, child);
@@ -77,7 +76,8 @@ class Summary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double maxTime = 0;
-    for (var item in _globalContext.data.summaryData.data) {
+    var data = _globalContext.data.summaryData[GlobalDataFrame.current]!.data;
+    for (var item in data) {
       if (item.planed > maxTime) maxTime = item.planed;
       if (item.recorded > maxTime) maxTime = item.recorded;
     }
@@ -97,7 +97,7 @@ class Summary extends StatelessWidget {
               return ListView.builder(
                 clipBehavior: Clip.none,
                 controller: _scrollController,
-                itemCount: _globalContext.data.summaryData.data.length,
+                itemCount: data.length,
                 itemBuilder: (BuildContext context, int index) {
                   Widget x = SummaryEntry(
                       _globalContext, constraints.maxWidth, maxTime, index);

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
+import 'package:scheduler/data.dart';
 
 enum SplitDirection { vertical, horizontal }
 
@@ -161,7 +162,8 @@ class _CrossSplit extends State<CrossSplit> {
       }
 
       // we moved the thing => clear the width lists
-      for (var item in widget._globalContext.data.summaryData.data) {
+      for (var item in widget
+          ._globalContext.data.summaryData[GlobalDataFrame.current]!.data) {
         widget._globalContext.data.minSubjectTextHeight[item.subjectId] = 0;
       }
     });
@@ -263,7 +265,8 @@ class Split extends StatelessWidget {
         var sizes = getSizes(constraints);
 
         if (sizes["sb1_w"] != null) {
-          for (var item in _globalContext.data.summaryData.data) {
+          for (var item in _globalContext
+              .data.summaryData[GlobalDataFrame.current]!.data) {
             double width = (sizes["sb1_w"]! as double) -
                 2 * GlobalStyle.cardPadding -
                 2 * GlobalStyle.cardMargin -

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scheduler/context.dart';
+import 'package:scheduler/data.dart';
 import 'dart:math';
 
 class TimeTable extends StatelessWidget {
@@ -61,7 +62,7 @@ class TimeTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int numCells = _globalContext.data.dateRange();
-    print(numCells);
+    var data = _globalContext.data.summaryData[GlobalDataFrame.current]!.data;
     return Container(
       // elevation: 0,
       margin: EdgeInsets.all(GlobalStyle.globalCardMargin),
@@ -77,10 +78,9 @@ class TimeTable extends StatelessWidget {
               return ListView.builder(
                 clipBehavior: Clip.none,
                 controller: _scrollController,
-                itemCount: _globalContext.data.summaryData.data.length,
+                itemCount: data.length,
                 itemBuilder: (BuildContext context, int index) {
-                  int subjectId =
-                      _globalContext.data.summaryData.data[index].subjectId;
+                  int subjectId = data[index].subjectId;
                   double height = _globalContext.showSubjectsInSummary
                       ? _globalContext.data.minSubjectTextHeight[subjectId]!
                       : 0;

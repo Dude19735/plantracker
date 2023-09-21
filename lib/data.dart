@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:scheduler/data_utils.dart';
+import 'package:collection/collection.dart';
 
 class ColumnName {
   static const String date = "Date";
@@ -419,39 +420,74 @@ class Data<D> {
   }
 }
 
+enum GlobalDataFrame { previous, current, next, temp }
+
 class GlobalData {
   Map<int, double> minSubjectTextHeight = {};
-  late Data<SummaryData> summaryData;
-  late Data<TimeTableData> timeTableData;
-  late Data<SchedulePlanData> schedulePlanData;
+  late Map<GlobalDataFrame, Data<SummaryData>> summaryData;
+  late Map<GlobalDataFrame, Data<TimeTableData>> timeTableData;
+  late Map<GlobalDataFrame, Data<SchedulePlanData>> schedulePlanData;
 
   DateTime _fromDate;
   DateTime _toDate;
 
   GlobalData(this._fromDate, this._toDate) {
-    load(_fromDate, _toDate);
+    int diff = _fromDate.difference(_toDate).inDays.abs();
+    Duration d = Duration(days: diff + 1);
+
+    summaryData = {
+      GlobalDataFrame.previous: Data<SummaryData>.fromJsonStr(
+          Data.testDataSummaryView(_fromDate.subtract(d), _toDate.subtract(d))),
+      GlobalDataFrame.current: Data<SummaryData>.fromJsonStr(
+          Data.testDataSummaryView(_fromDate, _toDate)),
+      GlobalDataFrame.next: Data<SummaryData>.fromJsonStr(
+          Data.testDataSummaryView(_fromDate.add(d), _toDate.add(d)))
+    };
+
+    timeTableData = {
+      GlobalDataFrame.previous: Data<TimeTableData>.fromJsonStr(
+          Data.testDataTimeTableView(
+              _fromDate.subtract(d), _toDate.subtract(d))),
+      GlobalDataFrame.current: Data<TimeTableData>.fromJsonStr(
+          Data.testDataTimeTableView(_fromDate, _toDate)),
+      GlobalDataFrame.next: Data<TimeTableData>.fromJsonStr(
+          Data.testDataTimeTableView(_fromDate.add(d), _toDate.add(d)))
+    };
+
+    schedulePlanData = {
+      GlobalDataFrame.previous: Data<SchedulePlanData>.fromJsonStr(
+          Data.testDateScheduleViewPlan(
+              _fromDate.subtract(d), _toDate.subtract(d))),
+      GlobalDataFrame.current: Data<SchedulePlanData>.fromJsonStr(
+          Data.testDateScheduleViewPlan(_fromDate, _toDate)),
+      GlobalDataFrame.next: Data<SchedulePlanData>.fromJsonStr(
+          Data.testDateScheduleViewPlan(_fromDate.add(d), _toDate.add(d)))
+    };
+
+    // requirement
+    summaryData.forEach((key, value) {
+      value.data.sort((a, b) => a.subject.compareTo(b.subject));
+    });
+    timeTableData.forEach((key, value) {
+      value.data.sort((a, b) => a.subject.compareTo(b.subject));
+    });
+    timeTableData.forEach((key, value) {
+      value.data.sort((a, b) => a.date.compareTo(b.date));
+    });
+    schedulePlanData.forEach((key, value) {
+      value.data.sort((a, b) => a.date.compareTo(b.date));
+    });
+
+    summaryData.forEach((key, value) {
+      value.data.forEach((element) {
+        minSubjectTextHeight[element.subjectId] = 0;
+      });
+    });
   }
 
   DateTime fromDate() => _fromDate;
   DateTime toDate() => _toDate;
   int dateRange() => _toDate.difference(_fromDate).inDays.abs();
 
-  void load(DateTime fromDate, DateTime toDate) {
-    summaryData = Data<SummaryData>.fromJsonStr(
-        Data.testDataSummaryView(fromDate, toDate));
-    timeTableData = Data<TimeTableData>.fromJsonStr(
-        Data.testDataTimeTableView(fromDate, toDate));
-    schedulePlanData = Data<SchedulePlanData>.fromJsonStr(
-        Data.testDateScheduleViewPlan(fromDate, toDate));
-
-    // requirement
-    summaryData.data.sort((a, b) => a.subject.compareTo(b.subject));
-    timeTableData.data.sort((a, b) => a.subject.compareTo(b.subject));
-    timeTableData.data.sort((a, b) => a.date.compareTo(b.date));
-    schedulePlanData.data.sort((a, b) => a.date.compareTo(b.date));
-
-    for (var item in summaryData.data) {
-      minSubjectTextHeight[item.subjectId] = 0;
-    }
-  }
+  void _load(DateTime fromDate, DateTime toDate) {}
 }
