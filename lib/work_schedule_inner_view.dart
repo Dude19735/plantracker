@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/number_symbols_data.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -38,10 +39,6 @@ class WorkScheduleInnerView extends StatefulWidget {
 
 class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     with SingleTickerProviderStateMixin {
-  late int _days;
-
-  late Data<SchedulePlanData> _data;
-
   // Future<Data<SchedulePlanData>> _load(DateTime fromDate, DateTime toDate) async {
 
   // }
@@ -49,13 +46,13 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
   @override
   void initState() {
     super.initState();
-    _days = widget._days;
 
     // load data async...
   }
 
   @override
   Widget build(BuildContext context) {
+    double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Stack(children: [
@@ -63,20 +60,21 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
               child: Container(
                   margin: const EdgeInsets.all(GlobalStyle.globalCardMargin),
                   width: constraints.maxWidth,
-                  height: GlobalStyle.scheduleBoxHeightPx * 96 +
+                  height: GlobalStyle.scheduleBoxHeightPx * numBoxes +
                       2 *
                           (GlobalStyle.globalCardPadding +
-                              GlobalStyle.globalCardMargin),
+                              GlobalStyle.globalCardMargin) +
+                      (numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth,
                   child: Padding(
                     padding: EdgeInsets.all(GlobalStyle.globalCardPadding),
                     child: GlobalStyle.createShadowContainer(
                         context, CustomPaint(painter: _GridPainter())),
                   ))),
-          Container(
-              color: Colors.black12.withAlpha(125),
-              child: Center(
-                  child: LoadingAnimationWidget.newtonCradle(
-                      color: Colors.white, size: 200.0)))
+          // Container(
+          //     color: Colors.black12.withAlpha(125),
+          //     child: Center(
+          //         child: LoadingAnimationWidget.newtonCradle(
+          //             color: Colors.white, size: 200.0)))
         ]);
       },
     );

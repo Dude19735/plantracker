@@ -4,10 +4,6 @@ import 'package:scheduler/data_utils.dart';
 
 class CurrentConfig {
   static String currentLocale = 'en-GB';
-
-  // schedule widget configs
-  static int scheduleHourOffset = 5; // start at 5am
-  static int scheduleBoxRangeS = 60 * 15; // 15 mins schedule box size
 }
 
 class GlobalSettings {
@@ -23,6 +19,10 @@ class GlobalSettings {
     "de-CH": Locale('de', 'CH'),
     "fr-CH": Locale('fr', 'CH')
   };
+
+  // schedule widget configs
+  static int scheduleHourOffset = 5; // start at 5am
+  static int scheduleBoxRangeS = 60 * 15; // 15 mins schedule box size
 }
 
 class GlobalStyle {
