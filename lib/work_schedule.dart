@@ -75,7 +75,8 @@ class _WorkSchedule extends State<WorkSchedule>
               IconButton(
                   onPressed: () {
                     setState(() {
-                      Duration d = _toDate.difference(_fromDate);
+                      Duration d =
+                          _toDate.difference(_fromDate) + Duration(days: 1);
                       _fromDate = _fromDate.subtract(d);
                       _toDate = _toDate.subtract(d);
                     });
@@ -181,7 +182,8 @@ class _WorkSchedule extends State<WorkSchedule>
               IconButton(
                 onPressed: () {
                   setState(() {
-                    Duration d = _toDate.difference(_fromDate);
+                    Duration d =
+                        _toDate.difference(_fromDate) + Duration(days: 1);
                     _fromDate = _fromDate.add(d);
                     _toDate = _toDate.add(d);
                   });
