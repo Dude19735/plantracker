@@ -4,6 +4,10 @@ import 'package:scheduler/data_utils.dart';
 
 class CurrentConfig {
   static String currentLocale = 'en-GB';
+
+  static DateTime fromDateWindow = DateTime.now();
+  static DateTime toDateWindow =
+      fromDateWindow.add(Duration(days: GlobalSettings.initDateWindowSize));
 }
 
 class GlobalSettings {
@@ -21,8 +25,9 @@ class GlobalSettings {
   };
 
   // schedule widget configs
-  static int scheduleHourOffset = 5; // start at 5am
-  static int scheduleBoxRangeS = 60 * 15; // 15 mins schedule box size
+  static const int scheduleHourOffset = 5; // start at 5am
+  static const int scheduleBoxRangeS = 60 * 15; // 15 mins schedule box size
+  static const int initDateWindowSize = 7;
 }
 
 class GlobalStyle {

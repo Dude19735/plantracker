@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/number_symbols_data.dart';
 import 'package:scheduler/context.dart';
-import 'package:scheduler/data.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'dart:math';
 
 class WorkScheduleInnerView extends StatefulWidget {
   final GlobalContext _globalContext;
 
-  final int _days;
-  WorkScheduleInnerView(this._globalContext, this._days);
+  WorkScheduleInnerView(this._globalContext);
 
   static of(BuildContext context, {bool root = false}) => root
       ? context.findRootAncestorStateOfType<_WorkScheduleInnerView>()
@@ -100,7 +95,11 @@ class _GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    int ccsbx = 7;
+    int ccsbx = CurrentConfig.fromDateWindow
+        .difference(CurrentConfig.toDateWindow)
+        .inDays
+        .abs();
+
     double boxWidth =
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
             ccsbx;

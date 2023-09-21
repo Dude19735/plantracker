@@ -16,8 +16,6 @@ class WorkSchedule extends StatefulWidget {
 
 class _WorkSchedule extends State<WorkSchedule>
     with SingleTickerProviderStateMixin {
-  late DateTime _fromDate;
-  late DateTime _toDate;
   late Widget _workScheduleInnerView;
 
   // Widget _getCalendarButton(DateTime date) {
@@ -51,11 +49,10 @@ class _WorkSchedule extends State<WorkSchedule>
   void initState() {
     super.initState();
 
-    _fromDate = DataUtils.getLastMonday(DateTime.now());
-    _toDate = DataUtils.getNextSunday(DateTime.now());
+    CurrentConfig.fromDateWindow = DataUtils.getLastMonday(DateTime.now());
+    CurrentConfig.toDateWindow = DataUtils.getNextSunday(DateTime.now());
 
-    _workScheduleInnerView = WorkScheduleInnerView(
-        widget._globalContext, _toDate.difference(_fromDate).inDays);
+    _workScheduleInnerView = WorkScheduleInnerView(widget._globalContext);
     // WorkScheduleInnerView.of(context)
     // _controller.addListener(_onTap);
   }
@@ -75,10 +72,13 @@ class _WorkSchedule extends State<WorkSchedule>
               IconButton(
                   onPressed: () {
                     setState(() {
-                      Duration d =
-                          _toDate.difference(_fromDate) + Duration(days: 1);
-                      _fromDate = _fromDate.subtract(d);
-                      _toDate = _toDate.subtract(d);
+                      Duration d = CurrentConfig.toDateWindow
+                              .difference(CurrentConfig.fromDateWindow) +
+                          Duration(days: 1);
+                      CurrentConfig.fromDateWindow =
+                          CurrentConfig.fromDateWindow.subtract(d);
+                      CurrentConfig.toDateWindow =
+                          CurrentConfig.toDateWindow.subtract(d);
                     });
                   },
                   icon: Icon(Icons.chevron_left)),
@@ -86,21 +86,24 @@ class _WorkSchedule extends State<WorkSchedule>
               IconButton(
                   onPressed: () {
                     setState(() {
-                      _fromDate = _fromDate.subtract(Duration(days: 1));
+                      CurrentConfig.fromDateWindow = CurrentConfig
+                          .fromDateWindow
+                          .subtract(Duration(days: 1));
                     });
                   },
                   icon: Icon(Icons.remove)),
               SizedBox(
                 width: 150,
                 child: ElevatedButton.icon(
-                    label: Text(DataUtils.getFormatedDateTime(_fromDate)),
+                    label: Text(DataUtils.getFormatedDateTime(
+                        CurrentConfig.fromDateWindow)),
                     style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
                           context: context,
-                          initialDate: _fromDate,
+                          initialDate: CurrentConfig.fromDateWindow,
                           firstDate: GlobalSettings.earliestDate,
-                          lastDate: _toDate,
+                          lastDate: CurrentConfig.toDateWindow,
                           locale: GlobalSettings
                               .locals[CurrentConfig.currentLocale]);
 
@@ -108,7 +111,7 @@ class _WorkSchedule extends State<WorkSchedule>
                             if (value != null)
                               {
                                 setState(() {
-                                  _fromDate = value;
+                                  CurrentConfig.fromDateWindow = value;
                                 })
                               }
                           });
@@ -118,14 +121,19 @@ class _WorkSchedule extends State<WorkSchedule>
               IconButton(
                   onPressed: () {
                     setState(() {
-                      if (_fromDate.compareTo(_toDate) < 0) {
-                        _fromDate = _fromDate.add(Duration(days: 1));
+                      if (CurrentConfig.fromDateWindow
+                              .compareTo(CurrentConfig.toDateWindow) <
+                          0) {
+                        CurrentConfig.fromDateWindow =
+                            CurrentConfig.fromDateWindow.add(Duration(days: 1));
                       }
                     });
                   },
                   icon: Icon(
                     Icons.add,
-                    color: (_fromDate.compareTo(_toDate) < 0
+                    color: (CurrentConfig.fromDateWindow
+                                .compareTo(CurrentConfig.toDateWindow) <
+                            0
                         ? Colors.black
                         : Colors.black12),
                   )),
@@ -135,27 +143,33 @@ class _WorkSchedule extends State<WorkSchedule>
               IconButton(
                   onPressed: () {
                     setState(() {
-                      if (_toDate.compareTo(_fromDate) > 0) {
-                        _toDate = _toDate.subtract(Duration(days: 1));
+                      if (CurrentConfig.toDateWindow
+                              .compareTo(CurrentConfig.fromDateWindow) >
+                          0) {
+                        CurrentConfig.toDateWindow = CurrentConfig.toDateWindow
+                            .subtract(Duration(days: 1));
                       }
                     });
                   },
                   icon: Icon(
                     Icons.remove,
-                    color: (_toDate.compareTo(_fromDate) > 0
+                    color: (CurrentConfig.toDateWindow
+                                .compareTo(CurrentConfig.fromDateWindow) >
+                            0
                         ? Colors.black
                         : Colors.black12),
                   )),
               SizedBox(
                 width: 150,
                 child: ElevatedButton.icon(
-                    label: Text(DataUtils.getFormatedDateTime(_toDate)),
+                    label: Text(DataUtils.getFormatedDateTime(
+                        CurrentConfig.toDateWindow)),
                     style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
                           context: context,
-                          initialDate: _toDate,
-                          firstDate: _fromDate,
+                          initialDate: CurrentConfig.toDateWindow,
+                          firstDate: CurrentConfig.fromDateWindow,
                           lastDate: GlobalSettings.latestDate,
                           locale: GlobalSettings
                               .locals[CurrentConfig.currentLocale]);
@@ -164,7 +178,7 @@ class _WorkSchedule extends State<WorkSchedule>
                             if (value != null)
                               {
                                 setState(() {
-                                  _toDate = value;
+                                  CurrentConfig.toDateWindow = value;
                                 })
                               }
                           });
@@ -174,7 +188,8 @@ class _WorkSchedule extends State<WorkSchedule>
               IconButton(
                   onPressed: () {
                     setState(() {
-                      _toDate = _toDate.add(Duration(days: 1));
+                      CurrentConfig.toDateWindow =
+                          CurrentConfig.toDateWindow.add(Duration(days: 1));
                     });
                   },
                   icon: Icon(Icons.add)),
@@ -182,10 +197,13 @@ class _WorkSchedule extends State<WorkSchedule>
               IconButton(
                 onPressed: () {
                   setState(() {
-                    Duration d =
-                        _toDate.difference(_fromDate) + Duration(days: 1);
-                    _fromDate = _fromDate.add(d);
-                    _toDate = _toDate.add(d);
+                    Duration d = CurrentConfig.toDateWindow
+                            .difference(CurrentConfig.fromDateWindow) +
+                        Duration(days: 1);
+                    CurrentConfig.fromDateWindow =
+                        CurrentConfig.fromDateWindow.add(d);
+                    CurrentConfig.toDateWindow =
+                        CurrentConfig.toDateWindow.add(d);
                   });
                 },
                 icon: Icon(Icons.chevron_right),

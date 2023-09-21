@@ -46,7 +46,7 @@ class SummaryEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var data = _globalContext.data.summaryData[GlobalDataFrame.current]!.data;
+    var data = _globalContext.data.summaryData.data;
     Widget child = Padding(
       padding: const EdgeInsets.all(GlobalStyle.cardPadding),
       child: Wrap(children: [
@@ -76,7 +76,7 @@ class Summary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double maxTime = 0;
-    var data = _globalContext.data.summaryData[GlobalDataFrame.current]!.data;
+    var data = _globalContext.data.summaryData.data;
     for (var item in data) {
       if (item.planed > maxTime) maxTime = item.planed;
       if (item.recorded > maxTime) maxTime = item.recorded;

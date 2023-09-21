@@ -62,7 +62,7 @@ class TimeTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int numCells = _globalContext.data.dateRange();
-    var data = _globalContext.data.summaryData[GlobalDataFrame.current]!.data;
+    var data = _globalContext.data.summaryData.data;
     return Container(
       // elevation: 0,
       margin: EdgeInsets.all(GlobalStyle.globalCardMargin),

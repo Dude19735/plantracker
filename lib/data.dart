@@ -1,26 +1,8 @@
 import 'dart:convert';
-import 'dart:math';
+import 'package:scheduler/data_gen.dart';
+import 'package:scheduler/data_columns.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:collection/collection.dart';
-
-class ColumnName {
-  static const String date = "Date";
-  static const String fromTime = "FromTime";
-  static const String toTime = "ToTime";
-  static const String planed = "Planed";
-  static const String recorded = "Recorded";
-  static const String subject = "Subject";
-  static const String subjectAcronym = "SubjectAcronym";
-  static const String subjectId = "SubjectId";
-  static const String workTypeId = "WorkTypeId";
-  static const String workType = "WorkType";
-  static const String seriesId = "SeriesId";
-  static const String series = "Series";
-  static const String seriesFromDate = "SeriesFromDate";
-  static const String seriesToDate = "SeriesToDate";
-  static const String noteId = "NoteId";
-  static const String note = "Note";
-}
 
 class TimeTableData {
   final int subjectId;
@@ -96,315 +78,38 @@ class SummaryData {
   }
 }
 
+typedef TSummaryData = List<SummaryData>;
+typedef TTimeTableData = Map<int, List<TimeTableData>>;
+typedef TSchedulePlanData = Map<int, List<SchedulePlanData>>;
+
 class Data<D> {
-  late final List<String> header;
-  late final List<D> data;
+  late final D data;
 
-  static String testDateScheduleViewPlan(DateTime fromDate, DateTime toDate) {
-    int range = fromDate.difference(toDate).inDays.abs() + 1;
-    Random rand = Random();
-    rand.nextInt(range);
-
-    return """{
-      "header": [
-        "${ColumnName.subjectId}",
-        "${ColumnName.subjectAcronym}",
-        "${ColumnName.subject}",
-        "${ColumnName.workTypeId}",
-        "${ColumnName.workType}",  
-        "${ColumnName.seriesId}",    
-        "${ColumnName.seriesFromDate}",
-        "${ColumnName.seriesToDate}",
-        "${ColumnName.noteId}",
-        "${ColumnName.note}",      
-        "${ColumnName.date}",        
-        "${ColumnName.fromTime}",
-        "${ColumnName.toTime}"
-      ],        
-      "data": [
-        {
-          "${ColumnName.subjectId}": 1,
-          "${ColumnName.subjectAcronym}": "Acr-1",
-          "${ColumnName.subject}": "Subject-1",
-          "${ColumnName.workTypeId}": 1,
-          "${ColumnName.workType}": "Free Work",  
-          "${ColumnName.seriesId}": -1,    
-          "${ColumnName.seriesFromDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.noteId}": 1,
-          "${ColumnName.note}": "Note-S1-1",      
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},        
-          "${ColumnName.fromTime}": ${3.0 * 60 * 60},
-          "${ColumnName.toTime}": ${4.5 * 60 * 60}
-        },
-        {
-          "${ColumnName.subjectId}": 1,
-          "${ColumnName.subjectAcronym}": "Acr-1",
-          "${ColumnName.subject}": "Subject-1",
-          "${ColumnName.workTypeId}": 1,
-          "${ColumnName.workType}": "Free Work",
-          "${ColumnName.seriesId}": -1,
-          "${ColumnName.seriesFromDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.noteId}": 2,
-          "${ColumnName.note}": "Note-S1-2",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
-          "${ColumnName.fromTime}": ${4.75 * 60 * 60},
-          "${ColumnName.toTime}": ${6.0 * 60 * 60}
-        },
-        {
-          "${ColumnName.subjectId}": 2,
-          "${ColumnName.subjectAcronym}": "Acr-2",
-          "${ColumnName.subject}": "Subject-2",
-          "${ColumnName.workTypeId}": 1,
-          "${ColumnName.workType}": "Free Work",
-          "${ColumnName.seriesId}": -1,
-          "${ColumnName.seriesFromDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.noteId}": 3,
-          "${ColumnName.note}": "Note-S2-1",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
-          "${ColumnName.fromTime}": ${6.0 * 60 * 60},
-          "${ColumnName.toTime}": ${7.25 * 60 * 60}
-        },
-        {
-          "${ColumnName.subjectId}": 2,
-          "${ColumnName.subjectAcronym}": "Acr-2",
-          "${ColumnName.subject}": "Subject-2",
-          "${ColumnName.workTypeId}": 1,
-          "${ColumnName.workType}": "Free Work",
-          "${ColumnName.seriesId}": -1,
-          "${ColumnName.seriesFromDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.noteId}": 4,
-          "${ColumnName.note}": "Note-S2-2",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
-          "${ColumnName.fromTime}": ${7.5 * 60 * 60},
-          "${ColumnName.toTime}": ${8.25 * 60 * 60}
-        },
-        {
-          "${ColumnName.subjectId}": 3,
-          "${ColumnName.subjectAcronym}": "Acr-3",
-          "${ColumnName.subject}": "Subject-3",
-          "${ColumnName.workTypeId}": 1,
-          "${ColumnName.workType}": "Free Work",
-          "${ColumnName.seriesId}": -1,
-          "${ColumnName.seriesFromDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.noteId}": 5,
-          "${ColumnName.note}": "Note-S3-1",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
-          "${ColumnName.fromTime}": ${8.5 * 60 * 60},
-          "${ColumnName.toTime}": ${9.75 * 60 * 60}
-        },
-        {
-          "${ColumnName.subjectId}": 4,
-          "${ColumnName.subjectAcronym}": "Acr-4",
-          "${ColumnName.subject}": "Subject-4",
-          "${ColumnName.workTypeId}": 1,
-          "${ColumnName.workType}": "Free Work",
-          "${ColumnName.seriesId}": -1,
-          "${ColumnName.seriesFromDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.noteId}": 6,
-          "${ColumnName.note}": "Note-S4-1",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
-          "${ColumnName.fromTime}": ${10.0 * 60 * 60},
-          "${ColumnName.toTime}": ${12.0 * 60 * 60}
-        },
-        {
-          "${ColumnName.subjectId}": 5,
-          "${ColumnName.subjectAcronym}": "Acr-5",
-          "${ColumnName.subject}": "Subject-5",
-          "${ColumnName.workTypeId}": 1,
-          "${ColumnName.workType}": "Free Work",
-          "${ColumnName.seriesId}": -1,
-          "${ColumnName.seriesFromDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
-          "${ColumnName.noteId}": 7,
-          "${ColumnName.note}": "Note-S5-1",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
-          "${ColumnName.fromTime}": ${13.0 * 60 * 60},
-          "${ColumnName.toTime}": ${14.8 * 60 * 60}
-        }
-      ]
-    }""";
-  }
-
-  static String testDataTimeTableView(DateTime fromDate, DateTime toDate) {
-    int range = fromDate.difference(toDate).inDays.abs() + 1;
-    Random rand = Random();
-    rand.nextInt(range);
-
-    int s1 = rand.nextInt(range);
-    int s2 = rand.nextInt(range);
-    int s3 = rand.nextInt(range);
-    int s4 = rand.nextInt(range);
-    int s5 = rand.nextInt(range);
-    int s6 = rand.nextInt(range);
-
-    return """{
-      "header": [
-        "${ColumnName.subjectId}",
-        "${ColumnName.date}",
-        "${ColumnName.planed}",
-        "${ColumnName.recorded}",
-        "${ColumnName.subject}"
-      ],
-      "data": [
-        {
-          "${ColumnName.subjectId}": 1,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: s1)))},
-          "${ColumnName.planed}": 15.0,
-          "${ColumnName.recorded}": 17.5,
-          "${ColumnName.subject}": "Sub1"
-        },
-        {
-          "${ColumnName.subjectId}": 2,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: s2)))},
-          "${ColumnName.planed}": 14.0,
-          "${ColumnName.recorded}": 13.9,
-          "${ColumnName.subject}": "Sub2"
-        },
-        {
-          "${ColumnName.subjectId}": 3,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: s3)))},
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 12.0,
-          "${ColumnName.subject}": "Sub3"
-        },
-        {
-          "${ColumnName.subjectId}": 4,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: s4)))},
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 0.0,
-          "${ColumnName.subject}": "Sub4"
-        },  
-        {
-          "${ColumnName.subjectId}": 5,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: s5)))},
-          "${ColumnName.planed}": 0.0,
-          "${ColumnName.recorded}": 12.0,
-          "${ColumnName.subject}": "Sub5"
-        },
-        {
-          "${ColumnName.subjectId}": 6,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: s6)))},
-          "${ColumnName.planed}": 0.0,
-          "${ColumnName.recorded}": 0.0,
-          "${ColumnName.subject}": "Sub6"
-        },
-        {
-          "${ColumnName.subjectId}": 1,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s1 + 2) % 7)))},
-          "${ColumnName.planed}": 15.0,
-          "${ColumnName.recorded}": 17.5,
-          "${ColumnName.subject}": "Sub1"
-        },
-        {
-          "${ColumnName.subjectId}": 2,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s2 + 3) % 7)))},
-          "${ColumnName.planed}": 14.0,
-          "${ColumnName.recorded}": 13.9,
-          "${ColumnName.subject}": "Sub2"
-        },
-        {
-          "${ColumnName.subjectId}": 3,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s3 + 1) % 7)))},
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 12.0,
-          "${ColumnName.subject}": "Sub3"
-        },
-        {
-          "${ColumnName.subjectId}": 4,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s4 + 4) % 7)))},
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 0.0,
-          "${ColumnName.subject}": "Sub4"
-        },  
-        {
-          "${ColumnName.subjectId}": 5,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s5 + 2) % 7)))},
-          "${ColumnName.planed}": 0.0,
-          "${ColumnName.recorded}": 12.0,
-          "${ColumnName.subject}": "Sub5"
-        },
-        {
-          "${ColumnName.subjectId}": 6,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s6 + 1) % 7)))},
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 6.0,
-          "${ColumnName.subject}": "Sub6"
-        },
-        {
-          "${ColumnName.subjectId}": 6,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s6 + 3) % 7)))},
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 6.0,
-          "${ColumnName.subject}": "Sub6"
-        }
-      ]
-    }""";
-  }
-
-  static String testDataSummaryView(DateTime fromDate, DateTime toDate) {
-    return """{
-      "header": [
-        "${ColumnName.subjectId}", "${ColumnName.planed}", "${ColumnName.recorded}", "${ColumnName.subject}"],
-      "data": [
-        {
-          "${ColumnName.subjectId}": 1,
-          "${ColumnName.planed}": 15.0,
-          "${ColumnName.recorded}": 17.5,
-          "${ColumnName.subject}": "jslkjopivmlkaoiesoairejlökmvaoijseoijasoeihoivnkcoieklllöksamoivoie"
-        },
-        {
-          "${ColumnName.subjectId}": 2,
-          "${ColumnName.planed}": 14.0,
-          "${ColumnName.recorded}": 13.9,
-          "${ColumnName.subject}": "Sub2"
-        },
-        {
-          "${ColumnName.subjectId}": 3,
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 12.0,
-          "${ColumnName.subject}": "Sub3"
-        },
-        {
-          "${ColumnName.subjectId}": 4,
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 0.0,
-          "${ColumnName.subject}": "Sub4"
-        },  
-        {
-          "${ColumnName.subjectId}": 5,
-          "${ColumnName.planed}": 0.0,
-          "${ColumnName.recorded}": 12.0,
-          "${ColumnName.subject}": "Sub5"
-        },
-        {
-          "${ColumnName.subjectId}": 6,
-          "${ColumnName.planed}": 0.0,
-          "${ColumnName.recorded}": 0.0,
-          "${ColumnName.subject}": "Sub6"
-        }
-      ]
-    }""";
+  Data.init() {
+    if (D == TSummaryData) {
+      data = TSummaryData.empty() as D;
+    } else if (D == TTimeTableData) {
+      // ignore: prefer_collection_literals
+      data = TTimeTableData() as D;
+    } else if (D == TSchedulePlanData) {
+      // ignore: prefer_collection_literals
+      data = TSchedulePlanData() as D;
+    } else {
+      throw Exception("Message type [$D] not defined in data parser");
+    }
   }
 
   Data.fromJsonStr(String jsonStr) {
-    Map<String, dynamic> json = jsonDecode(jsonStr);
-    header = (json['header'] as List).map((item) => item as String).toList();
-    if (D == SummaryData) {
-      data = (json['data'] as List).map((item) => SummaryData(item)).toList()
-          as List<D>;
-    } else if (D == TimeTableData) {
-      data = (json['data'] as List).map((item) => TimeTableData(item)).toList()
-          as List<D>;
-    } else if (D == SchedulePlanData) {
-      data = (json['data'] as List)
-          .map((item) => SchedulePlanData(item))
-          .toList() as List<D>;
+    List<dynamic> json = jsonDecode(jsonStr);
+    if (D == TSummaryData) {
+      data = json.map((item) => SummaryData(item)).toList() as D;
+    } else if (D == TTimeTableData) {
+      List<TimeTableData> d = json.map((item) => TimeTableData(item)).toList();
+      data = groupBy(d, (TimeTableData elem) => elem.date) as D;
+    } else if (D == TSchedulePlanData) {
+      List<SchedulePlanData> d =
+          json.map((item) => SchedulePlanData(item)).toList();
+      data = groupBy(d, (SchedulePlanData elem) => elem.date) as D;
     } else {
       throw Exception("Message type [$D] not defined in data parser");
     }
@@ -416,78 +121,90 @@ class Data<D> {
 
   @override
   String toString() {
-    return "${header.toString()} \n ${data.toString()}";
+    return data.toString();
   }
 }
 
-enum GlobalDataFrame { previous, current, next, temp }
-
 class GlobalData {
   Map<int, double> minSubjectTextHeight = {};
-  late Map<GlobalDataFrame, Data<SummaryData>> summaryData;
-  late Map<GlobalDataFrame, Data<TimeTableData>> timeTableData;
-  late Map<GlobalDataFrame, Data<SchedulePlanData>> schedulePlanData;
+  late Data<TSummaryData> summaryData;
+  late Data<TTimeTableData> timeTableData;
+  late Data<TSchedulePlanData> schedulePlanData;
 
   DateTime _fromDate;
   DateTime _toDate;
 
   GlobalData(this._fromDate, this._toDate) {
-    int diff = _fromDate.difference(_toDate).inDays.abs();
-    Duration d = Duration(days: diff + 1);
-
-    summaryData = {
-      GlobalDataFrame.previous: Data<SummaryData>.fromJsonStr(
-          Data.testDataSummaryView(_fromDate.subtract(d), _toDate.subtract(d))),
-      GlobalDataFrame.current: Data<SummaryData>.fromJsonStr(
-          Data.testDataSummaryView(_fromDate, _toDate)),
-      GlobalDataFrame.next: Data<SummaryData>.fromJsonStr(
-          Data.testDataSummaryView(_fromDate.add(d), _toDate.add(d)))
-    };
-
-    timeTableData = {
-      GlobalDataFrame.previous: Data<TimeTableData>.fromJsonStr(
-          Data.testDataTimeTableView(
-              _fromDate.subtract(d), _toDate.subtract(d))),
-      GlobalDataFrame.current: Data<TimeTableData>.fromJsonStr(
-          Data.testDataTimeTableView(_fromDate, _toDate)),
-      GlobalDataFrame.next: Data<TimeTableData>.fromJsonStr(
-          Data.testDataTimeTableView(_fromDate.add(d), _toDate.add(d)))
-    };
-
-    schedulePlanData = {
-      GlobalDataFrame.previous: Data<SchedulePlanData>.fromJsonStr(
-          Data.testDateScheduleViewPlan(
-              _fromDate.subtract(d), _toDate.subtract(d))),
-      GlobalDataFrame.current: Data<SchedulePlanData>.fromJsonStr(
-          Data.testDateScheduleViewPlan(_fromDate, _toDate)),
-      GlobalDataFrame.next: Data<SchedulePlanData>.fromJsonStr(
-          Data.testDateScheduleViewPlan(_fromDate.add(d), _toDate.add(d)))
-    };
-
-    // requirement
-    summaryData.forEach((key, value) {
-      value.data.sort((a, b) => a.subject.compareTo(b.subject));
-    });
-    timeTableData.forEach((key, value) {
-      value.data.sort((a, b) => a.subject.compareTo(b.subject));
-    });
-    timeTableData.forEach((key, value) {
-      value.data.sort((a, b) => a.date.compareTo(b.date));
-    });
-    schedulePlanData.forEach((key, value) {
-      value.data.sort((a, b) => a.date.compareTo(b.date));
-    });
-
-    summaryData.forEach((key, value) {
-      value.data.forEach((element) {
-        minSubjectTextHeight[element.subjectId] = 0;
-      });
-    });
+    timeTableData = Data.init();
+    schedulePlanData = Data.init();
+    summaryData = Data.init();
+    _load(_fromDate, _toDate);
+    _summary();
   }
 
   DateTime fromDate() => _fromDate;
   DateTime toDate() => _toDate;
   int dateRange() => _toDate.difference(_fromDate).inDays.abs();
 
-  void _load(DateTime fromDate, DateTime toDate) {}
+  void _summary() {
+    summaryData = Data<TSummaryData>.fromJsonStr(
+        DataGen.testDataSummaryView(_fromDate, _toDate));
+    summaryData.data.sort((a, b) => a.subject.compareTo(b.subject));
+
+    for (var element in summaryData.data) {
+      minSubjectTextHeight[element.subjectId] = 0;
+    }
+  }
+
+  void _load(DateTime fromDate, DateTime toDate) {
+    var ttimeTableData = Data<TTimeTableData>.fromJsonStr(
+        DataGen.testDataTimeTableView(fromDate, toDate));
+    timeTableData.data.addAll(ttimeTableData.data);
+
+    var tschedulePlanData = Data<TSchedulePlanData>.fromJsonStr(
+        DataGen.testDateScheduleViewPlan(fromDate, toDate));
+    schedulePlanData.data.addAll(tschedulePlanData.data);
+
+    // requirement
+    timeTableData.data.forEach((key, value) {
+      value.sort((a, b) => a.subject.compareTo(b.subject));
+    });
+    schedulePlanData.data.forEach((key, value) {
+      value.sort((a, b) => a.subject.compareTo(b.subject));
+    });
+  }
+
+  void _remove(DateTime day) {
+    timeTableData.data.remove(DataUtils.dateTime2Int(day));
+    schedulePlanData.data.remove(DataUtils.dateTime2Int(day));
+  }
+
+  void load(DateTime fromDate, DateTime toDate) {
+    if (fromDate.compareTo(_fromDate) < 0) {
+      // add new data on this side
+      _load(fromDate, _fromDate.subtract(Duration(days: 1)));
+    } else if (fromDate.compareTo(_fromDate) > 0) {
+      // remove unused data on this side
+      for (DateTime d = _fromDate;
+          d.compareTo(fromDate) < 0;
+          d = d.add(Duration(days: 1))) {
+        _remove(d);
+      }
+    }
+
+    if (toDate.compareTo(_toDate) < 0) {
+      // remove unused data on this side
+      for (DateTime d = toDate;
+          d.compareTo(_toDate) < 0;
+          d = d.add(Duration(days: 1))) {
+        _remove(d);
+      }
+    } else if (toDate.compareTo(_toDate) > 0) {
+      // add new data on this side
+      _load(_toDate.add(Duration(days: 1)), toDate);
+    }
+
+    _fromDate = fromDate;
+    _toDate = toDate;
+  }
 }
