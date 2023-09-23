@@ -66,51 +66,75 @@ class TimeTable extends StatelessWidget {
     int numCells = _globalContext.data.dateRange();
     var data = _globalContext.data.summaryData.data;
 
-    Widget table = Container(
-      // elevation: 0,
-      margin: EdgeInsets.all(GlobalStyle.globalCardMargin),
-      color: Colors.transparent,
-      child: Padding(
-        padding: const EdgeInsets.all(GlobalStyle.globalCardPadding),
-        child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-          return DraggableScrollableSheet(
-            initialChildSize: 1.0,
-            minChildSize: 0.999999,
-            builder: (BuildContext context, ScrollController scrollController) {
-              return ListView.builder(
-                clipBehavior: Clip.none,
-                controller: _scrollController,
-                itemCount: data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  int subjectId = data[index].subjectId;
-                  double height = _globalContext.showSubjectsInSummary
-                      ? _globalContext.data.minSubjectTextHeight[subjectId]!
-                      : 0;
-                  // height += GlobalStyle.horizontalGrayLineHeight;
-                  height += 2 * GlobalStyle.summaryEntryBarHeight;
-                  height += GlobalStyle.cardMargin + GlobalStyle.cardPadding;
-                  return _getRow(context, constraints, numCells, height, index);
-                  // return Container(
-                  //     height: height,
-                  //     color: (index % 2 == 0) ? Colors.yellow : Colors.tealAccent);
-                },
-              );
-            },
-          );
-        }),
+    Widget table = NotificationListener(
+      onNotification: (notification) {
+        if (notification is ScrollNotification) {
+          return true;
+        }
+        return false;
+      },
+      child: Container(
+        // elevation: 0,
+        margin: EdgeInsets.all(GlobalStyle.globalCardMargin),
+        color: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.all(GlobalStyle.globalCardPadding),
+          child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+            return DraggableScrollableSheet(
+              initialChildSize: 1.0,
+              minChildSize: 0.999999,
+              builder:
+                  (BuildContext context, ScrollController scrollController) {
+                return ListView.builder(
+                  clipBehavior: Clip.none,
+                  controller: _scrollController,
+                  itemCount: data.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    int subjectId = data[index].subjectId;
+                    double height = _globalContext.showSubjectsInSummary
+                        ? _globalContext.data.minSubjectTextHeight[subjectId]!
+                        : 0;
+                    // height += GlobalStyle.horizontalGrayLineHeight;
+                    height += 2 * GlobalStyle.summaryEntryBarHeight;
+                    height += GlobalStyle.cardMargin + GlobalStyle.cardPadding;
+                    return _getRow(
+                        context, constraints, numCells, height, index);
+                    // return Container(
+                    //     height: height,
+                    //     color: (index % 2 == 0) ? Colors.yellow : Colors.tealAccent);
+                  },
+                );
+              },
+            );
+          }),
+        ),
       ),
     );
 
     return NotificationListener(
       onNotification: (notification) {
         if (notification is UserScrollNotification) {
-          print("scrolling...");
+          // print("scrolling bottom");
+          _splitController.bottomPageScrolling = true;
+          _splitController.topPageScrolling = false;
+        } else if (notification is ScrollEndNotification) {
+          // print("end scrolling");
+          // _splitController.topPageOffset = 0.0;
+        } else if (_splitController.bottomPageScrolling &&
+            notification is ScrollUpdateNotification) {
+          // print(_splitController.bottomPageController.offset);
+          _splitController.topPageController.position
+              .jumpTo(_splitController.bottomPageController.position.pixels);
+          // print("..... ${notification.scrollDelta}");
+        } else {
+          // print(notification);
         }
         return false;
       },
       child: PageView.builder(
         controller: _splitController.bottomPageController,
+        pageSnapping: false,
         onPageChanged: (value) {
           print("page changed $value");
         },

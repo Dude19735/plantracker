@@ -5,6 +5,17 @@ class SplitController {
   final PageController bottomPageController =
       PageController(initialPage: 2 << 31);
 
+  bool topPageScrolling = false;
+  bool bottomPageScrolling = false;
+  double topPageOffset = 0.0;
+  double bottomPageOffset = 0.0;
+
+  // SplitController(){
+  //   topPageController.addListener(() {
+  //     if()
+  //   })
+  // }
+
   void nextPage(
       {Duration duration = const Duration(milliseconds: 250),
       Curve curve = Curves.linear}) {

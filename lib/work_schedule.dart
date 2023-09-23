@@ -78,6 +78,32 @@ class _WorkSchedule extends State<WorkSchedule>
 
   @override
   Widget build(BuildContext context) {
+    var pagebuilder = NotificationListener(
+      onNotification: (notification) {
+        if (notification is UserScrollNotification) {
+          // print("scrolling top");
+          widget._splitController.bottomPageScrolling = false;
+          widget._splitController.topPageScrolling = true;
+        } else if (widget._splitController.topPageScrolling &&
+            notification is ScrollUpdateNotification) {
+          widget._splitController.bottomPageController.position.jumpTo(
+              widget._splitController.topPageController.position.pixels);
+          // print("..... ${notification.scrollDelta}");
+        }
+        return false;
+      },
+      child: PageView.builder(
+        pageSnapping: false,
+        controller: widget._splitController.topPageController,
+        onPageChanged: (value) {
+          print("page changed $value");
+        },
+        itemBuilder: (context, index) {
+          return _innerViewList[1];
+        },
+      ),
+    );
+
     return Column(
       children: [
         Container(
@@ -240,16 +266,7 @@ class _WorkSchedule extends State<WorkSchedule>
             ],
           ),
         ),
-        Expanded(
-            child: PageView.builder(
-          controller: widget._splitController.topPageController,
-          onPageChanged: (value) {
-            print("page changed $value");
-          },
-          itemBuilder: (context, index) {
-            return _innerViewList[1];
-          },
-        ))
+        Expanded(child: pagebuilder)
       ],
     );
   }
