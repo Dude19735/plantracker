@@ -15,6 +15,7 @@ import 'package:scheduler/summary.dart';
 import 'package:scheduler/time_table.dart';
 import 'package:scheduler/watch_manager.dart';
 import 'package:scheduler/work_schedule.dart';
+import 'package:scheduler/split_controller.dart';
 
 import 'package:scheduler/sqlite_test.dart';
 
@@ -103,6 +104,7 @@ class _MyHomePageState extends State<MyHomePage>
   late ScrollController _timeTable;
   int _mouseInWidget = -1;
   late final TabController _controller;
+  final SplitController _splitController = SplitController();
 
   @override
   void initState() {
@@ -121,9 +123,9 @@ class _MyHomePageState extends State<MyHomePage>
       verticalInitRatio: GlobalStyle.verticalInitRatio,
       verticalGrabberSize: GlobalStyle.verticalGrabberSize,
       topLeft: Placeholder(color: Colors.black12),
-      topRight: WorkSchedule(globalContext),
+      topRight: WorkSchedule(globalContext, _splitController),
       bottomLeft: Summary(globalContext, _summary),
-      bottomRight: TimeTable(globalContext, _timeTable),
+      bottomRight: TimeTable(globalContext, _timeTable, _splitController),
     );
 
     return Scaffold(

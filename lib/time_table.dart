@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data.dart';
+import 'package:scheduler/split_controller.dart';
 import 'dart:math';
 
 class TimeTable extends StatelessWidget {
   final GlobalContext _globalContext;
   final ScrollController _scrollController;
+  final SplitController _splitController;
 
-  TimeTable(this._globalContext, this._scrollController);
+  TimeTable(this._globalContext, this._scrollController, this._splitController);
 
   Widget _getContainer(BuildContext context, BoxConstraints constraints,
       int numCells, height, int rowIndex, int colIndex, bool fullFrame) {
@@ -63,7 +65,8 @@ class TimeTable extends StatelessWidget {
   Widget build(BuildContext context) {
     int numCells = _globalContext.data.dateRange();
     var data = _globalContext.data.summaryData.data;
-    return Container(
+
+    Widget table = Container(
       // elevation: 0,
       margin: EdgeInsets.all(GlobalStyle.globalCardMargin),
       color: Colors.transparent,
@@ -97,6 +100,18 @@ class TimeTable extends StatelessWidget {
           );
         }),
       ),
+    );
+
+    return PageView.builder(
+      controller: _splitController.bottomPageController,
+      onPageChanged: (value) {
+        print("page changed $value");
+      },
+      itemBuilder: (context, index) {
+        return Center(
+          child: table,
+        );
+      },
     );
   }
 }

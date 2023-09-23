@@ -1,14 +1,18 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/work_schedule_inner_view.dart';
+import 'package:scheduler/split_controller.dart';
 
 /// Flutter code sample for [IconButton].
 
 class WorkSchedule extends StatefulWidget {
   final GlobalContext _globalContext;
+  final SplitController _splitController;
 
-  WorkSchedule(this._globalContext);
+  WorkSchedule(this._globalContext, this._splitController);
 
   @override
   State<WorkSchedule> createState() => _WorkSchedule();
@@ -16,7 +20,8 @@ class WorkSchedule extends StatefulWidget {
 
 class _WorkSchedule extends State<WorkSchedule>
     with SingleTickerProviderStateMixin {
-  late Widget _workScheduleInnerView;
+  late final List<WorkScheduleInnerView> _innerViewList;
+  late WorkScheduleInnerView _innerView;
 
   // Widget _getCalendarButton(DateTime date) {
   //   return MouseRegion(
@@ -52,7 +57,21 @@ class _WorkSchedule extends State<WorkSchedule>
     CurrentConfig.fromDateWindow = DataUtils.getLastMonday(DateTime.now());
     CurrentConfig.toDateWindow = DataUtils.getNextSunday(DateTime.now());
 
-    _workScheduleInnerView = WorkScheduleInnerView(widget._globalContext);
+    _innerViewList = [];
+    _innerViewList.insertAll(0, [
+      WorkScheduleInnerView(widget._globalContext),
+      WorkScheduleInnerView(widget._globalContext),
+      WorkScheduleInnerView(widget._globalContext)
+    ]);
+
+    _innerView = WorkScheduleInnerView(widget._globalContext);
+
+    // _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
+
+    // _workScheduleInnerView = TabBarView(
+    //   controller: _tabController,
+    //   children: _innerViewList,
+    // );
     // WorkScheduleInnerView.of(context)
     // _controller.addListener(_onTap);
   }
@@ -79,6 +98,12 @@ class _WorkSchedule extends State<WorkSchedule>
                           CurrentConfig.fromDateWindow.subtract(d);
                       CurrentConfig.toDateWindow =
                           CurrentConfig.toDateWindow.subtract(d);
+
+                      widget._splitController.previousPage(
+                          duration: Duration(
+                              milliseconds:
+                                  GlobalSettings.pageChangeDurationMS),
+                          curve: Curves.linear);
                     });
                   },
                   icon: Icon(Icons.chevron_left)),
@@ -204,6 +229,10 @@ class _WorkSchedule extends State<WorkSchedule>
                         CurrentConfig.fromDateWindow.add(d);
                     CurrentConfig.toDateWindow =
                         CurrentConfig.toDateWindow.add(d);
+                    widget._splitController.nextPage(
+                        duration: Duration(
+                            milliseconds: GlobalSettings.pageChangeDurationMS),
+                        curve: Curves.linear);
                   });
                 },
                 icon: Icon(Icons.chevron_right),
@@ -211,7 +240,16 @@ class _WorkSchedule extends State<WorkSchedule>
             ],
           ),
         ),
-        Expanded(child: _workScheduleInnerView)
+        Expanded(
+            child: PageView.builder(
+          controller: widget._splitController.topPageController,
+          onPageChanged: (value) {
+            print("page changed $value");
+          },
+          itemBuilder: (context, index) {
+            return _innerViewList[1];
+          },
+        ))
       ],
     );
   }
