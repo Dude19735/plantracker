@@ -78,32 +78,6 @@ class _WorkSchedule extends State<WorkSchedule>
 
   @override
   Widget build(BuildContext context) {
-    var pagebuilder = NotificationListener(
-      onNotification: (notification) {
-        if (notification is UserScrollNotification) {
-          // print("scrolling top");
-          widget._splitController.bottomPageScrolling = false;
-          widget._splitController.topPageScrolling = true;
-        } else if (widget._splitController.topPageScrolling &&
-            notification is ScrollUpdateNotification) {
-          widget._splitController.bottomPageController.position.jumpTo(
-              widget._splitController.topPageController.position.pixels);
-          // print("..... ${notification.scrollDelta}");
-        }
-        return false;
-      },
-      child: PageView.builder(
-        pageSnapping: false,
-        controller: widget._splitController.topPageController,
-        onPageChanged: (value) {
-          print("page changed $value");
-        },
-        itemBuilder: (context, index) {
-          return _innerViewList[1];
-        },
-      ),
-    );
-
     return Column(
       children: [
         Container(
@@ -125,11 +99,8 @@ class _WorkSchedule extends State<WorkSchedule>
                       CurrentConfig.toDateWindow =
                           CurrentConfig.toDateWindow.subtract(d);
 
-                      widget._splitController.previousPage(
-                          duration: Duration(
-                              milliseconds:
-                                  GlobalSettings.pageChangeDurationMS),
-                          curve: Curves.linear);
+                      widget._splitController
+                          .previousPage(curve: Curves.linear);
                     });
                   },
                   icon: Icon(Icons.chevron_left)),
@@ -255,10 +226,7 @@ class _WorkSchedule extends State<WorkSchedule>
                         CurrentConfig.fromDateWindow.add(d);
                     CurrentConfig.toDateWindow =
                         CurrentConfig.toDateWindow.add(d);
-                    widget._splitController.nextPage(
-                        duration: Duration(
-                            milliseconds: GlobalSettings.pageChangeDurationMS),
-                        curve: Curves.linear);
+                    widget._splitController.nextPage(curve: Curves.linear);
                   });
                 },
                 icon: Icon(Icons.chevron_right),
@@ -266,7 +234,9 @@ class _WorkSchedule extends State<WorkSchedule>
             ],
           ),
         ),
-        Expanded(child: pagebuilder)
+        Expanded(
+            child: widget._splitController
+                .widget(_innerViewList[1], SplitControllerLocation.top))
       ],
     );
   }

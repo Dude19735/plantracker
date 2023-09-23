@@ -112,38 +112,6 @@ class TimeTable extends StatelessWidget {
       ),
     );
 
-    return NotificationListener(
-      onNotification: (notification) {
-        if (notification is UserScrollNotification) {
-          // print("scrolling bottom");
-          _splitController.bottomPageScrolling = true;
-          _splitController.topPageScrolling = false;
-        } else if (notification is ScrollEndNotification) {
-          // print("end scrolling");
-          // _splitController.topPageOffset = 0.0;
-        } else if (_splitController.bottomPageScrolling &&
-            notification is ScrollUpdateNotification) {
-          // print(_splitController.bottomPageController.offset);
-          _splitController.topPageController.position
-              .jumpTo(_splitController.bottomPageController.position.pixels);
-          // print("..... ${notification.scrollDelta}");
-        } else {
-          // print(notification);
-        }
-        return false;
-      },
-      child: PageView.builder(
-        controller: _splitController.bottomPageController,
-        pageSnapping: false,
-        onPageChanged: (value) {
-          print("page changed $value");
-        },
-        itemBuilder: (context, index) {
-          return Center(
-            child: table,
-          );
-        },
-      ),
-    );
+    return _splitController.widget(table, SplitControllerLocation.bottom);
   }
 }

@@ -96,15 +96,13 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage>
-    with SingleTickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   GlobalContext globalContext = GlobalContext();
   LinkedScrollControllerGroup _controllerGroup = LinkedScrollControllerGroup();
   late ScrollController _summary;
   late ScrollController _timeTable;
-  int _mouseInWidget = -1;
   late final TabController _controller;
-  final SplitController _splitController = SplitController();
+  late final SplitController _splitController;
 
   @override
   void initState() {
@@ -112,6 +110,7 @@ class _MyHomePageState extends State<MyHomePage>
     _controller = TabController(vsync: this, length: 3);
     _summary = _controllerGroup.addAndGet();
     _timeTable = _controllerGroup.addAndGet();
+    _splitController = SplitController(animationMs: 2000);
   }
 
   @override
