@@ -112,6 +112,7 @@ class TimeTable extends StatelessWidget {
       ),
     );
 
-    return _splitController.widget(table, SplitControllerLocation.bottom);
+    return _splitController.widget(
+        context, table, SplitControllerLocation.bottom);
   }
 }

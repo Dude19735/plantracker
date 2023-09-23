@@ -1,12 +1,10 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/work_schedule_inner_view.dart';
 import 'package:scheduler/split_controller.dart';
 
-/// Flutter code sample for [IconButton].
+class DateChangedNotification extends Notification {}
 
 class WorkSchedule extends StatefulWidget {
   final GlobalContext _globalContext;
@@ -21,34 +19,6 @@ class WorkSchedule extends StatefulWidget {
 class _WorkSchedule extends State<WorkSchedule>
     with SingleTickerProviderStateMixin {
   late final List<WorkScheduleInnerView> _innerViewList;
-  late WorkScheduleInnerView _innerView;
-
-  // Widget _getCalendarButton(DateTime date) {
-  //   return MouseRegion(
-  //     cursor: SystemMouseCursors.grab,
-  //     child: GestureDetector(
-  //       onTap: () {
-  //         Future<DateTime?> res = showDatePicker(
-  //             context: context,
-  //             initialDate: _fromDate,
-  //             firstDate: GlobalSettings.earliestDate,
-  //             lastDate: _toDate,
-  //             locale: GlobalSettings.locals[CurrentConfig.currentLocale]);
-
-  //         res.then((value) => {
-  //               if (value != null)
-  //                 {
-  //                   setState(() {
-  //                     _fromDate = value;
-  //                   })
-  //                 }
-  //             });
-  //       },
-  //       child: Placeholder(),
-  //     ),
-  //     onHover: (details) {},
-  //   );
-  // }
 
   @override
   void initState() {
@@ -63,17 +33,6 @@ class _WorkSchedule extends State<WorkSchedule>
       WorkScheduleInnerView(widget._globalContext),
       WorkScheduleInnerView(widget._globalContext)
     ]);
-
-    _innerView = WorkScheduleInnerView(widget._globalContext);
-
-    // _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
-
-    // _workScheduleInnerView = TabBarView(
-    //   controller: _tabController,
-    //   children: _innerViewList,
-    // );
-    // WorkScheduleInnerView.of(context)
-    // _controller.addListener(_onTap);
   }
 
   @override
@@ -90,28 +49,19 @@ class _WorkSchedule extends State<WorkSchedule>
             children: [
               IconButton(
                   onPressed: () {
-                    setState(() {
-                      Duration d = CurrentConfig.toDateWindow
-                              .difference(CurrentConfig.fromDateWindow) +
-                          Duration(days: 1);
-                      CurrentConfig.fromDateWindow =
-                          CurrentConfig.fromDateWindow.subtract(d);
-                      CurrentConfig.toDateWindow =
-                          CurrentConfig.toDateWindow.subtract(d);
-
-                      widget._splitController
-                          .previousPage(curve: Curves.linear);
-                    });
+                    // widget._splitController.previousPage(curve: Curves.linear);
+                    PageChangeNotification(0, true, flipPage: true)
+                        .dispatch(context);
                   },
                   icon: Icon(Icons.chevron_left)),
               Spacer(),
               IconButton(
                   onPressed: () {
-                    setState(() {
-                      CurrentConfig.fromDateWindow = CurrentConfig
-                          .fromDateWindow
-                          .subtract(Duration(days: 1));
-                    });
+                    // setState(() {
+                    CurrentConfig.fromDateWindow = CurrentConfig.fromDateWindow
+                        .subtract(Duration(days: 1));
+                    // });
+                    DateChangedNotification().dispatch(context);
                   },
                   icon: Icon(Icons.remove)),
               SizedBox(
@@ -129,27 +79,30 @@ class _WorkSchedule extends State<WorkSchedule>
                           locale: GlobalSettings
                               .locals[CurrentConfig.currentLocale]);
 
-                      res.then((value) => {
-                            if (value != null)
-                              {
-                                setState(() {
-                                  CurrentConfig.fromDateWindow = value;
-                                })
-                              }
-                          });
+                      res.then((value) {
+                        if (value != null) {
+                          // CurrentConfig.fromDateWindow = value,
+                          // DateChangedNotification().dispatch(context),
+                          // setState(() {
+                          CurrentConfig.fromDateWindow = value;
+                          DateChangedNotification().dispatch(context);
+                          // })
+                        }
+                      });
                     },
                     icon: Icon(Icons.calendar_month_outlined)),
               ),
               IconButton(
                   onPressed: () {
-                    setState(() {
-                      if (CurrentConfig.fromDateWindow
-                              .compareTo(CurrentConfig.toDateWindow) <
-                          0) {
-                        CurrentConfig.fromDateWindow =
-                            CurrentConfig.fromDateWindow.add(Duration(days: 1));
-                      }
-                    });
+                    // setState(() {
+                    if (CurrentConfig.fromDateWindow
+                            .compareTo(CurrentConfig.toDateWindow) <
+                        0) {
+                      CurrentConfig.fromDateWindow =
+                          CurrentConfig.fromDateWindow.add(Duration(days: 1));
+                      DateChangedNotification().dispatch(context);
+                    }
+                    // });
                   },
                   icon: Icon(
                     Icons.add,
@@ -164,14 +117,15 @@ class _WorkSchedule extends State<WorkSchedule>
               ),
               IconButton(
                   onPressed: () {
-                    setState(() {
-                      if (CurrentConfig.toDateWindow
-                              .compareTo(CurrentConfig.fromDateWindow) >
-                          0) {
-                        CurrentConfig.toDateWindow = CurrentConfig.toDateWindow
-                            .subtract(Duration(days: 1));
-                      }
-                    });
+                    // setState(() {
+                    if (CurrentConfig.toDateWindow
+                            .compareTo(CurrentConfig.fromDateWindow) >
+                        0) {
+                      CurrentConfig.toDateWindow = CurrentConfig.toDateWindow
+                          .subtract(Duration(days: 1));
+                      DateChangedNotification().dispatch(context);
+                    }
+                    // });
                   },
                   icon: Icon(
                     Icons.remove,
@@ -196,38 +150,32 @@ class _WorkSchedule extends State<WorkSchedule>
                           locale: GlobalSettings
                               .locals[CurrentConfig.currentLocale]);
 
-                      res.then((value) => {
-                            if (value != null)
-                              {
-                                setState(() {
-                                  CurrentConfig.toDateWindow = value;
-                                })
-                              }
-                          });
+                      res.then((value) {
+                        if (value != null) {
+                          // setState(() {
+                          CurrentConfig.toDateWindow = value;
+                          DateChangedNotification().dispatch(context);
+                          // })
+                        }
+                      });
                     },
                     icon: Icon(Icons.calendar_month_outlined)),
               ),
               IconButton(
                   onPressed: () {
-                    setState(() {
-                      CurrentConfig.toDateWindow =
-                          CurrentConfig.toDateWindow.add(Duration(days: 1));
-                    });
+                    // setState(() {
+                    CurrentConfig.toDateWindow =
+                        CurrentConfig.toDateWindow.add(Duration(days: 1));
+                    DateChangedNotification().dispatch(context);
+                    // });
                   },
                   icon: Icon(Icons.add)),
               Spacer(),
               IconButton(
                 onPressed: () {
-                  setState(() {
-                    Duration d = CurrentConfig.toDateWindow
-                            .difference(CurrentConfig.fromDateWindow) +
-                        Duration(days: 1);
-                    CurrentConfig.fromDateWindow =
-                        CurrentConfig.fromDateWindow.add(d);
-                    CurrentConfig.toDateWindow =
-                        CurrentConfig.toDateWindow.add(d);
-                    widget._splitController.nextPage(curve: Curves.linear);
-                  });
+                  // widget._splitController.nextPage(curve: Curves.linear);
+                  PageChangeNotification(0, false, flipPage: true)
+                      .dispatch(context);
                 },
                 icon: Icon(Icons.chevron_right),
               ),
@@ -235,8 +183,8 @@ class _WorkSchedule extends State<WorkSchedule>
           ),
         ),
         Expanded(
-            child: widget._splitController
-                .widget(_innerViewList[1], SplitControllerLocation.top))
+            child: widget._splitController.widget(
+                context, _innerViewList[1], SplitControllerLocation.top))
       ],
     );
   }

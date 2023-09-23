@@ -110,21 +110,60 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     _controller = TabController(vsync: this, length: 3);
     _summary = _controllerGroup.addAndGet();
     _timeTable = _controllerGroup.addAndGet();
-    _splitController = SplitController(animationMs: 2000);
+    _splitController =
+        SplitController(animationMs: GlobalSettings.pageChangeDurationMS);
   }
 
   @override
   Widget build(BuildContext context) {
-    var split = CrossSplit(
-      globalContext,
-      horizontalInitRatio: GlobalStyle.horizontalInitRatio,
-      horizontalGrabberSize: GlobalStyle.horizontalGrabberSize,
-      verticalInitRatio: GlobalStyle.verticalInitRatio,
-      verticalGrabberSize: GlobalStyle.verticalGrabberSize,
-      topLeft: Placeholder(color: Colors.black12),
-      topRight: WorkSchedule(globalContext, _splitController),
-      bottomLeft: Summary(globalContext, _summary),
-      bottomRight: TimeTable(globalContext, _timeTable, _splitController),
+    var split = NotificationListener(
+      onNotification: (notification) {
+        if (notification is DateChangedNotification) {
+          setState(() {
+            print("Date range changed");
+          });
+        }
+        if (notification is PageChangeNotification) {
+          print("date changed");
+          setState(() {
+            if (!notification.backwards) {
+              Duration d = CurrentConfig.toDateWindow
+                      .difference(CurrentConfig.fromDateWindow) +
+                  Duration(days: 1);
+              CurrentConfig.fromDateWindow =
+                  CurrentConfig.fromDateWindow.add(d);
+              CurrentConfig.toDateWindow = CurrentConfig.toDateWindow.add(d);
+              if (notification.flipPage) {
+                _splitController.nextPage();
+              }
+            } else {
+              Duration d = CurrentConfig.toDateWindow
+                      .difference(CurrentConfig.fromDateWindow) +
+                  Duration(days: 1);
+              CurrentConfig.fromDateWindow =
+                  CurrentConfig.fromDateWindow.subtract(d);
+              CurrentConfig.toDateWindow =
+                  CurrentConfig.toDateWindow.subtract(d);
+              if (notification.flipPage) {
+                _splitController.previousPage();
+              }
+            }
+          });
+          return true;
+        }
+        return false;
+      },
+      child: CrossSplit(
+        globalContext,
+        horizontalInitRatio: GlobalStyle.horizontalInitRatio,
+        horizontalGrabberSize: GlobalStyle.horizontalGrabberSize,
+        verticalInitRatio: GlobalStyle.verticalInitRatio,
+        verticalGrabberSize: GlobalStyle.verticalGrabberSize,
+        topLeft: Placeholder(color: Colors.black12),
+        topRight: WorkSchedule(globalContext, _splitController),
+        bottomLeft: Summary(globalContext, _summary),
+        bottomRight: TimeTable(globalContext, _timeTable, _splitController),
+      ),
     );
 
     return Scaffold(
