@@ -10,6 +10,7 @@ class SplitController {
       Curve curve = Curves.linear}) {
     topPageController.nextPage(duration: duration, curve: curve);
     bottomPageController.nextPage(duration: duration, curve: curve);
+    // bottomPageController.position.addListener(() {topPageController.position})
   }
 
   void previousPage(

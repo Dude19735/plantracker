@@ -102,16 +102,24 @@ class TimeTable extends StatelessWidget {
       ),
     );
 
-    return PageView.builder(
-      controller: _splitController.bottomPageController,
-      onPageChanged: (value) {
-        print("page changed $value");
+    return NotificationListener(
+      onNotification: (notification) {
+        if (notification is UserScrollNotification) {
+          print("scrolling...");
+        }
+        return false;
       },
-      itemBuilder: (context, index) {
-        return Center(
-          child: table,
-        );
-      },
+      child: PageView.builder(
+        controller: _splitController.bottomPageController,
+        onPageChanged: (value) {
+          print("page changed $value");
+        },
+        itemBuilder: (context, index) {
+          return Center(
+            child: table,
+          );
+        },
+      ),
     );
   }
 }
