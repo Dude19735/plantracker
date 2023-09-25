@@ -1,12 +1,9 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/work_button.dart';
 import 'package:scheduler/subject_dropdown.dart';
 import 'package:scheduler/work_toggler.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:scheduler/work_stop_button.dart';
 import 'dart:math';
 
@@ -51,9 +48,6 @@ class _WatchManager extends State<WatchManager>
       ..addListener(() {
         setState(() {});
       });
-    // ..addStatusListener((status) {
-    //   if (status == AnimationStatus.completed) {}
-    // });
 
     active = true;
     _watchTimeout();
@@ -189,18 +183,9 @@ class WatchPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final double s = _size - strokeWidth;
 
-    // var path = Path();
-    // path.addOval(Rect.fromCircle(
-    //     center: Offset(size.width / 2, size.height / 2),
-    //     radius: _size / 2 - GlobalStyle.cardPadding * 2));
-    // canvas.drawShadow(path, Colors.black, 10, true);
-    // canvas.drawPath(path, backgroundPainter);
-
     Offset off = Offset(_size / 2, _size / 2);
     canvas.drawArc(Rect.fromCenter(center: off, width: s, height: s), 0,
         _arcRadius, false, redCirclePainter);
-
-    // canvas.drawShadow(path, color, elevation, transparentOccluder)
 
     final textStyle = TextStyle(
         color: Colors.black, fontSize: fontSize, fontWeight: FontWeight.bold);

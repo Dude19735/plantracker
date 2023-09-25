@@ -17,12 +17,7 @@ import 'package:scheduler/watch_manager.dart';
 import 'package:scheduler/work_schedule.dart';
 import 'package:scheduler/split_controller.dart';
 
-import 'package:scheduler/sqlite_test.dart';
-
 Future<void> main() async {
-  // var d = DatabaseHelper();
-  // await d.init();
-
   const String title = "Just something...";
   const Size minSize = Size(1280, 720);
   const Size currentSize = Size(1280, 720);
@@ -120,16 +115,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       onNotification: (notification) {
         if (notification is DateChangedNotification2) {
           setState(() {
-            print(
-                "Date range changed ${CurrentConfig.fromDateWindow} ${CurrentConfig.toDateWindow} ${notification.from} ${notification.to}");
             CurrentConfig.fromDateWindow = notification.from;
             CurrentConfig.toDateWindow = notification.to;
-            // _workSchedule.refreshInnerViews();
-
-            print(CurrentConfig.fromDateWindow
-                .difference(CurrentConfig.toDateWindow)
-                .inDays
-                .abs());
           });
           return true;
         }

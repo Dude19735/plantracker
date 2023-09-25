@@ -1,8 +1,6 @@
 // import 'animated_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:scheduler/work_toggler.dart';
 
 /// Flutter code sample for [IconButton].
 

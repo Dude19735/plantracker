@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-
 import 'package:flutter_svg/svg.dart';
 
 enum WorkTogglerIconAlignmentStrategy { centralized, pullingTip }

@@ -19,19 +19,6 @@ class WorkButton extends StatefulWidget {
 }
 
 class _WorkButton extends State<WorkButton> {
-  // Widget _getButton(BoxConstraints constraints) {
-  //   return Material(
-  //     type: MaterialType.transparency,
-  //     child: InkWell(
-  //       onTap: () {},
-  //       child: SvgPicture.asset(widget._label,
-  //           width: constraints.maxHeight,
-  //           height: constraints.maxWidth,
-  //           semanticsLabel: 'Label'),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Row(children: [

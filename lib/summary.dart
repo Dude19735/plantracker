@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
-import 'package:scheduler/data.dart';
-import 'dart:math';
 
 class SummaryEntry extends StatelessWidget {
   final GlobalContext _globalContext;
@@ -9,8 +7,6 @@ class SummaryEntry extends StatelessWidget {
   final double _maxWidth;
   final double _maxTime;
   final int _index;
-
-  // final GlobalKey _key = GlobalKey();
 
   SummaryEntry(this._globalContext, this._maxWidth, this._maxTime, this._index);
 
@@ -83,7 +79,6 @@ class Summary extends StatelessWidget {
     }
 
     return Container(
-      // elevation: 0,
       margin: EdgeInsets.all(GlobalStyle.globalCardMargin),
       color: Colors.transparent,
       child: Padding(

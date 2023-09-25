@@ -10,55 +10,11 @@ class DateChangedNotification2 extends Notification {
   DateChangedNotification2(this.from, this.to);
 }
 
-// class WorkSchedule extends StatefulWidget {
-//   final GlobalContext _globalContext;
-//   final SplitController _splitController;
-//   late final List<WorkScheduleInnerView> _innerViewList;
-
-//   WorkSchedule(this._globalContext, this._splitController) {
-//     _innerViewList = [];
-//     _innerViewList.insertAll(0, [
-//       WorkScheduleInnerView(_globalContext),
-//       WorkScheduleInnerView(_globalContext),
-//       WorkScheduleInnerView(_globalContext)
-//     ]);
-//   }
-
-//   // void refreshInnerViews() {
-//   //   _innerViewList.clear();
-//   // }
-
-//   @override
-//   State<WorkSchedule> createState() => _WorkSchedule();
-// }
-
-class WorkSchedule extends StatelessWidget
-// with SingleTickerProviderStateMixin
-{
+class WorkSchedule extends StatelessWidget {
   final GlobalContext _globalContext;
   final SplitController _splitController;
-  // late final List<WorkScheduleInnerView> _innerViewList;
 
-  WorkSchedule(this._globalContext, this._splitController) {
-    print("init work schedule");
-    // CurrentConfig.fromDateWindow = DataUtils.getLastMonday(DateTime.now());
-    // CurrentConfig.toDateWindow = DataUtils.getNextSunday(DateTime.now());
-
-    // _innerViewList = [];
-    // _innerViewList.insertAll(0, [
-    //   WorkScheduleInnerView(_globalContext),
-    //   WorkScheduleInnerView(_globalContext),
-    //   WorkScheduleInnerView(_globalContext)
-    // ]);
-  }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-
-  //   CurrentConfig.fromDateWindow = DataUtils.getLastMonday(DateTime.now());
-  //   CurrentConfig.toDateWindow = DataUtils.getNextSunday(DateTime.now());
-  // }
+  WorkSchedule(this._globalContext, this._splitController);
 
   @override
   Widget build(BuildContext context) {
@@ -74,17 +30,12 @@ class WorkSchedule extends StatelessWidget
             children: [
               IconButton(
                   onPressed: () {
-                    // widget._splitController.previousPage(curve: Curves.linear);
                     ChangePageNotification(true).dispatch(context);
                   },
                   icon: Icon(Icons.chevron_left)),
               Spacer(),
               IconButton(
                   onPressed: () {
-                    // setState(() {
-                    // CurrentConfig.fromDateWindow = CurrentConfig.fromDateWindow
-                    //     .subtract(Duration(days: 1));
-                    // });
                     DateChangedNotification2(
                             CurrentConfig.fromDateWindow
                                 .subtract(Duration(days: 1)),
@@ -109,14 +60,9 @@ class WorkSchedule extends StatelessWidget
 
                       res.then((value) {
                         if (value != null) {
-                          // CurrentConfig.fromDateWindow = value,
-                          // DateChangedNotification().dispatch(context),
-                          // setState(() {
-                          // CurrentConfig.fromDateWindow = value;
                           DateChangedNotification2(
                                   value, CurrentConfig.toDateWindow)
                               .dispatch(context);
-                          // })
                         }
                       });
                     },
@@ -124,19 +70,15 @@ class WorkSchedule extends StatelessWidget
               ),
               IconButton(
                   onPressed: () {
-                    // setState(() {
                     if (CurrentConfig.fromDateWindow
                             .compareTo(CurrentConfig.toDateWindow) <
                         0) {
-                      // CurrentConfig.fromDateWindow =
-                      //     CurrentConfig.fromDateWindow.add(Duration(days: 1));
                       DateChangedNotification2(
                               CurrentConfig.fromDateWindow
                                   .add(Duration(days: 1)),
                               CurrentConfig.toDateWindow)
                           .dispatch(context);
                     }
-                    // });
                   },
                   icon: Icon(
                     Icons.add,
@@ -151,12 +93,9 @@ class WorkSchedule extends StatelessWidget
               ),
               IconButton(
                   onPressed: () {
-                    // setState(() {
                     if (CurrentConfig.toDateWindow
                             .compareTo(CurrentConfig.fromDateWindow) >
                         0) {
-                      // CurrentConfig.toDateWindow = CurrentConfig.toDateWindow
-                      //     .subtract(Duration(days: 1));
                       DateChangedNotification2(
                               CurrentConfig.fromDateWindow,
                               CurrentConfig.toDateWindow = CurrentConfig
@@ -164,7 +103,6 @@ class WorkSchedule extends StatelessWidget
                                   .subtract(Duration(days: 1)))
                           .dispatch(context);
                     }
-                    // });
                   },
                   icon: Icon(
                     Icons.remove,
@@ -191,12 +129,9 @@ class WorkSchedule extends StatelessWidget
 
                       res.then((value) {
                         if (value != null) {
-                          // setState(() {
-                          // CurrentConfig.toDateWindow = value;
                           DateChangedNotification2(
                                   CurrentConfig.fromDateWindow, value)
                               .dispatch(context);
-                          // })
                         }
                       });
                     },
@@ -204,22 +139,17 @@ class WorkSchedule extends StatelessWidget
               ),
               IconButton(
                   onPressed: () {
-                    // setState(() {
-                    // CurrentConfig.toDateWindow =
-                    //     CurrentConfig.toDateWindow.add(Duration(days: 1));
                     DateChangedNotification2(
                             CurrentConfig.fromDateWindow,
                             CurrentConfig.toDateWindow = CurrentConfig
                                 .toDateWindow
                                 .add(Duration(days: 1)))
                         .dispatch(context);
-                    // });
                   },
                   icon: Icon(Icons.add)),
               Spacer(),
               IconButton(
                 onPressed: () {
-                  // widget._splitController.nextPage(curve: Curves.linear);
                   ChangePageNotification(false).dispatch(context);
                 },
                 icon: Icon(Icons.chevron_right),

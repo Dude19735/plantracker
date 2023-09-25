@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:scheduler/context.dart';
-import 'package:scheduler/data.dart';
 import 'package:scheduler/split_controller.dart';
 import 'dart:math';
 
@@ -34,23 +32,7 @@ class TimeTable extends StatelessWidget {
       SizedBox(
           height: height,
           width: constraints.maxWidth,
-          child: GlobalStyle.createShadowContainer(context, null)
-          // Align(
-          //     alignment: Alignment.bottomCenter,
-          //     child: Container(
-          //         height: 1.0,
-          //         decoration: BoxDecoration(
-          //           shape: BoxShape.rectangle,
-          //           boxShadow: [
-          //             BoxShadow(
-          //               color: Colors.grey.withOpacity(0.7),
-          //               spreadRadius: 0,
-          //               blurRadius: 0.5,
-          //               offset: Offset(constraints.maxWidth / numCells / 2, 0),
-          //             ),
-          //           ],
-          //         )))
-          ),
+          child: GlobalStyle.createShadowContainer(context, null)),
       Row(children: [
         for (int i = 0; i < numCells - 1; i++)
           _getContainer(
@@ -78,7 +60,6 @@ class TimeTable extends StatelessWidget {
         return false;
       },
       child: Container(
-        // elevation: 0,
         margin: EdgeInsets.all(GlobalStyle.globalCardMargin),
         color: Colors.transparent,
         child: Padding(
@@ -99,14 +80,10 @@ class TimeTable extends StatelessWidget {
                     double height = _globalContext.showSubjectsInSummary
                         ? _globalContext.data.minSubjectTextHeight[subjectId]!
                         : 0;
-                    // height += GlobalStyle.horizontalGrayLineHeight;
                     height += 2 * GlobalStyle.summaryEntryBarHeight;
                     height += GlobalStyle.cardMargin + GlobalStyle.cardPadding;
                     return _getRow(
                         context, constraints, numCells, height, index);
-                    // return Container(
-                    //     height: height,
-                    //     color: (index % 2 == 0) ? Colors.yellow : Colors.tealAccent);
                   },
                 );
               },

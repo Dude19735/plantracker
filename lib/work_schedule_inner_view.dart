@@ -1,57 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 
-// class WorkScheduleInnerView extends StatefulWidget {
-//   final GlobalContext _globalContext;
-
-//   WorkScheduleInnerView(this._globalContext);
-
-//   static of(BuildContext context, {bool root = false}) => root
-//       ? context.findRootAncestorStateOfType<_WorkScheduleInnerView>()
-//       : context.findAncestorStateOfType<_WorkScheduleInnerView>();
-
-//   // @override
-//   // Widget build(BuildContext context) {
-//   //   return DefaultTabController(
-//   //     length: 3,
-//   //     child: const TabBarView(children: <Widget>[
-//   //       Center(
-//   //         child: Text("It's cloudy here"),
-//   //       ),
-//   //       Center(
-//   //         child: Text("It's rainy here"),
-//   //       ),
-//   //       Center(
-//   //         child: Text("It's sunny here"),
-//   //       ),
-//   //     ]),
-//   //   );
-//   // }
-
-//   @override
-//   State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();
-// }
-
-class WorkScheduleInnerView extends StatelessWidget
-// with SingleTickerProviderStateMixin
-{
+class WorkScheduleInnerView extends StatelessWidget {
   final GlobalContext _globalContext;
   WorkScheduleInnerView(this._globalContext);
 
-  // Future<Data<SchedulePlanData>> _load(DateTime fromDate, DateTime toDate) async {
-
-  // }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-
-  //   // load data async...
-  // }
-
   @override
   Widget build(BuildContext context) {
-    print("rebuild inner view");
     double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -82,10 +37,6 @@ class WorkScheduleInnerView extends StatelessWidget
 }
 
 class _GridPainter extends CustomPainter {
-  // late final double _boxWidth;
-  // late final double _totalWidth;
-  // final double _totalHeight = CurrentConfig.scheduleBoxHeightPx * 96;
-
   Paint backgroundPainter = Paint();
   Paint gridPainter = Paint();
 
@@ -106,16 +57,12 @@ class _GridPainter extends CustomPainter {
             .abs() +
         1;
 
-    print("repaint inner view $ccsbx");
-
     double boxWidth =
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
             ccsbx;
 
     canvas.drawRect(
         Rect.fromLTWH(0, 0, size.width, size.height), backgroundPainter);
-
-    // canvas.drawPaint(backgroundPainter);
 
     double xOffset = boxWidth;
     gridPainter.color = GlobalStyle.scheduleGridColorBox;

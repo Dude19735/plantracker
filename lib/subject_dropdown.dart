@@ -48,21 +48,6 @@ class _SubjectDropdown extends State<SubjectDropdown> {
               );
             }).toList()),
       );
-
-      //     DropdownMenu<String>(
-      //   width: constraints.maxWidth,
-      //   initialSelection: list.first,
-      //   onSelected: (String? value) {
-      //     // This is called when the user selects an item.
-      //     setState(() {
-      //       dropdownValue = value!;
-      //     });
-      //   },
-      //   dropdownMenuEntries:
-      //       list.map<DropdownMenuEntry<String>>((String value) {
-      //     return DropdownMenuEntry<String>(value: value, label: value);
-      //   }).toList(),
-      // );
     });
   }
 }

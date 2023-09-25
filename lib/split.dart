@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
-import 'package:scheduler/data.dart';
 
 enum SplitDirection { vertical, horizontal }
 
@@ -110,8 +109,6 @@ class _CrossSplit extends State<CrossSplit> {
 
     bool center = name.startsWith("h") && x1 <= px && px <= x2;
 
-    // print("$x1 $px $x2");
-
     return center;
   }
 
@@ -127,17 +124,6 @@ class _CrossSplit extends State<CrossSplit> {
           _hSync(notification);
         }
       } else if (notification is StartNotification) {
-        // double x1 = vRatio.ratio *
-        //     (notification.constraints.maxWidth - vRatio.grabSize);
-        // double x2 = vRatio.ratio *
-        //         (notification.constraints.maxWidth - vRatio.grabSize) +
-        //     vRatio.grabSize;
-
-        // // add the clockBarWidth because it's inside the same parent
-        // double px =
-        //     notification.details.globalPosition.dx - GlobalStyle.clockBarWidth;
-        // // print("$x1 $x2 $px");
-        // if (notification.name.startsWith("h") && x1 <= px && px <= x2) {
         if (_CrossSplit._mouseInCenter(
             vRatio,
             notification.constraints.maxWidth,
@@ -187,8 +173,9 @@ class _CrossSplit extends State<CrossSplit> {
             widget._globalContext,
             "hAll",
             hRatio,
-            SplitDirection.horizontal, cursor, //this,
-            color: Colors.red, // GlobalStyle.grabberColor,
+            SplitDirection.horizontal,
+            cursor,
+            color: Colors.red,
             topOrLeft: Row(children: [
               Split(
                 widget._globalContext,
@@ -203,7 +190,7 @@ class _CrossSplit extends State<CrossSplit> {
             ]),
             bottomOrRight: Row(children: [
               Split(widget._globalContext, "vBottom", vRatio,
-                  SplitDirection.vertical, cursor, //this,
+                  SplitDirection.vertical, cursor,
                   color: GlobalStyle.grabberColor,
                   topOrLeft: widget.bottomLeft,
                   bottomOrRight: widget.bottomRight)
@@ -219,7 +206,6 @@ class Split extends StatelessWidget {
   final SplitDirection _direction;
   final String _name;
   final Color color;
-  // final _CrossSplit _parent;
   final DragCursor _cursor;
   late final Ratio _ratio;
 
