@@ -1,52 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 
-class WorkScheduleInnerView extends StatefulWidget {
-  final GlobalContext _globalContext;
+// class WorkScheduleInnerView extends StatefulWidget {
+//   final GlobalContext _globalContext;
 
+//   WorkScheduleInnerView(this._globalContext);
+
+//   static of(BuildContext context, {bool root = false}) => root
+//       ? context.findRootAncestorStateOfType<_WorkScheduleInnerView>()
+//       : context.findAncestorStateOfType<_WorkScheduleInnerView>();
+
+//   // @override
+//   // Widget build(BuildContext context) {
+//   //   return DefaultTabController(
+//   //     length: 3,
+//   //     child: const TabBarView(children: <Widget>[
+//   //       Center(
+//   //         child: Text("It's cloudy here"),
+//   //       ),
+//   //       Center(
+//   //         child: Text("It's rainy here"),
+//   //       ),
+//   //       Center(
+//   //         child: Text("It's sunny here"),
+//   //       ),
+//   //     ]),
+//   //   );
+//   // }
+
+//   @override
+//   State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();
+// }
+
+class WorkScheduleInnerView extends StatelessWidget
+// with SingleTickerProviderStateMixin
+{
+  final GlobalContext _globalContext;
   WorkScheduleInnerView(this._globalContext);
 
-  static of(BuildContext context, {bool root = false}) => root
-      ? context.findRootAncestorStateOfType<_WorkScheduleInnerView>()
-      : context.findAncestorStateOfType<_WorkScheduleInnerView>();
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return DefaultTabController(
-  //     length: 3,
-  //     child: const TabBarView(children: <Widget>[
-  //       Center(
-  //         child: Text("It's cloudy here"),
-  //       ),
-  //       Center(
-  //         child: Text("It's rainy here"),
-  //       ),
-  //       Center(
-  //         child: Text("It's sunny here"),
-  //       ),
-  //     ]),
-  //   );
-  // }
-
-  @override
-  State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();
-}
-
-class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
-    with SingleTickerProviderStateMixin {
   // Future<Data<SchedulePlanData>> _load(DateTime fromDate, DateTime toDate) async {
 
   // }
 
-  @override
-  void initState() {
-    super.initState();
+  // @override
+  // void initState() {
+  //   super.initState();
 
-    // load data async...
-  }
+  //   // load data async...
+  // }
 
   @override
   Widget build(BuildContext context) {
+    print("rebuild inner view");
     double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -96,9 +101,12 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     int ccsbx = CurrentConfig.fromDateWindow
-        .difference(CurrentConfig.toDateWindow)
-        .inDays
-        .abs();
+            .difference(CurrentConfig.toDateWindow)
+            .inDays
+            .abs() +
+        1;
+
+    print("repaint inner view $ccsbx");
 
     double boxWidth =
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /

@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 
 enum SplitControllerLocation { top, bottom }
 
-class PageChangeNotification extends Notification {
+class ChangePageNotification extends Notification {
+  final bool backwards;
+  ChangePageNotification(this.backwards);
+}
+
+class PageScrolledNotification extends Notification {
   final int page;
   final bool backwards;
   final bool flipPage;
-  PageChangeNotification(this.page, this.backwards, {this.flipPage = false});
+  PageScrolledNotification(this.page, this.backwards, {this.flipPage = false});
 }
 
 class SplitController {
@@ -18,7 +23,7 @@ class SplitController {
   final PageController _bottomPageController =
       PageController(initialPage: 2 << 31);
 
-  bool emitNotification = true;
+  bool emitNotificationOnPageChanged = true;
 
   SplitController({this.animationMs = 250});
 
@@ -60,10 +65,9 @@ class SplitController {
       child: PageView.builder(
         onPageChanged: (page) {
           if (page != _currentPage) {
-            print("Page changed $page $_currentPage");
             bool backwards = page < _currentPage;
             _currentPage = page;
-            PageChangeNotification(page, backwards).dispatch(context);
+            PageScrolledNotification(page, backwards).dispatch(context);
           }
         },
         controller: location == SplitControllerLocation.top

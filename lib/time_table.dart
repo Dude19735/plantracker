@@ -63,7 +63,11 @@ class TimeTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int numCells = _globalContext.data.dateRange();
+    int numCells = CurrentConfig.fromDateWindow
+            .difference(CurrentConfig.toDateWindow)
+            .inDays
+            .abs() +
+        1;
     var data = _globalContext.data.summaryData.data;
 
     Widget table = NotificationListener(

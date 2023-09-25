@@ -118,13 +118,22 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     var split = NotificationListener(
       onNotification: (notification) {
-        if (notification is DateChangedNotification) {
+        if (notification is DateChangedNotification2) {
           setState(() {
-            print("Date range changed");
+            print(
+                "Date range changed ${CurrentConfig.fromDateWindow} ${CurrentConfig.toDateWindow} ${notification.from} ${notification.to}");
+            CurrentConfig.fromDateWindow = notification.from;
+            CurrentConfig.toDateWindow = notification.to;
+            // _workSchedule.refreshInnerViews();
+
+            print(CurrentConfig.fromDateWindow
+                .difference(CurrentConfig.toDateWindow)
+                .inDays
+                .abs());
           });
+          return true;
         }
-        if (notification is PageChangeNotification) {
-          print("date changed");
+        if (notification is PageScrolledNotification) {
           setState(() {
             if (!notification.backwards) {
               Duration d = CurrentConfig.toDateWindow
@@ -133,9 +142,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               CurrentConfig.fromDateWindow =
                   CurrentConfig.fromDateWindow.add(d);
               CurrentConfig.toDateWindow = CurrentConfig.toDateWindow.add(d);
-              if (notification.flipPage) {
-                _splitController.nextPage();
-              }
             } else {
               Duration d = CurrentConfig.toDateWindow
                       .difference(CurrentConfig.fromDateWindow) +
@@ -144,12 +150,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   CurrentConfig.fromDateWindow.subtract(d);
               CurrentConfig.toDateWindow =
                   CurrentConfig.toDateWindow.subtract(d);
-              if (notification.flipPage) {
-                _splitController.previousPage();
-              }
             }
           });
           return true;
+        }
+        if (notification is ChangePageNotification) {
+          if (notification.backwards) {
+            _splitController.previousPage();
+          } else {
+            _splitController.nextPage();
+          }
         }
         return false;
       },
