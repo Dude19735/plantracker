@@ -161,7 +161,7 @@ class WorkSchedule extends StatelessWidget {
             child: _splitController.widget(
                 context,
                 WorkScheduleInnerView(_globalContext),
-                SplitControllerLocation.top))
+                SplitControllerLocation.top)),
       ],
     );
   }

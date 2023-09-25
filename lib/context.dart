@@ -77,34 +77,39 @@ class GlobalStyle {
       height,
       color = Colors.white}) {
     return Container(
-        width: width,
-        height: height,
-        margin: EdgeInsets.all(margin),
-        decoration: BoxDecoration(
-          color: color,
-          border: Border(
-              left: BorderSide.none,
-              right: BorderSide.none,
-              top: BorderSide.none,
-              bottom: BorderSide.none),
-          borderRadius:
-              BorderRadius.circular(borderRadius), //border corner radius
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context)
-                  .colorScheme
-                  .shadow
-                  .withOpacity(0.1), //color of shadow
-              spreadRadius: 3, //spread radius
-              blurRadius: 4, // blur radius
-              offset: Offset(0, 0), // changes position of shadow
-              //first paramerter of offset is left-right
-              //second parameter is top to down
-            ),
-            //you can set more BoxShadow() here
-          ],
-        ),
-        child: child);
+      width: width,
+      height: height,
+      margin: EdgeInsets.all(margin),
+      decoration: BoxDecoration(
+        color: color,
+        border: Border(
+            left: BorderSide.none,
+            right: BorderSide.none,
+            top: BorderSide.none,
+            bottom: BorderSide.none),
+        borderRadius:
+            BorderRadius.circular(borderRadius), //border corner radius
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context)
+                .colorScheme
+                .shadow
+                .withOpacity(0.1), //color of shadow
+            spreadRadius: 3, //spread radius
+            blurRadius: 4, // blur radius
+            offset: Offset(0, 0), // changes position of shadow
+            //first paramerter of offset is left-right
+            //second parameter is top to down
+          ),
+          //you can set more BoxShadow() here
+        ],
+      ),
+      child: GestureDetector(
+          onTapDown: (details) {
+            print("hello world ${details.localPosition}");
+          },
+          child: child),
+    );
   }
 
   static int dateToInt(DateTime date) {
