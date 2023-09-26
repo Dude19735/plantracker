@@ -12,6 +12,11 @@ class GlobalContext {
   static bool showSubjectsInSummary = true;
   static GlobalData data = GlobalData(DataUtils.getLastMonday(DateTime.now()),
       DataUtils.getNextSunday(DateTime.now()));
+
+  static Rect scheduleWindowOutlineRect = Rect.fromLTWH(0, 0, 1, 1);
+  static Rect scheduleWindowInlineRect = Rect.fromLTWH(0, 0, 1, 1);
+  static Rect scheduleWindowCell = Rect.fromLTWH(0, 0, 1, 1);
+  static Rect? scheduleWindowSelectionBox;
 }
 
 class GlobalSettings {
@@ -33,6 +38,7 @@ class GlobalSettings {
   static const int scheduleBoxRangeS = 60 * 15; // 15 mins schedule box size
   static const int initDateWindowSize = 7;
   static const int pageChangeDurationMS = 250;
+  static const double scheduleWindowAutoScrollOffset = 0;
 }
 
 class GlobalStyle {
@@ -48,7 +54,9 @@ class GlobalStyle {
   static const Color scheduleGridColorBox = Colors.black12;
   static const Color scheduleGridColorFullHour = Colors.black54;
   static const double scheduleGridStrokeWidth = 1.0;
-  static int scheduleBoxHeightPx = 30; // height of a schedule box in pixel
+  static const double scheduleBoxHeightPx =
+      30; // height of a schedule box in pixel
+  static final Color scheduleSelectionColor = Colors.blueGrey.withAlpha(50);
 
   // marker colors
   static const Color markerBlue = Color.fromARGB(255, 48, 110, 176);

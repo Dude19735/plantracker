@@ -119,8 +119,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             GlobalContext.toDateWindow = notification.to;
           });
           return true;
-        }
-        if (notification is PageScrolledNotification) {
+        } else if (notification is PageScrolledNotification) {
           setState(() {
             if (!notification.backwards) {
               Duration d = GlobalContext.toDateWindow
@@ -140,14 +139,18 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             }
           });
           return true;
-        }
-        if (notification is ChangePageNotification) {
+        } else if (notification is ChangePageNotification) {
           if (notification.backwards) {
             _splitController.previousPage();
           } else {
             _splitController.nextPage();
           }
+        } else if (notification is ScheduleMarkedNotification) {
+          setState(
+            () {},
+          );
         }
+
         return false;
       },
       child: CrossSplit(
