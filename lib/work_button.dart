@@ -9,11 +9,6 @@ import 'package:scheduler/work_toggler.dart';
 enum WorkButtonType { red, blue }
 
 class WorkButton extends StatefulWidget {
-  final GlobalContext _globalContext;
-  late final String _label;
-
-  WorkButton(this._globalContext);
-
   @override
   State<WorkButton> createState() => _WorkButton();
 }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 
 class WorkScheduleInnerView extends StatelessWidget {
-  final GlobalContext _globalContext;
-  WorkScheduleInnerView(this._globalContext);
+  ScrollController _controller;
+  WorkScheduleInnerView(this._controller);
 
   @override
   Widget build(BuildContext context) {
@@ -11,20 +11,31 @@ class WorkScheduleInnerView extends StatelessWidget {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Stack(children: [
+          // NotificationListener(
+          //   onNotification: (notification) {
+          //     if (notification is UserScrollNotification) {
+          //       print("hello world");
+          //       return false;
+          //     }
+          //     return false;
+          //   },
+          // child:
           SingleChildScrollView(
-              child: Container(
-                  margin: const EdgeInsets.all(GlobalStyle.globalCardMargin),
-                  width: constraints.maxWidth,
-                  height: GlobalStyle.scheduleBoxHeightPx * numBoxes +
-                      2 *
-                          (GlobalStyle.globalCardPadding +
-                              GlobalStyle.globalCardMargin) +
-                      (numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth,
-                  child: Padding(
-                    padding: EdgeInsets.all(GlobalStyle.globalCardPadding),
-                    child: GlobalStyle.createShadowContainer(
-                        context, CustomPaint(painter: _GridPainter())),
-                  ))),
+            controller: _controller,
+            child: Container(
+                margin: const EdgeInsets.all(GlobalStyle.globalCardMargin),
+                width: constraints.maxWidth,
+                height: GlobalStyle.scheduleBoxHeightPx * numBoxes +
+                    2 *
+                        (GlobalStyle.globalCardPadding +
+                            GlobalStyle.globalCardMargin) +
+                    (numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth,
+                child: Padding(
+                  padding: EdgeInsets.all(GlobalStyle.globalCardPadding),
+                  child: GlobalStyle.createShadowContainer(
+                      context, CustomPaint(painter: _GridPainter())),
+                )),
+          ),
           // Container(
           //     color: Colors.black12.withAlpha(125),
           //     child: Center(
@@ -51,8 +62,8 @@ class _GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    int ccsbx = CurrentConfig.fromDateWindow
-            .difference(CurrentConfig.toDateWindow)
+    int ccsbx = GlobalContext.fromDateWindow
+            .difference(GlobalContext.toDateWindow)
             .inDays
             .abs() +
         1;
@@ -87,6 +98,9 @@ class _GridPainter extends CustomPainter {
       yOffset +=
           GlobalStyle.scheduleGridStrokeWidth + GlobalStyle.scheduleBoxHeightPx;
     }
+
+    // var rect = Rect.fromLTWH(left, top, boxWidth, GlobalStyle.scheduleBoxHeightPx as double);
+    // canvas.drawRect(, paint)
   }
 
   @override

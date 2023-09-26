@@ -51,9 +51,7 @@ class CrossSplit extends StatefulWidget {
   final Widget topRight;
   final Widget bottomRight;
 
-  final GlobalContext _globalContext;
-
-  CrossSplit(this._globalContext,
+  CrossSplit(
       {this.horizontalInitRatio = GlobalStyle.horizontalInitRatio,
       this.horizontalGrabberSize = GlobalStyle.horizontalGrabberSize,
       this.verticalInitRatio = GlobalStyle.verticalInitRatio,
@@ -148,8 +146,8 @@ class _CrossSplit extends State<CrossSplit> {
       }
 
       // we moved the thing => clear the width lists
-      for (var item in widget._globalContext.data.summaryData.data) {
-        widget._globalContext.data.minSubjectTextHeight[item.subjectId] = 0;
+      for (var item in GlobalContext.data.summaryData.data) {
+        GlobalContext.data.minSubjectTextHeight[item.subjectId] = 0;
       }
     });
     return true;
@@ -170,7 +168,6 @@ class _CrossSplit extends State<CrossSplit> {
       child: Column(
         children: [
           Split(
-            widget._globalContext,
             "hAll",
             hRatio,
             SplitDirection.horizontal,
@@ -178,7 +175,6 @@ class _CrossSplit extends State<CrossSplit> {
             color: Colors.red,
             topOrLeft: Row(children: [
               Split(
-                widget._globalContext,
                 "vTop",
                 vRatio,
                 SplitDirection.vertical, cursor,
@@ -189,8 +185,7 @@ class _CrossSplit extends State<CrossSplit> {
               )
             ]),
             bottomOrRight: Row(children: [
-              Split(widget._globalContext, "vBottom", vRatio,
-                  SplitDirection.vertical, cursor,
+              Split("vBottom", vRatio, SplitDirection.vertical, cursor,
                   color: GlobalStyle.grabberColor,
                   topOrLeft: widget.bottomLeft,
                   bottomOrRight: widget.bottomRight)
@@ -212,10 +207,7 @@ class Split extends StatelessWidget {
   late final Widget topOrLeft;
   late final Widget bottomOrRight;
 
-  final GlobalContext _globalContext;
-
   Split(
-      this._globalContext,
       this._name,
       this._ratio,
       this._direction,
@@ -250,17 +242,17 @@ class Split extends StatelessWidget {
         var sizes = getSizes(constraints);
 
         if (sizes["sb1_w"] != null) {
-          for (var item in _globalContext.data.summaryData.data) {
+          for (var item in GlobalContext.data.summaryData.data) {
             double width = (sizes["sb1_w"]! as double) -
                 2 * GlobalStyle.cardPadding -
                 2 * GlobalStyle.cardMargin -
                 2 * GlobalStyle.globalCardPadding -
                 2 * GlobalStyle.globalCardMargin;
             double oldHeight =
-                _globalContext.data.minSubjectTextHeight[item.subjectId]!;
+                GlobalContext.data.minSubjectTextHeight[item.subjectId]!;
             double height =
                 GlobalStyle.getTextHeight(item.subject, context, width);
-            _globalContext.data.minSubjectTextHeight[item.subjectId] =
+            GlobalContext.data.minSubjectTextHeight[item.subjectId] =
                 max(oldHeight, height);
           }
         }

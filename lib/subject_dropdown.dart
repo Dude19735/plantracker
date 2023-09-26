@@ -6,10 +6,6 @@ import 'package:scheduler/context.dart';
 const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
 
 class SubjectDropdown extends StatefulWidget {
-  final GlobalContext _globalContext;
-
-  const SubjectDropdown(this._globalContext);
-
   @override
   State<SubjectDropdown> createState() => _SubjectDropdown();
 }
