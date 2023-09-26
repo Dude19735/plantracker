@@ -4,11 +4,10 @@ import 'package:scheduler/split_controller.dart';
 import 'dart:math';
 
 class TimeTable extends StatelessWidget {
-  final GlobalContext _globalContext;
   final ScrollController _scrollController;
   final SplitController _splitController;
 
-  TimeTable(this._globalContext, this._scrollController, this._splitController);
+  TimeTable(this._scrollController, this._splitController);
 
   Widget _getContainer(BuildContext context, BoxConstraints constraints,
       int numCells, height, int rowIndex, int colIndex, bool fullFrame) {
@@ -45,12 +44,12 @@ class TimeTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int numCells = CurrentConfig.fromDateWindow
-            .difference(CurrentConfig.toDateWindow)
+    int numCells = GlobalContext.fromDateWindow
+            .difference(GlobalContext.toDateWindow)
             .inDays
             .abs() +
         1;
-    var data = _globalContext.data.summaryData.data;
+    var data = GlobalContext.data.summaryData.data;
 
     Widget table = NotificationListener(
       onNotification: (notification) {
@@ -77,8 +76,8 @@ class TimeTable extends StatelessWidget {
                   itemCount: data.length,
                   itemBuilder: (BuildContext context, int index) {
                     int subjectId = data[index].subjectId;
-                    double height = _globalContext.showSubjectsInSummary
-                        ? _globalContext.data.minSubjectTextHeight[subjectId]!
+                    double height = GlobalContext.showSubjectsInSummary
+                        ? GlobalContext.data.minSubjectTextHeight[subjectId]!
                         : 0;
                     height += 2 * GlobalStyle.summaryEntryBarHeight;
                     height += GlobalStyle.cardMargin + GlobalStyle.cardPadding;

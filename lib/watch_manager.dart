@@ -8,10 +8,6 @@ import 'package:scheduler/work_stop_button.dart';
 import 'dart:math';
 
 class WatchManager extends StatefulWidget {
-  final GlobalContext _globalContext;
-
-  const WatchManager(this._globalContext);
-
   @override
   State<WatchManager> createState() => _WatchManager();
 }
@@ -93,22 +89,19 @@ class _WatchManager extends State<WatchManager>
             width: GlobalStyle.clockBarWidth - clockPadding,
             height: GlobalStyle.clockBarWidth - clockPadding),
         Container(height: GlobalStyle.globalCardPadding),
-        GlobalStyle.createShadowContainer(
-            context, SubjectDropdown(widget._globalContext),
+        GlobalStyle.createShadowContainer(context, SubjectDropdown(),
             margin: 0.0,
             borderRadius: radius,
             width: GlobalStyle.clockBarWidth - clockPadding,
             height: GlobalStyle.clockBarWidth / 3),
         Container(height: GlobalStyle.globalCardPadding),
-        GlobalStyle.createShadowContainer(
-            context, WorkStopButton(widget._globalContext),
+        GlobalStyle.createShadowContainer(context, WorkStopButton(),
             margin: 0.0,
             borderRadius: radius,
             width: GlobalStyle.clockBarWidth - clockPadding,
             height: 0.5 * (GlobalStyle.clockBarWidth - clockPadding)),
         Container(height: GlobalStyle.globalCardPadding),
-        GlobalStyle.createShadowContainer(
-            context, WorkButton(widget._globalContext),
+        GlobalStyle.createShadowContainer(context, WorkButton(),
             margin: 0.0,
             borderRadius: radius,
             width: GlobalStyle.clockBarWidth - clockPadding,

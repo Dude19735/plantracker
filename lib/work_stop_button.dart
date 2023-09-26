@@ -7,11 +7,6 @@ import 'package:scheduler/context.dart';
 enum WorkButtonType { red, blue }
 
 class WorkStopButton extends StatefulWidget {
-  final GlobalContext _globalContext;
-  late final String _label;
-
-  WorkStopButton(this._globalContext);
-
   @override
   State<WorkStopButton> createState() => _WorkStopButton();
 }

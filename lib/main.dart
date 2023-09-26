@@ -115,28 +115,28 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       onNotification: (notification) {
         if (notification is DateChangedNotification2) {
           setState(() {
-            CurrentConfig.fromDateWindow = notification.from;
-            CurrentConfig.toDateWindow = notification.to;
+            GlobalContext.fromDateWindow = notification.from;
+            GlobalContext.toDateWindow = notification.to;
           });
           return true;
         }
         if (notification is PageScrolledNotification) {
           setState(() {
             if (!notification.backwards) {
-              Duration d = CurrentConfig.toDateWindow
-                      .difference(CurrentConfig.fromDateWindow) +
+              Duration d = GlobalContext.toDateWindow
+                      .difference(GlobalContext.fromDateWindow) +
                   Duration(days: 1);
-              CurrentConfig.fromDateWindow =
-                  CurrentConfig.fromDateWindow.add(d);
-              CurrentConfig.toDateWindow = CurrentConfig.toDateWindow.add(d);
+              GlobalContext.fromDateWindow =
+                  GlobalContext.fromDateWindow.add(d);
+              GlobalContext.toDateWindow = GlobalContext.toDateWindow.add(d);
             } else {
-              Duration d = CurrentConfig.toDateWindow
-                      .difference(CurrentConfig.fromDateWindow) +
+              Duration d = GlobalContext.toDateWindow
+                      .difference(GlobalContext.fromDateWindow) +
                   Duration(days: 1);
-              CurrentConfig.fromDateWindow =
-                  CurrentConfig.fromDateWindow.subtract(d);
-              CurrentConfig.toDateWindow =
-                  CurrentConfig.toDateWindow.subtract(d);
+              GlobalContext.fromDateWindow =
+                  GlobalContext.fromDateWindow.subtract(d);
+              GlobalContext.toDateWindow =
+                  GlobalContext.toDateWindow.subtract(d);
             }
           });
           return true;
@@ -151,15 +151,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         return false;
       },
       child: CrossSplit(
-        globalContext,
         horizontalInitRatio: GlobalStyle.horizontalInitRatio,
         horizontalGrabberSize: GlobalStyle.horizontalGrabberSize,
         verticalInitRatio: GlobalStyle.verticalInitRatio,
         verticalGrabberSize: GlobalStyle.verticalGrabberSize,
         topLeft: Placeholder(color: Colors.black12),
-        topRight: WorkSchedule(globalContext, _splitController),
-        bottomLeft: Summary(globalContext, _summary),
-        bottomRight: TimeTable(globalContext, _timeTable, _splitController),
+        topRight: WorkSchedule(_splitController),
+        bottomLeft: Summary(_summary),
+        bottomRight: TimeTable(_timeTable, _splitController),
       ),
     );
 
@@ -194,7 +193,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             )),
                         SizedBox(
                             width: GlobalStyle.clockBarWidth,
-                            child: WatchManager(globalContext)),
+                            child: WatchManager()),
                       ],
                     ),
                     Column(

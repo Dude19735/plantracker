@@ -11,10 +11,10 @@ class DateChangedNotification2 extends Notification {
 }
 
 class WorkSchedule extends StatelessWidget {
-  final GlobalContext _globalContext;
   final SplitController _splitController;
+  final ScrollController _innerViewScrollController = ScrollController();
 
-  WorkSchedule(this._globalContext, this._splitController);
+  WorkSchedule(this._splitController);
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +37,9 @@ class WorkSchedule extends StatelessWidget {
               IconButton(
                   onPressed: () {
                     DateChangedNotification2(
-                            CurrentConfig.fromDateWindow
+                            GlobalContext.fromDateWindow
                                 .subtract(Duration(days: 1)),
-                            CurrentConfig.toDateWindow)
+                            GlobalContext.toDateWindow)
                         .dispatch(context);
                   },
                   icon: Icon(Icons.remove)),
@@ -47,21 +47,21 @@ class WorkSchedule extends StatelessWidget {
                 width: 150,
                 child: ElevatedButton.icon(
                     label: Text(DataUtils.getFormatedDateTime(
-                        CurrentConfig.fromDateWindow)),
+                        GlobalContext.fromDateWindow)),
                     style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
                           context: context,
-                          initialDate: CurrentConfig.fromDateWindow,
+                          initialDate: GlobalContext.fromDateWindow,
                           firstDate: GlobalSettings.earliestDate,
-                          lastDate: CurrentConfig.toDateWindow,
+                          lastDate: GlobalContext.toDateWindow,
                           locale: GlobalSettings
-                              .locals[CurrentConfig.currentLocale]);
+                              .locals[GlobalContext.currentLocale]);
 
                       res.then((value) {
                         if (value != null) {
                           DateChangedNotification2(
-                                  value, CurrentConfig.toDateWindow)
+                                  value, GlobalContext.toDateWindow)
                               .dispatch(context);
                         }
                       });
@@ -70,20 +70,20 @@ class WorkSchedule extends StatelessWidget {
               ),
               IconButton(
                   onPressed: () {
-                    if (CurrentConfig.fromDateWindow
-                            .compareTo(CurrentConfig.toDateWindow) <
+                    if (GlobalContext.fromDateWindow
+                            .compareTo(GlobalContext.toDateWindow) <
                         0) {
                       DateChangedNotification2(
-                              CurrentConfig.fromDateWindow
+                              GlobalContext.fromDateWindow
                                   .add(Duration(days: 1)),
-                              CurrentConfig.toDateWindow)
+                              GlobalContext.toDateWindow)
                           .dispatch(context);
                     }
                   },
                   icon: Icon(
                     Icons.add,
-                    color: (CurrentConfig.fromDateWindow
-                                .compareTo(CurrentConfig.toDateWindow) <
+                    color: (GlobalContext.fromDateWindow
+                                .compareTo(GlobalContext.toDateWindow) <
                             0
                         ? Colors.black
                         : Colors.black12),
@@ -93,12 +93,12 @@ class WorkSchedule extends StatelessWidget {
               ),
               IconButton(
                   onPressed: () {
-                    if (CurrentConfig.toDateWindow
-                            .compareTo(CurrentConfig.fromDateWindow) >
+                    if (GlobalContext.toDateWindow
+                            .compareTo(GlobalContext.fromDateWindow) >
                         0) {
                       DateChangedNotification2(
-                              CurrentConfig.fromDateWindow,
-                              CurrentConfig.toDateWindow = CurrentConfig
+                              GlobalContext.fromDateWindow,
+                              GlobalContext.toDateWindow = GlobalContext
                                   .toDateWindow
                                   .subtract(Duration(days: 1)))
                           .dispatch(context);
@@ -106,8 +106,8 @@ class WorkSchedule extends StatelessWidget {
                   },
                   icon: Icon(
                     Icons.remove,
-                    color: (CurrentConfig.toDateWindow
-                                .compareTo(CurrentConfig.fromDateWindow) >
+                    color: (GlobalContext.toDateWindow
+                                .compareTo(GlobalContext.fromDateWindow) >
                             0
                         ? Colors.black
                         : Colors.black12),
@@ -116,21 +116,21 @@ class WorkSchedule extends StatelessWidget {
                 width: 150,
                 child: ElevatedButton.icon(
                     label: Text(DataUtils.getFormatedDateTime(
-                        CurrentConfig.toDateWindow)),
+                        GlobalContext.toDateWindow)),
                     style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
                           context: context,
-                          initialDate: CurrentConfig.toDateWindow,
-                          firstDate: CurrentConfig.fromDateWindow,
+                          initialDate: GlobalContext.toDateWindow,
+                          firstDate: GlobalContext.fromDateWindow,
                           lastDate: GlobalSettings.latestDate,
                           locale: GlobalSettings
-                              .locals[CurrentConfig.currentLocale]);
+                              .locals[GlobalContext.currentLocale]);
 
                       res.then((value) {
                         if (value != null) {
                           DateChangedNotification2(
-                                  CurrentConfig.fromDateWindow, value)
+                                  GlobalContext.fromDateWindow, value)
                               .dispatch(context);
                         }
                       });
@@ -140,8 +140,8 @@ class WorkSchedule extends StatelessWidget {
               IconButton(
                   onPressed: () {
                     DateChangedNotification2(
-                            CurrentConfig.fromDateWindow,
-                            CurrentConfig.toDateWindow = CurrentConfig
+                            GlobalContext.fromDateWindow,
+                            GlobalContext.toDateWindow = GlobalContext
                                 .toDateWindow
                                 .add(Duration(days: 1)))
                         .dispatch(context);
@@ -158,10 +158,15 @@ class WorkSchedule extends StatelessWidget {
           ),
         ),
         Expanded(
-            child: _splitController.widget(
-                context,
-                WorkScheduleInnerView(_globalContext),
-                SplitControllerLocation.top)),
+            child: GestureDetector(
+          onPanUpdate: (details) {
+            print("hello world");
+          },
+          child: _splitController.widget(
+              context,
+              WorkScheduleInnerView(_innerViewScrollController),
+              SplitControllerLocation.top),
+        )),
       ],
     );
   }

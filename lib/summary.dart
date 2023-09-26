@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 
 class SummaryEntry extends StatelessWidget {
-  final GlobalContext _globalContext;
-
   final double _maxWidth;
   final double _maxTime;
   final int _index;
 
-  SummaryEntry(this._globalContext, this._maxWidth, this._maxTime, this._index);
+  SummaryEntry(this._maxWidth, this._maxTime, this._index);
 
   Widget _getBar(double height, double fraction, Color color, String text) {
     return SizedBox(
@@ -42,11 +40,11 @@ class SummaryEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var data = _globalContext.data.summaryData.data;
+    var data = GlobalContext.data.summaryData.data;
     Widget child = Padding(
       padding: const EdgeInsets.all(GlobalStyle.cardPadding),
       child: Wrap(children: [
-        if (_globalContext.showSubjectsInSummary) Text(data[_index].subject),
+        if (GlobalContext.showSubjectsInSummary) Text(data[_index].subject),
         _getBar(
             GlobalStyle.summaryEntryBarHeight,
             _getFraction(_maxTime, data[_index].recorded),
@@ -64,15 +62,14 @@ class SummaryEntry extends StatelessWidget {
 }
 
 class Summary extends StatelessWidget {
-  final GlobalContext _globalContext;
   final ScrollController _scrollController;
 
-  Summary(this._globalContext, this._scrollController);
+  Summary(this._scrollController);
 
   @override
   Widget build(BuildContext context) {
     double maxTime = 0;
-    var data = _globalContext.data.summaryData.data;
+    var data = GlobalContext.data.summaryData.data;
     for (var item in data) {
       if (item.planed > maxTime) maxTime = item.planed;
       if (item.recorded > maxTime) maxTime = item.recorded;
@@ -94,8 +91,7 @@ class Summary extends StatelessWidget {
                 controller: _scrollController,
                 itemCount: data.length,
                 itemBuilder: (BuildContext context, int index) {
-                  Widget x = SummaryEntry(
-                      _globalContext, constraints.maxWidth, maxTime, index);
+                  Widget x = SummaryEntry(constraints.maxWidth, maxTime, index);
                   return x;
                 },
               );

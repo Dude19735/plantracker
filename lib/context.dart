@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
 
-class CurrentConfig {
+class GlobalContext {
   static String currentLocale = 'en-GB';
 
   static DateTime fromDateWindow = DataUtils.getLastMonday(DateTime.now());
   static DateTime toDateWindow =
       fromDateWindow.add(Duration(days: GlobalSettings.initDateWindowSize));
+
+  static bool showSubjectsInSummary = true;
+  static GlobalData data = GlobalData(DataUtils.getLastMonday(DateTime.now()),
+      DataUtils.getNextSunday(DateTime.now()));
 }
 
 class GlobalSettings {
@@ -104,11 +108,7 @@ class GlobalStyle {
           //you can set more BoxShadow() here
         ],
       ),
-      child: GestureDetector(
-          onTapDown: (details) {
-            print("hello world ${details.localPosition}");
-          },
-          child: child),
+      child: child,
     );
   }
 
@@ -134,10 +134,4 @@ class GlobalStyle {
     // print("$numLines, ${numLines * textPainter.height}: $text");
     return numLines * textPainter.height;
   }
-}
-
-class GlobalContext {
-  bool showSubjectsInSummary = true;
-  GlobalData data = GlobalData(DataUtils.getLastMonday(DateTime.now()),
-      DataUtils.getNextSunday(DateTime.now()));
 }
