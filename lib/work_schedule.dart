@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/work_schedule_inner_view.dart';
-import 'package:scheduler/work_schedule_date_bar.dart';
 import 'package:scheduler/split_controller.dart';
-import 'dart:math';
 
 class DateChangedNotification extends Notification {
   final DateTime from;
@@ -14,19 +12,7 @@ class DateChangedNotification extends Notification {
 
 class ScheduleMarkedNotification extends Notification {}
 
-// class WorkSchedule extends StatefulWidget {
-//   final SplitController _splitController;
-
-//   WorkSchedule(this._splitController);
-
-//   @override
-//   State<StatefulWidget> createState() => _WorkSchedule();
-// }
-
-class WorkSchedule extends StatelessWidget // State<WorkSchedule>
-// with SingleTickerProviderStateMixin
-{
-  // bool _initSelection = false;
+class WorkSchedule extends StatelessWidget {
   final SplitController _splitController;
   WorkSchedule(this._splitController);
 
@@ -172,88 +158,11 @@ class WorkSchedule extends StatelessWidget // State<WorkSchedule>
           ),
         ),
         Expanded(
-            // child: GestureDetector(
-            //     onPanUpdate: (details) {
-            //   setState(() {
-            //     _syncVertScrollPos(details.localPosition.dy);
-
-            //     if (_resetConditions(details.delta.dy)) {
-            //       resetSelection();
-            //       return;
-            //     }
-
-            //     double offset = GlobalContext.scheduleWindowScrollOffset;
-            //     //widget._innerViewScrollController.offset;
-            //     GlobalContext.scheduleWindowScrollOffset = offset;
-            //     double yMousePos = details.localPosition.dy + offset;
-            //     double xMousePos = _roundToVFrame(details.localPosition.dx);
-
-            //     if (_clampConditions(xMousePos, yMousePos)) {
-            //       return;
-            //     }
-
-            //     double ypos = _roundToHFrame(yMousePos);
-
-            //     if (GlobalContext.scheduleWindowSelectionBox == null) {
-            //       // stick to beginning of cells
-
-            //       if (_curYPos != ypos) {
-            //         print("start $_curYPos $ypos");
-            //         _curYPos = ypos;
-            //         _curXPos = xMousePos;
-            //         GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
-            //             _curXPos,
-            //             ypos,
-            //             GlobalContext.scheduleWindowCell.width,
-            //             GlobalStyle.scheduleCellHeightPx);
-
-            //         _animBackwards = false;
-            //         // _controller.reset();
-            //         // _controller.forward();
-            //       }
-            //       // else if (_initSelection == false) {
-            //       //   print("init $_curYPos $ypos");
-            //       //   _initSelection = true;
-            //       //   _curYPos = ypos;
-            //       // }
-            //     } else {
-            //       if (_curYPos != ypos) {
-            //         _curYPos = ypos;
-            //         _curXPos = xMousePos;
-            //         GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
-            //             _curXPos,
-            //             GlobalContext.scheduleWindowSelectionBox!.top,
-            //             GlobalContext.scheduleWindowCell.width,
-            //             _curYPos +
-            //                 GlobalStyle.scheduleCellHeightPx -
-            //                 GlobalContext.scheduleWindowSelectionBox!.top);
-
-            //         _animBackwards = details.delta.dy < 0;
-            //         _controller.reset();
-            //         _animBackwards
-            //             ? _controller.reverse(from: 1)
-            //             : _controller.forward();
-            //       } else if (_curXPos != xMousePos) {
-            //         GlobalContext.scheduleWindowSelectionBox = GlobalContext
-            //             .scheduleWindowSelectionBox!
-            //             .translate(xMousePos - _curXPos, 0);
-            //         _curXPos = xMousePos;
-            //       }
-            //     }
-            //   });
-            // },
-            // onPanEnd: (details) {
-            //   setState(() {
-            //     resetSelection();
-            //   });
-            // },
             child: _splitController.widget(
                 context, WorkScheduleInnerView(), SplitControllerLocation.top)),
-        // ),
       ],
     );
 
-    // _innerViewScrollController.jumpTo(GlobalContext.scheduleWindowScrollOffset);
     return view;
   }
 }

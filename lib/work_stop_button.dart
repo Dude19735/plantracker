@@ -1,8 +1,4 @@
-// import 'animated_toggle.dart';
 import 'package:flutter/material.dart';
-import 'package:scheduler/context.dart';
-
-/// Flutter code sample for [IconButton].
 
 enum WorkButtonType { red, blue }
 
