@@ -9,7 +9,7 @@ enum SplitDirection { vertical, horizontal }
 class SyncNotification extends Notification {}
 
 class HoverNotification extends SyncNotification {
-  final name;
+  final String name;
   final PointerHoverEvent details;
   final BoxConstraints constraints;
   HoverNotification(this.name, this.details, this.constraints);

@@ -8,7 +8,7 @@ import 'package:scheduler/work_stop_button.dart';
 import 'dart:math';
 
 class WatchManager extends StatefulWidget {
-  final _width;
+  final double _width;
   const WatchManager(this._width);
 
   @override

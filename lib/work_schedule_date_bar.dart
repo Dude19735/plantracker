@@ -1,36 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
-import 'package:scheduler/work_schedule_date_bar.dart';
 
 class WorkScheduleDateBar extends StatelessWidget {
-  //State<WorkScheduleInnerView> {
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        return
-
-            // SingleChildScrollView(
-            //     padding: EdgeInsets.all(0.0),
-            //     controller: ScrollController(),
-            //     child: GlobalStyle.createShadowContainer(
-            //         context, CustomPaint(painter: _GridPainter()),
-            //         width: constraints.maxWidth,
-            //         height: GlobalStyle.scheduleDateBarHeight,
-            //         shadow: true,
-            //         margin: EdgeInsets.only(
-            //             top: GlobalStyle.summaryCardMargin,
-            //             left: GlobalStyle.summaryCardMargin,
-            //             right: GlobalStyle.summaryCardMargin)));
-
-            Container(
-                height: constraints.maxHeight,
-                width: constraints.maxWidth,
-                margin: EdgeInsets.only(
-                    left: GlobalStyle.summaryCardMargin,
-                    right: GlobalStyle.summaryCardMargin),
-                child: CustomPaint(painter: _GridPainter()));
+        return Container(
+            height: constraints.maxHeight,
+            width: constraints.maxWidth,
+            margin: EdgeInsets.only(
+                left: GlobalStyle.summaryCardMargin,
+                right: GlobalStyle.summaryCardMargin),
+            child: CustomPaint(painter: _GridPainter()));
       },
     );
   }

@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:scheduler/context.dart';
-
-/// Flutter code sample for [DropdownMenu].
 
 const List<String> list = <String>['One', 'Two', 'Three', 'Four'];
 
