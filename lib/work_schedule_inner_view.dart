@@ -5,15 +5,15 @@ import 'dart:ui';
 
 import 'package:scheduler/work_schedule_date_bar.dart';
 
-// class WorkScheduleInnerView extends StatefulWidget {
-//   final ScrollController _controller;
-//   WorkScheduleInnerView(this._controller);
+class WorkScheduleInnerView extends StatefulWidget {
+  WorkScheduleInnerView();
 
-//   @override
-//   State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();
-// }
+  @override
+  State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();
+}
 
-class WorkScheduleInnerView extends StatelessWidget {
+class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
+    with SingleTickerProviderStateMixin {
   //State<WorkScheduleInnerView> {
   // final ScrollController _controller;
 
@@ -21,7 +21,106 @@ class WorkScheduleInnerView extends StatelessWidget {
   //     initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
   //     keepScrollOffset: true);
 
-  WorkScheduleInnerView();
+  final double _topFrame = 0;
+  final double _sideFrame = GlobalStyle.splitterCellMargin;
+
+  late Animation<double> _animation;
+  late AnimationController _controller;
+  late double _curXPos;
+  late double _curYPos;
+  bool _animBackwards = false;
+
+  _WorkScheduleInnerView();
+
+  @override
+  void initState() {
+    super.initState();
+    _curXPos = -1;
+    _curYPos = -1;
+    _controller =
+        AnimationController(duration: Duration(milliseconds: 125), vsync: this);
+    _animation = Tween<double>(begin: 0, end: 1).animate(_controller)
+      ..addListener(() {
+        setState(() {
+          if (GlobalContext.scheduleWindowSelectionBox != null) {
+            double top = GlobalContext.scheduleWindowSelectionBox!.top;
+            GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
+                _curXPos,
+                top,
+                GlobalContext.scheduleWindowCell.width,
+                _curYPos -
+                    top +
+                    _animation.value * GlobalStyle.scheduleCellHeightPx +
+                    (_animBackwards ? GlobalStyle.scheduleCellHeightPx : 0));
+          }
+
+          if (_controller.status == AnimationStatus.completed) {}
+        });
+      });
+  }
+
+  double _roundToVFrame(double xval) {
+    double xpos = (xval - _sideFrame) -
+        (xval - _sideFrame) %
+            (GlobalContext.scheduleWindowCell.width +
+                GlobalStyle.scheduleGridStrokeWidth);
+
+    return xpos;
+  }
+
+  double _roundToHFrame(double yval) {
+    double yvalOffset = yval - _topFrame - GlobalStyle.scheduleDateBarHeight;
+    double ypos = yvalOffset -
+        yvalOffset %
+            (GlobalStyle.scheduleCellHeightPx +
+                GlobalStyle.scheduleGridStrokeWidth);
+
+    return ypos;
+  }
+
+  bool _clampConditions(double xMousePos, double yMousePos) {
+    // print(
+    //     "$yMousePos ${GlobalContext.scheduleWindowInlineRect.height + GlobalStyle.scheduleDateBarHeight - _bottomFrame}");
+    // bool clamp = yMousePos < 0 ||
+    //     yMousePos > GlobalContext.scheduleWindowInlineRect.height ||
+    //     xMousePos < 0 ||
+    //     xMousePos >
+    //         GlobalContext.scheduleWindowInlineRect.width - 2 * _sideFrame;
+
+    bool clamp = !GlobalContext.scheduleWindowInlineRect
+        .contains(Offset(xMousePos, yMousePos));
+
+    return clamp;
+  }
+
+  bool _resetConditions(double dy) {
+    bool reset = dy < 0 &&
+        (GlobalContext.scheduleWindowSelectionBox == null ||
+            GlobalContext.scheduleWindowSelectionBox!.height <
+                GlobalStyle.scheduleCellHeightPx);
+
+    return reset;
+  }
+
+  void _syncVertScrollPos(double ypos) {
+    if (ypos >
+        GlobalContext.scheduleWindowOutlineRect.height +
+            // GlobalStyle.scheduleDateBarHeight -
+            GlobalSettings.scheduleWindowAutoScrollOffset) {
+      GlobalContext.scheduleWindowScrollOffset += 5;
+    } else if (ypos < GlobalSettings.scheduleWindowAutoScrollOffset) {
+      GlobalContext.scheduleWindowScrollOffset -= 5;
+    }
+  }
+
+  void _resetSelection() {
+    _controller.reset();
+    GlobalContext.scheduleWindowSelectionBox = null;
+    _curYPos = -1;
+    _curXPos = -1;
+    _animBackwards = false;
+    // _initSelection = false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +133,11 @@ class WorkScheduleInnerView extends StatelessWidget {
 
         GlobalContext.scheduleWindowInlineRect = Rect.fromLTWH(
             0,
-            0,
+            GlobalStyle.scheduleDateBarHeight,
             constraints.maxWidth,
             GlobalStyle.scheduleCellHeightPx * numBoxes +
-                (numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth);
+                (numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth +
+                GlobalStyle.scheduleDateBarHeight);
 
         var controller = ScrollController(
             initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
@@ -56,7 +156,97 @@ class WorkScheduleInnerView extends StatelessWidget {
 
             GestureDetector(
                 onVerticalDragUpdate: (details) {
-                  print("vertical drag update ${details.localPosition}");
+                  // print("vertical drag update ${details.localPosition}");
+
+                  // _syncVertScrollPos(details.localPosition.dy);
+                  // GlobalContext.scheduleWindowScrollOffset = controller.offset;
+                  setState(() {
+                    if (details.localPosition.dy >
+                        GlobalContext.scheduleWindowOutlineRect.height +
+                            GlobalSettings.scheduleWindowAutoScrollOffset) {
+                      // GlobalContext.scheduleWindowScrollOffset += 5;
+                      controller.jumpTo(controller.offset + 5);
+                    } else if (details.localPosition.dy <
+                        GlobalSettings.scheduleWindowAutoScrollOffset) {
+                      // GlobalContext.scheduleWindowScrollOffset -= 5;
+                      controller.jumpTo(controller.offset - 5);
+                    }
+
+                    // _syncVertScrollPos(details.localPosition.dy);
+
+                    if (_resetConditions(details.delta.dy)) {
+                      _resetSelection();
+                      return;
+                    }
+
+                    // double offset = GlobalContext.scheduleWindowScrollOffset;
+                    //widget._innerViewScrollController.offset;
+                    // GlobalContext.scheduleWindowScrollOffset =
+                    //     controller.offset;
+                    double yMousePos =
+                        details.localPosition.dy + controller.offset;
+                    double xMousePos = _roundToVFrame(details.localPosition.dx);
+
+                    if (_clampConditions(xMousePos, yMousePos)) {
+                      return;
+                    }
+
+                    double ypos = _roundToHFrame(yMousePos);
+
+                    if (GlobalContext.scheduleWindowSelectionBox == null) {
+                      // stick to beginning of cells
+
+                      if (_curYPos != ypos) {
+                        _curYPos = ypos;
+                        _curXPos = xMousePos;
+                        GlobalContext.scheduleWindowSelectionBox =
+                            Rect.fromLTWH(
+                                _curXPos,
+                                ypos,
+                                GlobalContext.scheduleWindowCell.width,
+                                GlobalStyle.scheduleCellHeightPx);
+
+                        _animBackwards = false;
+                        // _controller.reset();
+                        // _controller.forward();
+                      }
+                      // else if (_initSelection == false) {
+                      //   print("init $_curYPos $ypos");
+                      //   _initSelection = true;
+                      //   _curYPos = ypos;
+                      // }
+                    } else {
+                      if (_curYPos != ypos) {
+                        _curYPos = ypos;
+                        _curXPos = xMousePos;
+                        GlobalContext.scheduleWindowSelectionBox =
+                            Rect.fromLTWH(
+                                _curXPos,
+                                GlobalContext.scheduleWindowSelectionBox!.top,
+                                GlobalContext.scheduleWindowCell.width,
+                                _curYPos +
+                                    GlobalStyle.scheduleCellHeightPx -
+                                    GlobalContext
+                                        .scheduleWindowSelectionBox!.top);
+
+                        _animBackwards = details.delta.dy < 0;
+                        _controller.reset();
+                        _animBackwards
+                            ? _controller.reverse(from: 1)
+                            : _controller.forward();
+                      } else if (_curXPos != xMousePos) {
+                        GlobalContext.scheduleWindowSelectionBox = GlobalContext
+                            .scheduleWindowSelectionBox!
+                            .translate(xMousePos - _curXPos, 0);
+                        _curXPos = xMousePos;
+                      }
+                    }
+                  });
+                },
+                onVerticalDragEnd: (details) {
+                  setState(() {
+                    _resetSelection();
+                  });
                 },
                 //   RawGestureDetector(
                 // gestures: <Type, GestureRecognizerFactory>{
@@ -130,6 +320,8 @@ class WorkScheduleInnerView extends StatelessWidget {
               if (notification is ScrollNotification) {
                 GlobalContext.scheduleWindowScrollOffset =
                     notification.metrics.pixels;
+                // print(
+                //     "looool ${controller.offset} ${notification.metrics.pixels}");
               }
               return false;
             },
