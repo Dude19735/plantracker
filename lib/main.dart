@@ -113,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     var split = NotificationListener(
       onNotification: (notification) {
-        if (notification is DateChangedNotification2) {
+        if (notification is DateChangedNotification) {
           setState(() {
             GlobalContext.fromDateWindow = notification.from;
             GlobalContext.toDateWindow = notification.to;
@@ -154,11 +154,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         return false;
       },
       child: CrossSplit(
-        horizontalInitRatio: GlobalStyle.horizontalInitRatio,
-        horizontalGrabberSize: GlobalStyle.horizontalGrabberSize,
-        verticalInitRatio: GlobalStyle.verticalInitRatio,
-        verticalGrabberSize: GlobalStyle.verticalGrabberSize,
-        topLeft: Placeholder(color: Colors.black12),
+        horizontalInitRatio: GlobalStyle.splitterHInitRatio,
+        horizontalGrabberSize: GlobalStyle.splitterHGrabberSize,
+        verticalInitRatio: GlobalStyle.splitterVInitRatio,
+        verticalGrabberSize: GlobalStyle.splitterVGrabberSize,
+        topLeft: SizedBox(),
         topRight: WorkSchedule(_splitController),
         bottomLeft: Summary(_summary),
         bottomRight: TimeTable(_timeTable, _splitController),
@@ -182,23 +182,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                       child: Row(children: [
-                    Column(
-                      children: [
-                        SizedBox(
-                            width: GlobalStyle.clockBarWidth,
-                            height: GlobalStyle.appBarHeight,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: SvgPicture.asset(
-                                "lib/img/title_clock.svg",
-                                alignment: Alignment.centerLeft,
-                              ),
-                            )),
-                        SizedBox(
-                            width: GlobalStyle.clockBarWidth,
-                            child: WatchManager()),
-                      ],
-                    ),
+                    SizedBox(width: GlobalStyle.clockBarWidth),
                     Column(
                       children: [
                         Align(
@@ -207,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             margin: EdgeInsets.only(
                                 right: constraints.maxWidth -
                                     GlobalStyle.clockBarWidth -
-                                    3 * GlobalStyle.tabBarTabWidth),
+                                    3 * GlobalStyle.appBarTabBarTabWidth),
                             height: GlobalStyle.appBarHeight,
                             child: TabBar(
                               padding: EdgeInsets.zero,
@@ -216,19 +200,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                               isScrollable: true,
                               tabs: [
                                 SizedBox(
-                                  width: GlobalStyle.tabBarTabWidth,
+                                  width: GlobalStyle.appBarTabBarTabWidth,
                                   child: Tab(
                                     icon: Icon(Icons.school),
                                   ),
                                 ),
                                 SizedBox(
-                                  width: GlobalStyle.tabBarTabWidth,
+                                  width: GlobalStyle.appBarTabBarTabWidth,
                                   child: Tab(
                                     icon: Icon(Icons.menu_book),
                                   ),
                                 ),
                                 SizedBox(
-                                  width: GlobalStyle.tabBarTabWidth,
+                                  width: GlobalStyle.appBarTabBarTabWidth,
                                   child: Tab(
                                     icon: Icon(Icons.settings),
                                   ),
@@ -247,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                   controller: _controller,
                                   children: [
                                     split,
-                                    Container(color: Colors.amber),
+                                    Container(color: Colors.white),
                                     Container(color: Colors.blue)
                                   ]),
                             ),
@@ -258,6 +242,36 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   ])),
                 ],
               ),
+              Row(children: [
+                DragToMoveArea(
+                  child: Material(
+                    clipBehavior: Clip.none,
+                    elevation: 20,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                            width: GlobalStyle.clockBarWidth - 1,
+                            height: GlobalStyle.appBarHeight,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: SvgPicture.asset(
+                                "lib/img/title_clock.svg",
+                                alignment: Alignment.centerLeft,
+                              ),
+                            )),
+                        Expanded(
+                            child: WatchManager(GlobalStyle.clockBarWidth -
+                                GlobalStyle.appBarSeparatorWidth -
+                                2 * GlobalStyle.clockBarPadding)),
+                      ],
+                    ),
+                  ),
+                ),
+                VerticalDivider(
+                  thickness: GlobalStyle.appBarSeparatorWidth,
+                  width: GlobalStyle.appBarSeparatorWidth,
+                ),
+              ]),
               const DragToResizeArea(
                 enableResizeEdges: [
                   ResizeEdge.topLeft,

@@ -52,10 +52,10 @@ class CrossSplit extends StatefulWidget {
   final Widget bottomRight;
 
   CrossSplit(
-      {this.horizontalInitRatio = GlobalStyle.horizontalInitRatio,
-      this.horizontalGrabberSize = GlobalStyle.horizontalGrabberSize,
-      this.verticalInitRatio = GlobalStyle.verticalInitRatio,
-      this.verticalGrabberSize = GlobalStyle.verticalGrabberSize,
+      {this.horizontalInitRatio = GlobalStyle.splitterHInitRatio,
+      this.horizontalGrabberSize = GlobalStyle.splitterHGrabberSize,
+      this.verticalInitRatio = GlobalStyle.splitterVInitRatio,
+      this.verticalGrabberSize = GlobalStyle.splitterVGrabberSize,
       this.topLeft = const Placeholder(),
       this.topRight = const Placeholder(),
       this.bottomLeft = const Placeholder(),
@@ -179,14 +179,14 @@ class _CrossSplit extends State<CrossSplit> {
                 vRatio,
                 SplitDirection.vertical, cursor,
                 //this,
-                color: GlobalStyle.grabberColor,
+                color: GlobalStyle.splitterGrabberColor,
                 topOrLeft: widget.topLeft,
                 bottomOrRight: widget.topRight,
               )
             ]),
             bottomOrRight: Row(children: [
               Split("vBottom", vRatio, SplitDirection.vertical, cursor,
-                  color: GlobalStyle.grabberColor,
+                  color: GlobalStyle.splitterGrabberColor,
                   topOrLeft: widget.bottomLeft,
                   bottomOrRight: widget.bottomRight)
             ]),
@@ -213,7 +213,7 @@ class Split extends StatelessWidget {
       this._direction,
       // this._parent,
       this._cursor,
-      {this.color = GlobalStyle.grabberColor,
+      {this.color = GlobalStyle.splitterGrabberColor,
       this.topOrLeft = const Placeholder(),
       this.bottomOrRight = const Placeholder()});
 
@@ -244,10 +244,9 @@ class Split extends StatelessWidget {
         if (sizes["sb1_w"] != null) {
           for (var item in GlobalContext.data.summaryData.data) {
             double width = (sizes["sb1_w"]! as double) -
-                2 * GlobalStyle.cardPadding -
-                2 * GlobalStyle.cardMargin -
-                2 * GlobalStyle.globalCardPadding -
-                2 * GlobalStyle.globalCardMargin;
+                // 2 * GlobalStyle.summaryCardPadding -
+                // 2 * GlobalStyle.cardMargin -
+                2 * GlobalStyle.splitterCellMargin;
             double oldHeight =
                 GlobalContext.data.minSubjectTextHeight[item.subjectId]!;
             double height =
@@ -257,51 +256,50 @@ class Split extends StatelessWidget {
           }
         }
 
-        return ClipRect(
-          child: SizedBox(
-              height: constraints.maxHeight,
-              child: Flex(
-                direction: _direction == SplitDirection.horizontal
-                    ? Axis.vertical
-                    : Axis.horizontal,
-                children: [
-                  SizedBox(
-                    width: sizes["sb1_w"],
-                    height: sizes["sb1_h"],
-                    child: topOrLeft,
-                  ),
-                  MouseRegion(
-                    cursor: _cursor.cursor,
-                    child: GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        child: Container(
-                          height: _direction == SplitDirection.horizontal
-                              ? _ratio.grabSize
-                              : constraints.maxHeight,
-                          width: _direction == SplitDirection.horizontal
-                              ? constraints.maxWidth
-                              : _ratio.grabSize,
-                          color: color,
-                        ),
-                        onPanUpdate: (DragUpdateDetails details) {
-                          PanNotification(_name, details, constraints)
-                              .dispatch(context);
-                        },
-                        onTapDown: (TapDownDetails details) {
-                          StartNotification(_name, details, constraints)
-                              .dispatch(context);
-                        }),
-                    onHover: (PointerHoverEvent details) {
-                      HoverNotification(_name, details, constraints)
+        return SizedBox(
+          height: constraints.maxHeight,
+          child: Flex(
+            direction: _direction == SplitDirection.horizontal
+                ? Axis.vertical
+                : Axis.horizontal,
+            children: [
+              SizedBox(
+                width: sizes["sb1_w"],
+                height: sizes["sb1_h"],
+                child: ClipRect(child: topOrLeft),
+              ),
+              MouseRegion(
+                cursor: _cursor.cursor,
+                child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    child: Container(
+                      height: _direction == SplitDirection.horizontal
+                          ? _ratio.grabSize
+                          : constraints.maxHeight,
+                      width: _direction == SplitDirection.horizontal
+                          ? constraints.maxWidth
+                          : _ratio.grabSize,
+                      color: color,
+                    ),
+                    onPanUpdate: (DragUpdateDetails details) {
+                      PanNotification(_name, details, constraints)
                           .dispatch(context);
                     },
-                  ),
-                  SizedBox(
-                      width: sizes["sb2_w"],
-                      height: sizes["sb2_h"],
-                      child: bottomOrRight)
-                ],
-              )),
+                    onTapDown: (TapDownDetails details) {
+                      StartNotification(_name, details, constraints)
+                          .dispatch(context);
+                    }),
+                onHover: (PointerHoverEvent details) {
+                  HoverNotification(_name, details, constraints)
+                      .dispatch(context);
+                },
+              ),
+              SizedBox(
+                  width: sizes["sb2_w"],
+                  height: sizes["sb2_h"],
+                  child: ClipRect(child: bottomOrRight))
+            ],
+          ),
         );
       }),
     );

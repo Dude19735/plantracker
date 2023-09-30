@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:scheduler/data_gen.dart';
 import 'package:scheduler/data_columns.dart';
 import 'package:scheduler/data_utils.dart';
@@ -84,6 +85,7 @@ typedef TSchedulePlanData = Map<int, List<SchedulePlanData>>;
 
 class Data<D> {
   late final D data;
+  late final Map<int, Rect> rects;
 
   Data.init() {
     if (D == TSummaryData) {
