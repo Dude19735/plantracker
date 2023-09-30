@@ -1,6 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'dart:ui';
+
+import 'package:scheduler/work_schedule_date_bar.dart';
 
 // class WorkScheduleInnerView extends StatefulWidget {
 //   final ScrollController _controller;
@@ -12,8 +15,13 @@ import 'dart:ui';
 
 class WorkScheduleInnerView extends StatelessWidget {
   //State<WorkScheduleInnerView> {
-  final ScrollController _controller;
-  WorkScheduleInnerView(this._controller);
+  // final ScrollController _controller;
+
+  // final ScrollController _controller = ScrollController(
+  //     initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
+  //     keepScrollOffset: true);
+
+  WorkScheduleInnerView();
 
   @override
   Widget build(BuildContext context) {
@@ -28,56 +36,105 @@ class WorkScheduleInnerView extends StatelessWidget {
             0,
             0,
             constraints.maxWidth,
-            GlobalStyle.scheduleBoxHeightPx * numBoxes +
-                2 *
-                    (GlobalStyle.globalCardPadding +
-                        GlobalStyle.globalCardMargin) +
+            GlobalStyle.scheduleCellHeightPx * numBoxes +
                 (numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth);
 
-        return Stack(children: [
-          // NotificationListener(
-          //   onNotification: (notification) {
-          //     if (notification is UserScrollNotification) {
-          //       print("hello world");
-          //       return false;
-          //     }
-          //     return false;
-          //   },
-          // child:
-          SingleChildScrollView(
-            controller: _controller,
-            child: Container(
-              margin: const EdgeInsets.all(GlobalStyle.globalCardMargin),
-              width: constraints.maxWidth,
-              height: GlobalContext.scheduleWindowInlineRect.height,
-              child: Padding(
-                padding: EdgeInsets.all(GlobalStyle.globalCardPadding),
-                child: GlobalStyle.createShadowContainer(
-                    context,
-                    // GestureDetector(
-                    // onVerticalDragUpdate: (details) {
-                    //   //   // if (details.localPosition.dy >
-                    //   //   //     constraints.maxHeight) {
-                    //   //   //   widget._controller
-                    //   //   //       .jumpTo(details.localPosition.dy);
-                    //   //   // }
-                    //   //   // widget._controller.animateTo(
-                    //   //   //     details.localPosition.dx,
-                    //   //   //     duration: Duration(seconds: 1),
-                    //   //   //     curve: Curves.linear);
-                    //   //   // UserScrollNotification(metrics: metrics, context: context, direction: direction)
-                    // },
-                    // child:
-                    CustomPaint(painter: _GridPainter())),
-              ),
-            ),
-          ),
-          // Container(
-          //     color: Colors.black12.withAlpha(125),
-          //     child: Center(
-          //         child: LoadingAnimationWidget.newtonCradle(
-          //             color: Colors.white, size: 200.0)))
-        ]);
+        var controller = ScrollController(
+            initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
+            keepScrollOffset: true);
+
+        var view = //Stack(children: [
+            // NotificationListener(
+            //   onNotification: (notification) {
+            //     if (notification is UserScrollNotification) {
+            //       print("hello world");
+            //       return false;
+            //     }
+            //     return false;
+            //   },
+            // child:
+
+            GestureDetector(
+                onVerticalDragUpdate: (details) {
+                  print("vertical drag update ${details.localPosition}");
+                },
+                //   RawGestureDetector(
+                // gestures: <Type, GestureRecognizerFactory>{
+                //   PanGestureRecognizer:
+                //       GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
+                //     () => PanGestureRecognizer(),
+                //     (PanGestureRecognizer instance) {
+                //       instance.onUpdate = (details) {
+                //         print(details);
+                //       };
+                //       // ..onTapDown = (TapDownDetails details) { setState(() { _last = 'down'; }); }
+                //       // ..onTapUp = (TapUpDetails details) { setState(() { _last = 'up'; }); }
+                //       // ..onTap = () { setState(() { _last = 'tap'; }); }
+                //       // ..onTapCancel = () { setState(() { _last = 'cancel'; }); };
+                //     },
+                //   ),
+                // },
+                child: CustomScrollView(controller: controller, slivers: [
+                  // SliverAppBar(
+                  //   pinned: true,
+                  //   expandedHeight: 90,
+                  //   flexibleSpace:
+                  //       FlexibleSpaceBar(background: Container(color: Colors.white)),
+                  // ),
+                  SliverAppBar(
+                    pinned: true,
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    surfaceTintColor: Colors.transparent,
+                    foregroundColor: Colors.transparent,
+                    shadowColor: Colors.black,
+                    flexibleSpace: WorkScheduleDateBar(),
+                  ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        // return Container(
+                        //     color: Colors.white,
+                        //     width: constraints.maxWidth,
+                        //     height: GlobalContext.scheduleWindowInlineRect.height);
+                        return Container(
+                            margin:
+                                EdgeInsets.all(GlobalStyle.summaryCardMargin),
+                            width: constraints.maxWidth,
+                            height:
+                                GlobalContext.scheduleWindowInlineRect.height,
+                            child: CustomPaint(painter: _GridPainter()));
+                      },
+                      childCount: 1,
+                    ),
+                  )
+                ]
+
+                    // child: Container(
+                    //     color: Colors.red,
+                    //     margin: EdgeInsets.only(
+                    //         left: GlobalStyle.cardMargin,
+                    //         right: GlobalStyle.cardMargin,
+                    //         bottom: GlobalStyle.cardMargin)),
+                    ));
+        // );
+        // Container(
+        //     color: Colors.black12.withAlpha(125),
+        //     child: Center(
+        //         child: LoadingAnimationWidget.newtonCradle(
+        //             color: Colors.white, size: 200.0)))
+        // ]);
+
+        return NotificationListener(
+            onNotification: (notification) {
+              if (notification is ScrollNotification) {
+                GlobalContext.scheduleWindowScrollOffset =
+                    notification.metrics.pixels;
+              }
+              return false;
+            },
+            child: view);
+        // return view;
       },
     );
   }
@@ -113,7 +170,7 @@ class _GridPainter extends CustomPainter {
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
             ccsbx;
     GlobalContext.scheduleWindowCell =
-        Rect.fromLTWH(0, 0, boxWidth, GlobalStyle.scheduleBoxHeightPx);
+        Rect.fromLTWH(0, 0, boxWidth, GlobalStyle.scheduleCellHeightPx);
 
     canvas.drawRect(
         Rect.fromLTWH(0, 0, size.width, size.height), backgroundPainter);
@@ -126,7 +183,7 @@ class _GridPainter extends CustomPainter {
       xOffset += boxWidth + GlobalStyle.scheduleGridStrokeWidth;
     }
 
-    double yOffset = GlobalStyle.scheduleBoxHeightPx +
+    double yOffset = GlobalStyle.scheduleCellHeightPx +
         GlobalStyle.scheduleGridStrokeWidth / 2;
     int counter = 1;
     while (yOffset < size.height - GlobalStyle.scheduleGridStrokeWidth) {
@@ -138,8 +195,8 @@ class _GridPainter extends CustomPainter {
       canvas.drawLine(
           Offset(0, yOffset), Offset(size.width, yOffset), gridPainter);
       counter++;
-      yOffset +=
-          GlobalStyle.scheduleGridStrokeWidth + GlobalStyle.scheduleBoxHeightPx;
+      yOffset += GlobalStyle.scheduleGridStrokeWidth +
+          GlobalStyle.scheduleCellHeightPx;
     }
 
     // var rect = Rect.fromLTWH(

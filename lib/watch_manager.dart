@@ -8,6 +8,9 @@ import 'package:scheduler/work_stop_button.dart';
 import 'dart:math';
 
 class WatchManager extends StatefulWidget {
+  final _width;
+  const WatchManager(this._width);
+
   @override
   State<WatchManager> createState() => _WatchManager();
 }
@@ -57,56 +60,69 @@ class _WatchManager extends State<WatchManager>
 
   @override
   Widget build(BuildContext context) {
-    const double clockPadding = 15;
-    const double radius = 5.0;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        GlobalStyle.createShadowContainer(
-            context,
-            WorkToggler(
-                onHitL: () {
-                  print("L");
-                },
-                onHitR: () {
-                  print("R");
-                },
-                restingColorL: GlobalStyle.markerRed,
-                restingColorR: GlobalStyle.markerRed,
-                handleRadius: 15.0,
-                iconAssetStr: ["lib/img/dismiss.svg", "lib/img/dismiss.svg"]),
-            width: GlobalStyle.clockBarWidth - clockPadding,
-            height: 30.0,
-            color: Colors.transparent),
-        Container(height: GlobalStyle.globalCardPadding),
-        GlobalStyle.createShadowContainer(
-            context,
-            CustomPaint(
-                painter: WatchPainter(GlobalStyle.clockBarWidth - clockPadding,
-                    watchState, watchState.getArc(animation))),
-            margin: 0.0,
-            borderRadius: GlobalStyle.clockBarWidth / 2,
-            width: GlobalStyle.clockBarWidth - clockPadding,
-            height: GlobalStyle.clockBarWidth - clockPadding),
-        Container(height: GlobalStyle.globalCardPadding),
-        GlobalStyle.createShadowContainer(context, SubjectDropdown(),
-            margin: 0.0,
-            borderRadius: radius,
-            width: GlobalStyle.clockBarWidth - clockPadding,
-            height: GlobalStyle.clockBarWidth / 3),
-        Container(height: GlobalStyle.globalCardPadding),
-        GlobalStyle.createShadowContainer(context, WorkStopButton(),
-            margin: 0.0,
-            borderRadius: radius,
-            width: GlobalStyle.clockBarWidth - clockPadding,
-            height: 0.5 * (GlobalStyle.clockBarWidth - clockPadding)),
-        Container(height: GlobalStyle.globalCardPadding),
-        GlobalStyle.createShadowContainer(context, WorkButton(),
-            margin: 0.0,
-            borderRadius: radius,
-            width: GlobalStyle.clockBarWidth - clockPadding,
-            height: GlobalStyle.clockBarWidth * 1.5),
-      ],
+    final double bWidth = widget._width;
+    return SizedBox(
+      child: Padding(
+        padding: const EdgeInsets.all(GlobalStyle.clockBarPadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            GlobalStyle.createShadowContainer(
+                context,
+                WorkToggler(
+                    onHitL: () {
+                      print("L");
+                    },
+                    onHitR: () {
+                      print("R");
+                    },
+                    restingColorL: GlobalStyle.markerRed,
+                    restingColorR: GlobalStyle.markerRed,
+                    handleRadius: 15.0,
+                    iconAssetStr: [
+                      "lib/img/dismiss.svg",
+                      "lib/img/dismiss.svg"
+                    ]),
+                width: bWidth,
+                height: 30.0,
+                margin: EdgeInsets.all(0.0),
+                padding: EdgeInsets.all(0.0),
+                color: Colors.transparent),
+            Container(height: GlobalStyle.clockBarSpacingDistance),
+            GlobalStyle.createShadowContainer(
+                context,
+                CustomPaint(
+                    painter: WatchPainter(
+                        bWidth, watchState, watchState.getArc(animation))),
+                margin: EdgeInsets.all(0.0),
+                padding: EdgeInsets.all(0.0),
+                borderRadius: bWidth / 2,
+                width: bWidth,
+                height: bWidth),
+            Container(height: GlobalStyle.clockBarSpacingDistance),
+            GlobalStyle.createShadowContainer(context, SubjectDropdown(),
+                margin: EdgeInsets.all(0.0),
+                padding: EdgeInsets.all(0.0),
+                borderRadius: GlobalStyle.clockBarBoxRadius,
+                width: bWidth,
+                height: bWidth / 3),
+            Container(height: GlobalStyle.clockBarSpacingDistance),
+            GlobalStyle.createShadowContainer(context, WorkStopButton(),
+                margin: EdgeInsets.all(0.0),
+                padding: EdgeInsets.all(0.0),
+                borderRadius: GlobalStyle.clockBarBoxRadius,
+                width: bWidth,
+                height: bWidth),
+            Container(height: GlobalStyle.clockBarSpacingDistance),
+            GlobalStyle.createShadowContainer(context, WorkButton(),
+                margin: EdgeInsets.all(0.0),
+                padding: EdgeInsets.all(0.0),
+                borderRadius: GlobalStyle.clockBarBoxRadius,
+                width: bWidth,
+                height: bWidth * 1.5),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -156,7 +172,7 @@ class WatchPainter extends CustomPainter {
   final double _size;
   final WatchState _watchState;
   final double strokeWidth = 15;
-  final double fontSize = 17;
+  final double fontSize = 12;
 
   Paint backgroundPainter = Paint();
   Paint redCirclePainter = Paint();

@@ -63,6 +63,7 @@ class SplitController {
         return false;
       },
       child: PageView.builder(
+        clipBehavior: Clip.none,
         onPageChanged: (page) {
           if (page != _currentPage) {
             bool backwards = page < _currentPage;

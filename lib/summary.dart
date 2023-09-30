@@ -41,23 +41,21 @@ class SummaryEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var data = GlobalContext.data.summaryData.data;
-    Widget child = Padding(
-      padding: const EdgeInsets.all(GlobalStyle.cardPadding),
-      child: Wrap(children: [
-        if (GlobalContext.showSubjectsInSummary) Text(data[_index].subject),
-        _getBar(
-            GlobalStyle.summaryEntryBarHeight,
-            _getFraction(_maxTime, data[_index].recorded),
-            Colors.blue,
-            "${data[_index].recorded}"),
-        _getBar(
-            GlobalStyle.summaryEntryBarHeight,
-            _getFraction(_maxTime, data[_index].planed),
-            Colors.orange,
-            "${data[_index].planed}"),
-      ]),
-    );
-    return GlobalStyle.createShadowContainer(context, child);
+    Widget child = Wrap(children: [
+      if (GlobalContext.showSubjectsInSummary) Text(data[_index].subject),
+      _getBar(
+          GlobalStyle.summaryEntryBarHeight,
+          _getFraction(_maxTime, data[_index].recorded),
+          Colors.blue,
+          "${data[_index].recorded}"),
+      _getBar(
+          GlobalStyle.summaryEntryBarHeight,
+          _getFraction(_maxTime, data[_index].planed),
+          Colors.orange,
+          "${data[_index].planed}"),
+    ]);
+    return GlobalStyle.createShadowContainer(context, child,
+        margin: EdgeInsets.all(GlobalStyle.summaryCardMargin));
   }
 }
 
@@ -75,30 +73,24 @@ class Summary extends StatelessWidget {
       if (item.recorded > maxTime) maxTime = item.recorded;
     }
 
-    return Container(
-      margin: EdgeInsets.all(GlobalStyle.globalCardMargin),
-      color: Colors.transparent,
-      child: Padding(
-        padding: const EdgeInsets.all(GlobalStyle.globalCardPadding),
-        child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-          return DraggableScrollableSheet(
-            initialChildSize: 1.0,
-            minChildSize: 0.999999,
-            builder: (BuildContext context, ScrollController scrollController) {
-              return ListView.builder(
-                clipBehavior: Clip.none,
-                controller: _scrollController,
-                itemCount: data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  Widget x = SummaryEntry(constraints.maxWidth, maxTime, index);
-                  return x;
-                },
-              );
-            },
-          );
-        }),
-      ),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return DraggableScrollableSheet(
+          initialChildSize: 1.0,
+          minChildSize: 0.999999,
+          builder: (BuildContext context, ScrollController scrollController) {
+            return ListView.builder(
+              clipBehavior: Clip.none,
+              controller: _scrollController,
+              itemCount: data.length,
+              itemBuilder: (BuildContext context, int index) {
+                Widget x = SummaryEntry(constraints.maxWidth, maxTime, index);
+                return x;
+              },
+            );
+          },
+        );
+      },
     );
   }
 }
