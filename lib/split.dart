@@ -172,21 +172,21 @@ class _CrossSplit extends State<CrossSplit> {
             hRatio,
             SplitDirection.horizontal,
             cursor,
-            color: Colors.red,
+            color: GlobalStyle.splitterHGrabberColor,
             topOrLeft: Row(children: [
               Split(
                 "vTop",
                 vRatio,
                 SplitDirection.vertical, cursor,
                 //this,
-                color: GlobalStyle.splitterGrabberColor,
+                color: GlobalStyle.splitterVGrabberColor,
                 topOrLeft: widget.topLeft,
                 bottomOrRight: widget.topRight,
               )
             ]),
             bottomOrRight: Row(children: [
               Split("vBottom", vRatio, SplitDirection.vertical, cursor,
-                  color: GlobalStyle.splitterGrabberColor,
+                  color: GlobalStyle.splitterVGrabberColor,
                   topOrLeft: widget.bottomLeft,
                   bottomOrRight: widget.bottomRight)
             ]),
@@ -213,7 +213,7 @@ class Split extends StatelessWidget {
       this._direction,
       // this._parent,
       this._cursor,
-      {this.color = GlobalStyle.splitterGrabberColor,
+      {this.color = GlobalStyle.splitterVGrabberColor,
       this.topOrLeft = const Placeholder(),
       this.bottomOrRight = const Placeholder()});
 
@@ -273,14 +273,29 @@ class Split extends StatelessWidget {
                 child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     child: Container(
-                      height: _direction == SplitDirection.horizontal
-                          ? _ratio.grabSize
-                          : constraints.maxHeight,
-                      width: _direction == SplitDirection.horizontal
-                          ? constraints.maxWidth
-                          : _ratio.grabSize,
-                      color: color,
-                    ),
+                        // height: _direction == SplitDirection.horizontal
+                        //     ? _ratio.grabSize
+                        //     : constraints.maxHeight,
+                        // width: _direction == SplitDirection.horizontal
+                        //     ? constraints.maxWidth
+                        //     : _ratio.grabSize,
+                        color: color,
+                        child: _direction == SplitDirection.horizontal
+                            ? RotatedBox(
+                                quarterTurns: 1,
+                                child: VerticalDivider(
+                                  width: _ratio.grabSize,
+                                  thickness: 2,
+                                  indent: GlobalStyle.summaryCardMargin,
+                                  endIndent: GlobalStyle.summaryCardMargin,
+                                ),
+                              )
+                            : VerticalDivider(
+                                width: _ratio.grabSize,
+                                thickness: 4,
+                                indent: GlobalStyle.summaryCardMargin,
+                                endIndent: GlobalStyle.summaryCardMargin,
+                              )),
                     onPanUpdate: (DragUpdateDetails details) {
                       PanNotification(_name, details, constraints)
                           .dispatch(context);
