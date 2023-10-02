@@ -41,19 +41,22 @@ class SummaryEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var data = GlobalContext.data.summaryData.data;
-    Widget child = Wrap(children: [
-      if (GlobalContext.showSubjectsInSummary) Text(data[_index].subject),
-      _getBar(
-          GlobalStyle.summaryEntryBarHeight,
-          _getFraction(_maxTime, data[_index].recorded),
-          Colors.blue,
-          "${data[_index].recorded}"),
-      _getBar(
-          GlobalStyle.summaryEntryBarHeight,
-          _getFraction(_maxTime, data[_index].planed),
-          Colors.orange,
-          "${data[_index].planed}"),
-    ]);
+    Widget child = Padding(
+      padding: const EdgeInsets.all(GlobalStyle.summaryCardPadding),
+      child: Wrap(children: [
+        if (GlobalContext.showSubjectsInSummary) Text(data[_index].subject),
+        _getBar(
+            GlobalStyle.summaryEntryBarHeight,
+            _getFraction(_maxTime, data[_index].recorded),
+            Colors.blue,
+            "${data[_index].recorded}"),
+        _getBar(
+            GlobalStyle.summaryEntryBarHeight,
+            _getFraction(_maxTime, data[_index].planed),
+            Colors.orange,
+            "${data[_index].planed}"),
+      ]),
+    );
     return GlobalStyle.createShadowContainer(context, child,
         margin: EdgeInsets.all(GlobalStyle.summaryCardMargin));
   }
