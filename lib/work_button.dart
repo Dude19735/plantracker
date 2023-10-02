@@ -33,8 +33,8 @@ class _WorkButton extends State<WorkButton> {
                         Icons.keyboard_double_arrow_left_outlined
                       ],
                       minSliderRatio: 0.5,
-                      restingColorL: GlobalStyle.markerRed,
-                      restingColorR: GlobalStyle.markerBlue,
+                      restingColorL: GlobalStyle.markerRed(context),
+                      restingColorR: GlobalStyle.markerBlue(context),
                     ))),
           ],
         ),

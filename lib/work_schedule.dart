@@ -21,7 +21,7 @@ class WorkSchedule extends StatelessWidget {
     var view = Column(
       children: [
         Container(
-          color: GlobalStyle.scheduleDateSelectorColor,
+          color: GlobalStyle.scheduleDateSelectorColor(context),
           width: double.infinity,
           height: GlobalStyle.scheduleDateSelectorHeight,
           child: Flex(
