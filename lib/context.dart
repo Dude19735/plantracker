@@ -49,21 +49,41 @@ class GlobalStyle {
   static const double appBarHeight = 45;
   static const double appBarTabBarTabWidth = 70.0;
   static const double appBarSeparatorWidth = 1;
+  static const double shadowOpacity = 0.1;
+
+  static Color appBarShadowColor(BuildContext context) => Theme.of(context)
+      .colorScheme
+      .shadow
+      .withOpacity(GlobalStyle.shadowOpacity);
 
   // ===========================================================================
   // schedule colors and paint settings
   // ===========================================================================
   static const double scheduleDateSelectorHeight = 40;
   static const double scheduleDateBarHeight = 63;
-  static const Color scheduleGridColorBox = Colors.black12;
-  static const Color scheduleGridColorFullHour = Colors.black54;
   static const double scheduleGridStrokeWidth = 1.0;
   static const double scheduleCellHeightPx = 30;
-  static final Color scheduleSelectionColor = Colors.blueGrey.withAlpha(50);
 
-  // marker colors
-  static const Color markerBlue = Color.fromARGB(255, 48, 110, 176);
-  static const Color markerRed = Color.fromARGB(255, 176, 48, 48);
+  static Color scheduleGridColorBox(BuildContext context) => Colors.black12;
+  static Color scheduleGridColorFullHour(BuildContext context) =>
+      Colors.black54;
+  static Color scheduleSelectionColor(BuildContext context) =>
+      Colors.blueGrey.withAlpha(50);
+  static Color scheduleDateSelectorColor(BuildContext context) =>
+      Colors.transparent;
+  static Color markerBlue(BuildContext context) =>
+      Color.fromARGB(255, 48, 110, 176);
+  static Color markerRed(BuildContext context) =>
+      Color.fromARGB(255, 176, 48, 48);
+
+  // ===========================================================================
+  // Time table colors and paint settings
+  // ===========================================================================
+  static Color timeTableCellShadeColorFull(BuildContext context) =>
+      Colors.green;
+  static Color timeTableCellShadeColorEmpty(BuildContext context) =>
+      Colors.transparent;
+  static Color timeTableCellColor(BuildContext context) => Colors.transparent;
 
   // ===========================================================================
   // splitter and grabber settings
@@ -72,7 +92,11 @@ class GlobalStyle {
   static const double splitterHGrabberSize = 10;
   static const double splitterVInitRatio = 0.75;
   static const double splitterVGrabberSize = 10;
-  static const Color splitterGrabberColor = Colors.green;
+
+  static Color splitterVGrabberColor(BuildContext context) =>
+      Colors.transparent;
+  static Color splitterHGrabberColor(BuildContext context) =>
+      Colors.transparent;
 
   // distance between edge of group of containers and surroundings
   static const double splitterCellMargin = 8.0;
@@ -85,11 +109,11 @@ class GlobalStyle {
   // distance between edge of individual container and surroundings
   static const double summaryCardMargin = 6.0; //5.0;
   // distance between edge of individual container and card contents
-  // static const double summaryCardPadding = 15.0; //5.0;
+  static const double summaryCardPadding = 5.0; //5.0;
   static const double summaryCardBorderRadius = 5.0;
-
-  static const Color globalCardColor = Colors.black12;
   static const double summaryEntryBarHeight = 20;
+
+  static Color globalCardColor(BuildContext context) => Colors.black12;
 
   // ===========================================================================
   // clock bar settings
@@ -109,28 +133,30 @@ class GlobalStyle {
       borderRadius = GlobalStyle.summaryCardBorderRadius,
       width,
       height,
-      color = Colors.white,
-      bool shadow = true}) {
+      color = Colors.transparent,
+      shadowColor,
+      bool shadow = true,
+      bool border = false}) {
     return Container(
       width: width,
       height: height,
       margin: margin,
       decoration: BoxDecoration(
         color: color,
-        border: Border(
-            left: BorderSide.none,
-            right: BorderSide.none,
-            top: BorderSide.none,
-            bottom: BorderSide.none),
+        border: border
+            ? Border.all(color: GlobalStyle.scheduleGridColorBox(context))
+            : Border(
+                left: BorderSide.none,
+                right: BorderSide.none,
+                top: BorderSide.none,
+                bottom: BorderSide.none),
         borderRadius:
             BorderRadius.circular(borderRadius), //border corner radius
         boxShadow: shadow
             ? [
                 BoxShadow(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .shadow
-                      .withOpacity(0.5), //color of shadow
+                  color: shadowColor ??
+                      GlobalStyle.appBarShadowColor(context), //color of shadow
                   spreadRadius: 3, //spread radius
                   blurRadius: 4, // blur radius
                   offset: Offset(0, 0), // changes position of shadow
