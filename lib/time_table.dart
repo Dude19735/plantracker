@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
+import 'package:scheduler/data.dart';
+import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split_controller.dart';
 import 'dart:math';
 
@@ -23,37 +25,40 @@ class TimeTable extends StatelessWidget {
         ));
   }
 
-  Widget _getRow(BuildContext context, BoxConstraints constraints, int numCells,
-      double height, int index) {
-    double cellWidth = (constraints.maxWidth) / numCells;
-    // height = height + GlobalStyle.summaryCardPadding + GlobalStyle.cardMargin;
-    return Stack(children: [
-      // GlobalStyle.createShadowContainer(context, null,
-      //     height: height,
-      //     width: constraints.maxWidth,
-      //     margin: EdgeInsets.all(GlobalStyle.summaryCardMargin)),
+  int _getColDate(int dayOffset) {
+    var d = GlobalContext.fromDateWindow.add(Duration(days: dayOffset));
+    return DataUtils.dateTime2Int(d);
+  }
 
+  SizedBox _getRowBox(double width, double height, BuildContext context,
+      Map<int, List<TimeTableData>>? subject, int dayIndex) {
+    int date = _getColDate(dayIndex);
+    bool fill = subject != null && subject[date] != null;
+    return SizedBox(
+      width: width,
+      child: GlobalStyle.createShadowContainer(context, null,
+          height: height,
+          margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
+          shadow: fill ? true : false,
+          border: fill ? false : true,
+          color: GlobalStyle.timeTableCellColor(context),
+          shadowColor: fill
+              ? GlobalStyle.timeTableCellShadeColorFull(context)
+              : GlobalStyle.timeTableCellShadeColorEmpty(context)),
+    );
+  }
+
+  Widget _getRow(BuildContext context, BoxConstraints constraints, int numCells,
+      double height, int subjectId) {
+    double cellWidth = (constraints.maxWidth) / numCells;
+    var subject = GlobalContext.data.timeTableData.data[subjectId];
+    return Stack(children: [
       Row(
         children: [
           for (int i = 0; i < numCells; i++)
-            SizedBox(
-              width: cellWidth,
-              child: GlobalStyle.createShadowContainer(context, null,
-                  height: height,
-                  margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
-                  shadow: false,
-                  border: true),
-            ),
+            _getRowBox(cellWidth, height, context, subject, i)
         ],
       )
-
-      // Row(children: [
-      //   for (int i = 0; i < numCells - 1; i++)
-      //     _getContainer(
-      //         context, constraints, numCells, height, i, index, false),
-      //   _getContainer(
-      //       context, constraints, numCells, height, numCells - 1, index, true)
-      // ]),
     ]);
   }
 
@@ -84,14 +89,15 @@ class TimeTable extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 controller: _scrollController,
                 itemCount: data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  int subjectId = data[index].subjectId;
+                itemBuilder: (BuildContext context, int subjecIndex) {
+                  int subjectId = data[subjecIndex].subjectId;
                   double height = GlobalContext.showSubjectsInSummary
                       ? GlobalContext.data.minSubjectTextHeight[subjectId]!
                       : 0;
                   height += 2 * GlobalStyle.summaryEntryBarHeight;
                   height += 2 * GlobalStyle.summaryCardPadding;
-                  return _getRow(context, constraints, numCells, height, index);
+                  return _getRow(
+                      context, constraints, numCells, height, subjectId);
                 },
               );
             },
