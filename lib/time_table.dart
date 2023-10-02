@@ -11,17 +11,12 @@ class TimeTable extends StatelessWidget {
 
   TimeTable(this._scrollController, this._splitController);
 
-  Widget _getContainer(BuildContext context, BoxConstraints constraints,
-      int numCells, height, int rowIndex, int colIndex, bool fullFrame) {
-    int elevate = Random().nextDouble() > 0.8 ? 1 : 0;
-    return SizedBox(
-        height: height,
-        width: constraints.maxWidth / numCells,
-        child: Container(
-          decoration: BoxDecoration(
-              color: elevate == 1 ? Colors.red : Colors.transparent,
-              borderRadius:
-                  BorderRadius.circular(GlobalStyle.summaryCardBorderRadius)),
+  Widget _getFullContainer(BuildContext context, TimeTableData subject) {
+    return Container(
+        color: Colors.transparent,
+        child: Text(
+          subject.toString(),
+          overflow: TextOverflow.visible,
         ));
   }
 
@@ -31,12 +26,13 @@ class TimeTable extends StatelessWidget {
   }
 
   SizedBox _getRowBox(double width, double height, BuildContext context,
-      Map<int, List<TimeTableData>>? subject, int dayIndex) {
+      Map<int, TimeTableData>? subject, int dayIndex) {
     int date = _getColDate(dayIndex);
     bool fill = subject != null && subject[date] != null;
     return SizedBox(
       width: width,
-      child: GlobalStyle.createShadowContainer(context, null,
+      child: GlobalStyle.createShadowContainer(
+          context, fill ? _getFullContainer(context, subject[date]!) : null,
           height: height,
           margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
           shadow: fill ? true : false,
