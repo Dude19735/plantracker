@@ -210,7 +210,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
                         margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
                         width: constraints.maxWidth,
                         height: GlobalContext.scheduleWindowInlineRect.height,
-                        child: CustomPaint(painter: _GridPainter()));
+                        child: CustomPaint(painter: _GridPainter(context)));
                   },
                   childCount: 1,
                 ),
@@ -235,8 +235,9 @@ class _GridPainter extends CustomPainter {
   Paint backgroundPainter = Paint();
   Paint gridPainter = Paint();
   Paint rectPainter = Paint();
+  BuildContext _context;
 
-  _GridPainter() {
+  _GridPainter(this._context) {
     backgroundPainter.color = Colors.white;
     backgroundPainter.style = PaintingStyle.fill;
 
@@ -246,7 +247,7 @@ class _GridPainter extends CustomPainter {
 
     rectPainter.style = PaintingStyle.fill;
     rectPainter.strokeWidth = 1;
-    rectPainter.color = GlobalStyle.scheduleSelectionColor;
+    rectPainter.color = GlobalStyle.scheduleSelectionColor(_context);
   }
 
   @override
@@ -267,7 +268,7 @@ class _GridPainter extends CustomPainter {
         Rect.fromLTWH(0, 0, size.width, size.height), backgroundPainter);
 
     double xOffset = boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2;
-    gridPainter.color = GlobalStyle.scheduleGridColorBox;
+    gridPainter.color = GlobalStyle.scheduleGridColorBox(_context);
     while (xOffset < size.width - boxWidth / 2) {
       canvas.drawLine(
           Offset(xOffset, 0), Offset(xOffset, size.height), gridPainter);
@@ -279,9 +280,9 @@ class _GridPainter extends CustomPainter {
     int counter = 1;
     while (yOffset < size.height - GlobalStyle.scheduleGridStrokeWidth) {
       if (counter % 4 == 0) {
-        gridPainter.color = GlobalStyle.scheduleGridColorFullHour;
+        gridPainter.color = GlobalStyle.scheduleGridColorFullHour(_context);
       } else {
-        gridPainter.color = GlobalStyle.scheduleGridColorBox;
+        gridPainter.color = GlobalStyle.scheduleGridColorBox(_context);
       }
       canvas.drawLine(
           Offset(0, yOffset), Offset(size.width, yOffset), gridPainter);

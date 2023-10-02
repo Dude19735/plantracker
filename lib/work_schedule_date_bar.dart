@@ -12,7 +12,7 @@ class WorkScheduleDateBar extends StatelessWidget {
             margin: EdgeInsets.only(
                 left: GlobalStyle.summaryCardMargin,
                 right: GlobalStyle.summaryCardMargin),
-            child: CustomPaint(painter: _GridPainter()));
+            child: CustomPaint(painter: _GridPainter(context)));
       },
     );
   }
@@ -21,15 +21,15 @@ class WorkScheduleDateBar extends StatelessWidget {
 class _GridPainter extends CustomPainter {
   Paint backgroundPainter = Paint();
   Paint gridPainter = Paint();
+  final BuildContext _context;
 
-  _GridPainter() {
+  _GridPainter(this._context) {
     backgroundPainter.color = Colors.white;
     backgroundPainter.style = PaintingStyle.fill;
 
     gridPainter.style = PaintingStyle.stroke;
     gridPainter.strokeWidth = 1.0;
     gridPainter.strokeCap = StrokeCap.square;
-    gridPainter.color = GlobalStyle.scheduleGridColorBox;
   }
 
   @override
@@ -51,7 +51,7 @@ class _GridPainter extends CustomPainter {
 
     double xOffset = boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2;
 
-    gridPainter.color = GlobalStyle.scheduleGridColorBox;
+    gridPainter.color = GlobalStyle.scheduleGridColorBox(_context);
     gridPainter.strokeWidth = 1;
     while (xOffset < size.width - boxWidth / 2) {
       canvas.drawLine(
@@ -60,7 +60,7 @@ class _GridPainter extends CustomPainter {
     }
 
     gridPainter.strokeWidth = 2;
-    gridPainter.color = GlobalStyle.scheduleGridColorFullHour;
+    gridPainter.color = GlobalStyle.scheduleGridColorFullHour(_context);
     canvas.drawLine(Offset(0, gridPainter.strokeWidth / 2),
         Offset(size.width, gridPainter.strokeWidth / 2), gridPainter);
     canvas.drawLine(

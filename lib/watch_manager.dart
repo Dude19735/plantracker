@@ -76,8 +76,8 @@ class _WatchManager extends State<WatchManager>
                     onHitR: () {
                       print("R");
                     },
-                    restingColorL: GlobalStyle.markerRed,
-                    restingColorR: GlobalStyle.markerRed,
+                    restingColorL: GlobalStyle.markerRed(context),
+                    restingColorR: GlobalStyle.markerRed(context),
                     handleRadius: 15.0,
                     iconAssetStr: [
                       "lib/img/dismiss.svg",
@@ -92,8 +92,8 @@ class _WatchManager extends State<WatchManager>
             GlobalStyle.createShadowContainer(
                 context,
                 CustomPaint(
-                    painter: WatchPainter(
-                        bWidth, watchState, watchState.getArc(animation))),
+                    painter: WatchPainter(context, bWidth, watchState,
+                        watchState.getArc(animation))),
                 margin: EdgeInsets.all(0.0),
                 padding: EdgeInsets.all(0.0),
                 borderRadius: bWidth / 2,
@@ -173,16 +173,17 @@ class WatchPainter extends CustomPainter {
   final WatchState _watchState;
   final double strokeWidth = 15;
   final double fontSize = 12;
+  final BuildContext _context;
 
   Paint backgroundPainter = Paint();
   Paint redCirclePainter = Paint();
 
-  WatchPainter(this._size, this._watchState, this._arcRadius) {
+  WatchPainter(this._context, this._size, this._watchState, this._arcRadius) {
     backgroundPainter.color = Colors.white;
     backgroundPainter.style = PaintingStyle.fill;
     backgroundPainter.strokeWidth = 1;
 
-    redCirclePainter.color = GlobalStyle.markerRed;
+    redCirclePainter.color = GlobalStyle.markerRed(_context);
     redCirclePainter.style = PaintingStyle.stroke;
     redCirclePainter.strokeWidth = strokeWidth;
     redCirclePainter.strokeCap = StrokeCap.round;

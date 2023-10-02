@@ -172,21 +172,21 @@ class _CrossSplit extends State<CrossSplit> {
             hRatio,
             SplitDirection.horizontal,
             cursor,
-            color: GlobalStyle.splitterHGrabberColor,
+            color: GlobalStyle.splitterHGrabberColor(context),
             topOrLeft: Row(children: [
               Split(
                 "vTop",
                 vRatio,
                 SplitDirection.vertical, cursor,
                 //this,
-                color: GlobalStyle.splitterVGrabberColor,
+                color: GlobalStyle.splitterVGrabberColor(context),
                 topOrLeft: widget.topLeft,
                 bottomOrRight: widget.topRight,
               )
             ]),
             bottomOrRight: Row(children: [
               Split("vBottom", vRatio, SplitDirection.vertical, cursor,
-                  color: GlobalStyle.splitterVGrabberColor,
+                  color: GlobalStyle.splitterVGrabberColor(context),
                   topOrLeft: widget.bottomLeft,
                   bottomOrRight: widget.bottomRight)
             ]),
@@ -213,7 +213,7 @@ class Split extends StatelessWidget {
       this._direction,
       // this._parent,
       this._cursor,
-      {this.color = GlobalStyle.splitterVGrabberColor,
+      {this.color = Colors.transparent,
       this.topOrLeft = const Placeholder(),
       this.bottomOrRight = const Placeholder()});
 
