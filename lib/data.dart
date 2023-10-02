@@ -81,7 +81,7 @@ class SummaryData {
 
 typedef TSummaryData = List<SummaryData>;
 // map by SubjectId then by Date
-typedef TTimeTableData = Map<int, Map<int, List<TimeTableData>>>;
+typedef TTimeTableData = Map<int, Map<int, TimeTableData>>;
 // map by Date
 typedef TSchedulePlanData = Map<int, List<SchedulePlanData>>;
 
@@ -108,7 +108,7 @@ class Data<D> {
       data = TSummaryData.empty() as D;
     } else if (D == TTimeTableData) {
       // ignore: prefer_collection_literals
-      data = <int, Map<int, List<TimeTableData>>>{} as D;
+      data = <int, Map<int, TimeTableData>>{} as D;
     } else if (D == TSchedulePlanData) {
       // ignore: prefer_collection_literals
       data = <int, List<SchedulePlanData>>{} as D;
@@ -133,14 +133,23 @@ class Data<D> {
 
       data = json.map((item) => SummaryData(item)).toList() as D;
     } else if (D == TTimeTableData) {
-      data = <int, Map<int, List<TimeTableData>>>{} as D;
+      data = <int, Map<int, TimeTableData>>{} as D;
 
       List<TimeTableData> d = json.map((item) => TimeTableData(item)).toList();
       var temp = groupBy(d, (TimeTableData elem) => elem.subjectId);
       for (var subjectId in temp.keys) {
-        (data as Map)[subjectId] = groupBy(
-            temp[subjectId] as List<TimeTableData>,
+        var t = groupBy(temp[subjectId] as List<TimeTableData>,
             (TimeTableData elem) => elem.date);
+
+        for (var elemK in t.keys) {
+          var elem = t[elemK]!;
+          if ((data as Map)[subjectId] == null) {
+            (data as Map)[subjectId] = {elemK: elem[0]};
+          } else {
+            (data as Map)[subjectId][elemK] = elem[0];
+          }
+        }
+        // (data as Map)[subjectId]
       }
     } else if (D == TSchedulePlanData) {
       // data = <int, List<SchedulePlanData>>{} as D;
