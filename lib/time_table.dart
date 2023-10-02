@@ -25,13 +25,28 @@ class TimeTable extends StatelessWidget {
 
   Widget _getRow(BuildContext context, BoxConstraints constraints, int numCells,
       double height, int index) {
+    double cellWidth = (constraints.maxWidth) / numCells;
     // height = height + GlobalStyle.summaryCardPadding + GlobalStyle.cardMargin;
     return Stack(children: [
-      SizedBox(
-          height: height,
-          child: GlobalStyle.createShadowContainer(context, null,
-              width: constraints.maxWidth,
-              margin: EdgeInsets.only(bottom: GlobalStyle.summaryCardMargin))),
+      // GlobalStyle.createShadowContainer(context, null,
+      //     height: height,
+      //     width: constraints.maxWidth,
+      //     margin: EdgeInsets.all(GlobalStyle.summaryCardMargin)),
+
+      Row(
+        children: [
+          for (int i = 0; i < numCells; i++)
+            SizedBox(
+              width: cellWidth,
+              child: GlobalStyle.createShadowContainer(context, null,
+                  height: height,
+                  margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
+                  shadow: false,
+                  border: true),
+            ),
+        ],
+      )
+
       // Row(children: [
       //   for (int i = 0; i < numCells - 1; i++)
       //     _getContainer(
@@ -66,6 +81,7 @@ class TimeTable extends StatelessWidget {
             builder: (BuildContext context, ScrollController scrollController) {
               return ListView.builder(
                 clipBehavior: Clip.none,
+                padding: EdgeInsets.zero,
                 controller: _scrollController,
                 itemCount: data.length,
                 itemBuilder: (BuildContext context, int index) {
@@ -74,11 +90,8 @@ class TimeTable extends StatelessWidget {
                       ? GlobalContext.data.minSubjectTextHeight[subjectId]!
                       : 0;
                   height += 2 * GlobalStyle.summaryEntryBarHeight;
-                  // height += GlobalStyle.cardMargin + GlobalStyle.summaryCardPadding;
-                  // return _getRow(context, constraints, numCells, height, index);
-                  return GlobalStyle.createShadowContainer(context, null,
-                      height: height,
-                      margin: EdgeInsets.all(GlobalStyle.summaryCardMargin));
+                  height += 2 * GlobalStyle.summaryCardPadding;
+                  return _getRow(context, constraints, numCells, height, index);
                 },
               );
             },
@@ -87,7 +100,11 @@ class TimeTable extends StatelessWidget {
       ),
     );
 
-    return _splitController.widget(
-        context, table, SplitControllerLocation.bottom);
+    return Padding(
+      padding:
+          const EdgeInsets.only(right: GlobalStyle.splitterVGrabberSize / 2),
+      child: _splitController.widget(
+          context, table, SplitControllerLocation.bottom),
+    );
   }
 }
