@@ -80,35 +80,71 @@ class SummaryData {
 }
 
 typedef TSummaryData = List<SummaryData>;
-typedef TTimeTableData = Map<int, List<TimeTableData>>;
+// map by SubjectId then by Date
+typedef TTimeTableData = Map<int, Map<int, List<TimeTableData>>>;
+// map by Date
 typedef TSchedulePlanData = Map<int, List<SchedulePlanData>>;
 
 class Data<D> {
   late final D data;
-  late final Map<int, Rect> rects;
+  // late final Map<int, Rect> rects;
 
-  Data.init() {
+  // Data.init() {
+  // if (D == TSummaryData) {
+  //   data = TSummaryData.empty() as D;
+  // } else if (D == TTimeTableData) {
+  //   // ignore: prefer_collection_literals
+  //   data = TTimeTableData() as D;
+  // } else if (D == TSchedulePlanData) {
+  //   // ignore: prefer_collection_literals
+  //   data = TSchedulePlanData() as D;
+  // } else {
+  //   throw Exception("Message type [$D] not defined in data parser");
+  // }
+  // }
+
+  Data() {
     if (D == TSummaryData) {
       data = TSummaryData.empty() as D;
     } else if (D == TTimeTableData) {
       // ignore: prefer_collection_literals
-      data = TTimeTableData() as D;
+      data = <int, Map<int, List<TimeTableData>>>{} as D;
     } else if (D == TSchedulePlanData) {
       // ignore: prefer_collection_literals
-      data = TSchedulePlanData() as D;
+      data = <int, List<SchedulePlanData>>{} as D;
     } else {
       throw Exception("Message type [$D] not defined in data parser");
     }
   }
 
   Data.fromJsonStr(String jsonStr) {
+    // if (D == TSummaryData) {
+    // } else if (D == TTimeTableData) {
+    //   // ignore: prefer_collection_literals
+    // } else if (D == TSchedulePlanData) {
+    //   // ignore: prefer_collection_literals
+    // } else {
+    //   throw Exception("Message type [$D] not defined in data parser");
+    // }
+
     List<dynamic> json = jsonDecode(jsonStr);
     if (D == TSummaryData) {
+      // data = TSummaryData.empty() as D;
+
       data = json.map((item) => SummaryData(item)).toList() as D;
     } else if (D == TTimeTableData) {
+      data = <int, Map<int, List<TimeTableData>>>{} as D;
+
       List<TimeTableData> d = json.map((item) => TimeTableData(item)).toList();
-      data = groupBy(d, (TimeTableData elem) => elem.date) as D;
+      var temp = groupBy(d, (TimeTableData elem) => elem.subjectId);
+      for (var subjectId in temp.keys) {
+        (data as Map)[subjectId] = groupBy(
+            temp[subjectId] as List<TimeTableData>,
+            (TimeTableData elem) => elem.date);
+      }
     } else if (D == TSchedulePlanData) {
+      // data = <int, List<SchedulePlanData>>{} as D;
+
       List<SchedulePlanData> d =
           json.map((item) => SchedulePlanData(item)).toList();
       data = groupBy(d, (SchedulePlanData elem) => elem.date) as D;
@@ -137,9 +173,9 @@ class GlobalData {
   DateTime _toDate;
 
   GlobalData(this._fromDate, this._toDate) {
-    timeTableData = Data.init();
-    schedulePlanData = Data.init();
-    summaryData = Data.init();
+    timeTableData = Data();
+    schedulePlanData = Data();
+    summaryData = Data();
     _load(_fromDate, _toDate);
     _summary();
   }
@@ -168,12 +204,12 @@ class GlobalData {
     schedulePlanData.data.addAll(tschedulePlanData.data);
 
     // requirement
-    timeTableData.data.forEach((key, value) {
-      value.sort((a, b) => a.subject.compareTo(b.subject));
-    });
-    schedulePlanData.data.forEach((key, value) {
-      value.sort((a, b) => a.subject.compareTo(b.subject));
-    });
+    // timeTableData.data.forEach((key, value) {
+    //   value.sort((a, b) => a.subject.compareTo(b.subject));
+    // });
+    // schedulePlanData.data.forEach((key, value) {
+    //   value.sort((a, b) => a.subject.compareTo(b.subject));
+    // });
   }
 
   void _remove(DateTime day) {
