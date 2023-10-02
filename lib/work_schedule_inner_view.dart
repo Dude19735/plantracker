@@ -73,6 +73,32 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
         .contains(Offset(xMousePos, yMousePos));
   }
 
+  void _autoScroll(DragUpdateDetails details, ScrollController controller) {
+    if (details.localPosition.dy >
+        GlobalContext.scheduleWindowOutlineRect.height +
+            GlobalSettings.scheduleWindowAutoScrollOffset) {
+      controller.jumpTo(controller.offset + 5);
+    } else if (details.localPosition.dy <
+        GlobalSettings.scheduleWindowAutoScrollOffset) {
+      controller.jumpTo(controller.offset - 5);
+    }
+  }
+
+  bool _resetSelection(DragUpdateDetails details) {
+    if (_resetConditions(details.delta.dy)) {
+      return true;
+    }
+    return false;
+  }
+
+  void _reset() {
+    _controller.reset();
+    GlobalContext.scheduleWindowSelectionBox = null;
+    _curYPos = -1;
+    _curXPos = -1;
+    _animBackwards = false;
+  }
+
   bool _resetConditions(double dy) {
     bool reset = dy < 0 &&
         (GlobalContext.scheduleWindowSelectionBox == null ||
@@ -82,12 +108,43 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     return reset;
   }
 
-  void _resetSelection() {
-    _controller.reset();
-    GlobalContext.scheduleWindowSelectionBox = null;
-    _curYPos = -1;
-    _curXPos = -1;
-    _animBackwards = false;
+  void _initSelection(double xpos, double ypos) {
+    if (_curYPos != ypos) {
+      _curYPos = ypos;
+      _curXPos = xpos; //xMousePos;
+      GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
+          _curXPos,
+          ypos,
+          GlobalContext.scheduleWindowCell.width,
+          GlobalStyle.scheduleCellHeightPx);
+
+      _animBackwards = false;
+      // _controller.reset();
+      // _controller.forward();
+    }
+  }
+
+  void _continueSelection(double xpos, double ypos, double dy) {
+    if (_curYPos != ypos) {
+      _curYPos = ypos;
+      _curXPos = xpos; //xMousePos;
+      GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
+          _curXPos,
+          GlobalContext.scheduleWindowSelectionBox!.top,
+          GlobalContext.scheduleWindowCell.width,
+          _curYPos +
+              GlobalStyle.scheduleCellHeightPx -
+              GlobalContext.scheduleWindowSelectionBox!.top);
+
+      _animBackwards = dy < 0; // details.delta.dy < 0;
+      _controller.reset();
+      _animBackwards ? _controller.reverse(from: 1) : _controller.forward();
+    } else if (_curXPos != xpos) {
+      GlobalContext.scheduleWindowSelectionBox = GlobalContext
+          .scheduleWindowSelectionBox!
+          .translate(xpos - _curXPos, 0);
+      _curXPos = xpos;
+    }
   }
 
   @override
@@ -114,73 +171,26 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
         var view = GestureDetector(
             onVerticalDragUpdate: (details) {
               setState(() {
-                if (details.localPosition.dy >
-                    GlobalContext.scheduleWindowOutlineRect.height +
-                        GlobalSettings.scheduleWindowAutoScrollOffset) {
-                  controller.jumpTo(controller.offset + 5);
-                } else if (details.localPosition.dy <
-                    GlobalSettings.scheduleWindowAutoScrollOffset) {
-                  controller.jumpTo(controller.offset - 5);
-                }
+                _autoScroll(details, controller);
 
-                if (_resetConditions(details.delta.dy)) {
-                  _resetSelection();
-                  return;
-                }
+                if (_resetSelection(details)) return;
 
                 double yMousePos = details.localPosition.dy + controller.offset;
                 double xMousePos = _roundToVFrame(details.localPosition.dx);
 
-                if (_clampConditions(xMousePos, yMousePos)) {
-                  return;
-                }
+                if (_clampConditions(xMousePos, yMousePos)) return;
 
                 double ypos = _roundToHFrame(yMousePos);
                 if (GlobalContext.scheduleWindowSelectionBox == null) {
-                  // stick to beginning of cells
-
-                  if (_curYPos != ypos) {
-                    _curYPos = ypos;
-                    _curXPos = xMousePos;
-                    GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
-                        _curXPos,
-                        ypos,
-                        GlobalContext.scheduleWindowCell.width,
-                        GlobalStyle.scheduleCellHeightPx);
-
-                    _animBackwards = false;
-                    // _controller.reset();
-                    // _controller.forward();
-                  }
+                  _initSelection(xMousePos, ypos);
                 } else {
-                  if (_curYPos != ypos) {
-                    _curYPos = ypos;
-                    _curXPos = xMousePos;
-                    GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
-                        _curXPos,
-                        GlobalContext.scheduleWindowSelectionBox!.top,
-                        GlobalContext.scheduleWindowCell.width,
-                        _curYPos +
-                            GlobalStyle.scheduleCellHeightPx -
-                            GlobalContext.scheduleWindowSelectionBox!.top);
-
-                    _animBackwards = details.delta.dy < 0;
-                    _controller.reset();
-                    _animBackwards
-                        ? _controller.reverse(from: 1)
-                        : _controller.forward();
-                  } else if (_curXPos != xMousePos) {
-                    GlobalContext.scheduleWindowSelectionBox = GlobalContext
-                        .scheduleWindowSelectionBox!
-                        .translate(xMousePos - _curXPos, 0);
-                    _curXPos = xMousePos;
-                  }
+                  _continueSelection(xMousePos, ypos, details.delta.dy);
                 }
               });
             },
             onVerticalDragEnd: (details) {
               setState(() {
-                _resetSelection();
+                _reset();
               });
             },
             child: CustomScrollView(controller: controller, slivers: [
