@@ -21,7 +21,7 @@ class WorkSchedule extends StatelessWidget {
     var view = Column(
       children: [
         Container(
-          color: Colors.amber,
+          color: GlobalStyle.scheduleDateSelectorColor,
           width: double.infinity,
           height: GlobalStyle.scheduleDateSelectorHeight,
           child: Flex(
@@ -163,6 +163,10 @@ class WorkSchedule extends StatelessWidget {
       ],
     );
 
-    return view;
+    return Padding(
+      padding:
+          const EdgeInsets.only(right: GlobalStyle.splitterVGrabberSize / 2),
+      child: view,
+    );
   }
 }
