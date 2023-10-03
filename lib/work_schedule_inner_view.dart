@@ -151,7 +151,6 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
   @override
   Widget build(BuildContext context) {
     double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
-
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         GlobalContext.scheduleWindowOutlineRect =

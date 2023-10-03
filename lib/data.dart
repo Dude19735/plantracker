@@ -88,21 +88,6 @@ typedef TSchedulePlanData = Map<int, List<SchedulePlanData>>;
 
 class Data<D> {
   late final D data;
-  // late final Map<int, Rect> rects;
-
-  // Data.init() {
-  // if (D == TSummaryData) {
-  //   data = TSummaryData.empty() as D;
-  // } else if (D == TTimeTableData) {
-  //   // ignore: prefer_collection_literals
-  //   data = TTimeTableData() as D;
-  // } else if (D == TSchedulePlanData) {
-  //   // ignore: prefer_collection_literals
-  //   data = TSchedulePlanData() as D;
-  // } else {
-  //   throw Exception("Message type [$D] not defined in data parser");
-  // }
-  // }
 
   Data() {
     if (D == TSummaryData) {
@@ -119,15 +104,6 @@ class Data<D> {
   }
 
   Data.fromJsonStr(String jsonStr) {
-    // if (D == TSummaryData) {
-    // } else if (D == TTimeTableData) {
-    //   // ignore: prefer_collection_literals
-    // } else if (D == TSchedulePlanData) {
-    //   // ignore: prefer_collection_literals
-    // } else {
-    //   throw Exception("Message type [$D] not defined in data parser");
-    // }
-
     List<dynamic> json = jsonDecode(jsonStr);
     if (D == TSummaryData) {
       // data = TSummaryData.empty() as D;
@@ -187,41 +163,20 @@ class GlobalData {
     schedulePlanData = Data();
     summaryData = Data();
 
-    int dateWindowSize = GlobalContext.fromDateWindow
-        .difference(GlobalContext.toDateWindow)
-        .inDays
-        .abs();
+    // current week
+    var from = GlobalContext.fromDateWindow;
+    var to = GlobalContext.toDateWindow;
+    _load(from, to);
 
-    // print(GlobalContext.fromDateWindow);
-    // print(GlobalContext.toDateWindow);
-    _load(GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
-    // timeTableData.data.forEach((key, value) {
-    //   print(value.keys);
-    // });
-    // print("==============================");
-    _load(GlobalContext.fromDateWindow.subtract(Duration(days: dateWindowSize)),
-        GlobalContext.toDateWindow.subtract(Duration(days: 1)));
-    // timeTableData.data.forEach((key, value) {
-    //   print(value.keys);
-    // });
-    // print("==============================");
-    _load(GlobalContext.fromDateWindow.add(Duration(days: dateWindowSize + 1)),
-        GlobalContext.toDateWindow.add(Duration(days: 2 * dateWindowSize)));
-    // timeTableData.data.forEach((key, value) {
-    //   print(value.keys);
-    // });
-    // print("==============================");
+    var adj = DataUtils.getAdjacentTimePeriods(from, to);
+    _load(adj["prev_from"], adj["prev_to"]);
+    _load(adj["next_from"], adj["next_to"]);
 
-    _fromDate =
-        GlobalContext.fromDateWindow.subtract(Duration(days: dateWindowSize));
-    _toDate = GlobalContext.toDateWindow.add(Duration(days: dateWindowSize));
+    _fromDate = adj["prev_from"];
+    _toDate = adj["next_to"];
 
     _summary();
   }
-
-  // DateTime fromDate() => _fromDate;
-  // DateTime toDate() => _toDate;
-  // int dateRange() => _toDate.difference(_fromDate).inDays.abs();
 
   void _summary() {
     // summaryData = Data<TSummaryData>.fromJsonStr(DataGen.testDataSummaryView(
@@ -264,6 +219,7 @@ class GlobalData {
   void _load(DateTime fromDate, DateTime toDate) {
     var ttimeTableData = Data<TTimeTableData>.fromJsonStr(
         DataGen.testDataTimeTableView(fromDate, toDate));
+
     for (var subjectId in ttimeTableData.data.keys) {
       if (timeTableData.data[subjectId] != null) {
         timeTableData.data[subjectId]!.addAll(ttimeTableData.data[subjectId]!);
@@ -291,40 +247,46 @@ class GlobalData {
   }
 
   void load() {
-    int dateWindowSize = GlobalContext.toDateWindow
-        .difference(GlobalContext.fromDateWindow)
-        .inDays
-        .abs();
-    DateTime fromDate =
-        GlobalContext.fromDateWindow.subtract(Duration(days: dateWindowSize));
-    DateTime toDate =
-        GlobalContext.toDateWindow.add(Duration(days: dateWindowSize));
+    var from = GlobalContext.fromDateWindow;
+    var to = GlobalContext.toDateWindow;
+    var adj = DataUtils.getAdjacentTimePeriods(from, to);
 
-    if (fromDate.compareTo(_fromDate) < 0) {
+    print("========================");
+    print("new time interval:");
+    print(adj);
+    var newFrom = adj["prev_from"];
+    if (newFrom.compareTo(_fromDate) < 0) {
       // add new data on this side
-      _load(fromDate, _fromDate.subtract(Duration(days: 1)));
-    } else if (fromDate.compareTo(_fromDate) > 0) {
+      print(
+          "load new data: $newFrom to ${_fromDate.subtract(Duration(days: 1))}");
+      _load(newFrom, _fromDate.subtract(Duration(days: 1)));
+    } else if (newFrom.compareTo(_fromDate) > 0) {
       // remove unused data on this side
+      print(
+          "remove old data: $_fromDate to ${newFrom.subtract(Duration(days: 1))}");
       for (DateTime d = _fromDate;
-          d.compareTo(fromDate) < 0;
+          d.compareTo(newFrom) < 0;
           d = d.add(Duration(days: 1))) {
         _remove(d);
       }
     }
 
-    if (toDate.compareTo(_toDate) < 0) {
+    var newTo = adj["next_to"];
+    if (newTo.compareTo(_toDate) < 0) {
       // remove unused data on this side
-      for (DateTime d = toDate;
-          d.compareTo(_toDate) < 0;
+      print("remove old data: ${newTo.add(Duration(days: 1))} to $_toDate");
+      for (DateTime d = newTo.add(Duration(days: 1));
+          d.compareTo(_toDate) <= 0;
           d = d.add(Duration(days: 1))) {
         _remove(d);
       }
-    } else if (toDate.compareTo(_toDate) > 0) {
+    } else if (newTo.compareTo(_toDate) > 0) {
       // add new data on this side
-      _load(_toDate.add(Duration(days: 1)), toDate);
+      print("load new data: ${_toDate.add(Duration(days: 1))} to $newTo");
+      _load(_toDate.add(Duration(days: 1)), newTo);
     }
 
-    _fromDate = fromDate;
-    _toDate = toDate;
+    _fromDate = newFrom;
+    _toDate = newTo;
   }
 }

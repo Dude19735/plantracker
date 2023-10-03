@@ -16,3 +16,19 @@ class ColumnName {
   static const String noteId = "NoteId";
   static const String note = "Note";
 }
+
+class DataValues {
+  static const List<String> subjectNames = [
+    "Sub_0",
+    "0_Mo",
+    "1_Tu",
+    "2_We",
+    "3_Th",
+    "4_Fr",
+    "5_Sa",
+    "6_Su"
+  ];
+
+  static const double planedTime = 5.0;
+  static const double recordedTime = 4.7;
+}
