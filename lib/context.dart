@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
+import 'package:scheduler/time_table.dart';
+import 'dart:ui';
+
+import 'package:scheduler/time_table_box.dart';
 
 class GlobalContext {
   static String currentLocale = 'en-GB';
@@ -78,11 +82,23 @@ class GlobalStyle {
   // ===========================================================================
   // Time table colors and paint settings
   // ===========================================================================
-  static Color timeTableCellShadeColorFull(BuildContext context) =>
-      Colors.green;
+  static Color timeTableCellShadeColorFull(
+      BuildContext context, TimeTableData data) {
+    double workRatio = clampDouble(data.recorded / data.planed, 0, 1.0);
+    return Color.lerp(Colors.red, Colors.green, workRatio)!;
+  }
+
+  static Color timeTableCellBarColor(BuildContext context, double ratio) {
+    return Color.lerp(Colors.brown, Colors.yellowAccent, ratio)!;
+  }
+
   static Color timeTableCellShadeColorEmpty(BuildContext context) =>
       Colors.transparent;
-  static Color timeTableCellColor(BuildContext context) => Colors.transparent;
+  static Color timeTableCellColor(
+          BuildContext context, TimeTableCellState state) =>
+      state == TimeTableCellState.inactive
+          ? Colors.transparent
+          : Colors.black12;
 
   // ===========================================================================
   // splitter and grabber settings
@@ -113,6 +129,14 @@ class GlobalStyle {
   static const double summaryEntryBarHeight = 20;
 
   static Color globalCardColor(BuildContext context) => Colors.black12;
+  static Color summaryPlanedTimeBarColor(BuildContext context) =>
+      Colors.black38;
+
+  static Color summaryRecordedTimeBarColor(
+      BuildContext context, SummaryData data) {
+    double workRatio = clampDouble(data.recorded / data.planed, 0, 1.0);
+    return Color.lerp(Colors.red, Colors.green, workRatio)!;
+  }
 
   // ===========================================================================
   // clock bar settings
