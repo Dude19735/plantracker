@@ -166,7 +166,6 @@ class WorkSchedule extends StatelessWidget {
                 context, innerViewBuilder, SplitControllerLocation.top)),
       ],
     );
-
     return Padding(
       padding:
           const EdgeInsets.only(right: GlobalStyle.splitterVGrabberSize / 2),

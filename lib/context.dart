@@ -7,7 +7,7 @@ class GlobalContext {
 
   static DateTime fromDateWindow = DataUtils.getLastMonday(DateTime.now());
   static DateTime toDateWindow =
-      fromDateWindow.add(Duration(days: GlobalSettings.initDateWindowSize));
+      fromDateWindow.add(Duration(days: GlobalSettings.initDateWindowSize - 1));
 
   static bool showSubjectsInSummary = true;
   static GlobalData data = GlobalData();

@@ -3,7 +3,6 @@ import 'package:scheduler/context.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split_controller.dart';
-import 'dart:math';
 
 class TimeTable extends StatelessWidget {
   final ScrollController _scrollController;
@@ -24,7 +23,7 @@ class TimeTable extends StatelessWidget {
 
   int _getColDate(int dayOffset) {
     var d = GlobalContext.fromDateWindow.add(Duration(days: dayOffset));
-    print("fromDate $d");
+    // print("fromDate $d");
     return DataUtils.dateTime2Int(d);
   }
 
@@ -52,11 +51,9 @@ class TimeTable extends StatelessWidget {
     double cellWidth = (constraints.maxWidth) / numCells;
     var subject = GlobalContext.data.timeTableData.data[subjectId];
     int dayOffset = pageOffset *
-        GlobalContext.fromDateWindow
-            .difference(GlobalContext.toDateWindow)
-            .inDays
-            .abs();
-    print("dayOffset $dayOffset $numCells");
+        DataUtils.getWindowSize(
+            GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+
     return Stack(children: [
       Row(
         children: [

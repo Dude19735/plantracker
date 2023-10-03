@@ -77,7 +77,7 @@ class SplitController {
             : _bottomPageController,
         pageSnapping: true,
         itemBuilder: (context, index) {
-          print("build page $index $_currentPage ${index - _currentPage}");
+          // print("build page $index $_currentPage ${index - _currentPage}");
           // child.setPageOffset(_currentPage - index);
           return Center(
             child: childBuilder(index - _currentPage),

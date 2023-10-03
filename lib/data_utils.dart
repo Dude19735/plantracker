@@ -1,4 +1,44 @@
 class DataUtils {
+  static String mapOfListsToStr(Map<int, List<Map<String, dynamic>>> data) {
+    String res = """[""";
+    for (var elemKey in data.keys) {
+      var elemList = data[elemKey];
+      if (elemList != null) {
+        for (var e in elemList) {
+          res += "{";
+          for (var k in e.keys) {
+            res += """"$k":""";
+            if (e[k] is String) {
+              res += """"${e[k]}",""";
+            } else {
+              res += "${e[k].toString()},";
+            }
+          }
+          res = res.substring(0, res.length - 1);
+          res += "},";
+        }
+      }
+    }
+    res = res.substring(0, res.length - 1);
+    res += "]";
+    return res;
+  }
+
+  static int getWindowSize(DateTime from, DateTime to) {
+    return from.difference(to).inDays.abs() + 1;
+  }
+
+  static Map getAdjacentTimePeriods(DateTime from, DateTime to) {
+    int dateWindowSize = DataUtils.getWindowSize(from, to);
+
+    return {
+      "prev_from": from.subtract(Duration(days: dateWindowSize)),
+      "prev_to": from.subtract(Duration(days: 1)),
+      "next_from": to.add(Duration(days: 1)),
+      "next_to": to.add(Duration(days: dateWindowSize))
+    };
+  }
+
   static DateTime getLastMonday(DateTime date) {
     return date.subtract(Duration(days: date.weekday - 1));
   }
