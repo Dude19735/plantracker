@@ -3,7 +3,8 @@ import 'package:scheduler/context.dart';
 import 'package:scheduler/work_schedule_date_bar.dart';
 
 class WorkScheduleInnerView extends StatefulWidget {
-  WorkScheduleInnerView();
+  final int _pageDaysOffset;
+  WorkScheduleInnerView(this._pageDaysOffset);
 
   @override
   State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();

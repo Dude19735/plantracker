@@ -18,6 +18,10 @@ class WorkSchedule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget innerViewBuilder(int dayOffset) {
+      return WorkScheduleInnerView(dayOffset);
+    }
+
     var view = Column(
       children: [
         Container(
@@ -159,7 +163,7 @@ class WorkSchedule extends StatelessWidget {
         ),
         Expanded(
             child: _splitController.widget(
-                context, WorkScheduleInnerView(), SplitControllerLocation.top)),
+                context, innerViewBuilder, SplitControllerLocation.top)),
       ],
     );
 

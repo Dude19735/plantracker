@@ -41,8 +41,8 @@ class SplitController {
         duration: Duration(milliseconds: animationMs), curve: curve);
   }
 
-  Widget widget(
-      BuildContext context, Widget child, SplitControllerLocation location) {
+  Widget widget(BuildContext context, Widget Function(int) childBuilder,
+      SplitControllerLocation location) {
     return NotificationListener(
       onNotification: (notification) {
         if (notification is UserScrollNotification) {
@@ -64,6 +64,7 @@ class SplitController {
       },
       child: PageView.builder(
         clipBehavior: Clip.none,
+        allowImplicitScrolling: true,
         onPageChanged: (page) {
           if (page != _currentPage) {
             bool backwards = page < _currentPage;
@@ -76,8 +77,10 @@ class SplitController {
             : _bottomPageController,
         pageSnapping: true,
         itemBuilder: (context, index) {
+          print("build page $index $_currentPage ${index - _currentPage}");
+          // child.setPageOffset(_currentPage - index);
           return Center(
-            child: child,
+            child: childBuilder(index - _currentPage),
           );
         },
       ),

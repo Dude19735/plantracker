@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:scheduler/context.dart';
 import 'package:scheduler/data_gen.dart';
 import 'package:scheduler/data_columns.dart';
 import 'package:scheduler/data_utils.dart';
@@ -21,7 +22,7 @@ class TimeTableData {
 
   @override
   String toString() {
-    return "\n${ColumnName.date}: $date\n${ColumnName.subject}: $subject\n${ColumnName.planed}: $planed\n${ColumnName.recorded}: $recorded\n";
+    return "${ColumnName.date}: $date\n${ColumnName.subject}: $subject\n${ColumnName.planed}: $planed\n${ColumnName.recorded}: $recorded\n";
   }
 }
 
@@ -57,7 +58,7 @@ class SchedulePlanData {
 
   @override
   String toString() {
-    return "\n${ColumnName.subjectId}: $subjectId\n${ColumnName.subjectAcronym}: $subjectAcronym\n${ColumnName.subject}: $subject\n${ColumnName.workTypeId}: $workTypeId\n${ColumnName.workType}: $workType\n${ColumnName.seriesId}: $seriesId\n${ColumnName.seriesFromDate}: $seriesFromDate\n${ColumnName.seriesToDate}: $seriesToDate\n${ColumnName.noteId}: $noteId\n${ColumnName.note}: $note\n${ColumnName.date}: $date\n${ColumnName.fromTime}: $fromTime\n${ColumnName.toTime}: $toTime";
+    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.subjectAcronym}: $subjectAcronym\n${ColumnName.subject}: $subject\n${ColumnName.workTypeId}: $workTypeId\n${ColumnName.workType}: $workType\n${ColumnName.seriesId}: $seriesId\n${ColumnName.seriesFromDate}: $seriesFromDate\n${ColumnName.seriesToDate}: $seriesToDate\n${ColumnName.noteId}: $noteId\n${ColumnName.note}: $note\n${ColumnName.date}: $date\n${ColumnName.fromTime}: $fromTime\n${ColumnName.toTime}: $toTime\n";
   }
 }
 
@@ -75,7 +76,7 @@ class SummaryData {
 
   @override
   String toString() {
-    return "\n${ColumnName.subject}: $subject\n${ColumnName.planed}: $planed\n${ColumnName.recorded}: $recorded\n";
+    return "${ColumnName.subject}: $subject\n${ColumnName.planed}: $planed\n${ColumnName.recorded}: $recorded\n";
   }
 }
 
@@ -105,7 +106,7 @@ class Data<D> {
 
   Data() {
     if (D == TSummaryData) {
-      data = TSummaryData.empty() as D;
+      data = TSummaryData.empty(growable: true) as D;
     } else if (D == TTimeTableData) {
       // ignore: prefer_collection_literals
       data = <int, Map<int, TimeTableData>>{} as D;
@@ -178,24 +179,81 @@ class GlobalData {
   late Data<TTimeTableData> timeTableData;
   late Data<TSchedulePlanData> schedulePlanData;
 
-  DateTime _fromDate;
-  DateTime _toDate;
+  late DateTime _fromDate;
+  late DateTime _toDate;
 
-  GlobalData(this._fromDate, this._toDate) {
+  GlobalData() {
     timeTableData = Data();
     schedulePlanData = Data();
     summaryData = Data();
-    _load(_fromDate, _toDate);
+
+    int dateWindowSize = GlobalContext.fromDateWindow
+        .difference(GlobalContext.toDateWindow)
+        .inDays
+        .abs();
+
+    // print(GlobalContext.fromDateWindow);
+    // print(GlobalContext.toDateWindow);
+    _load(GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+    // timeTableData.data.forEach((key, value) {
+    //   print(value.keys);
+    // });
+    // print("==============================");
+    _load(GlobalContext.fromDateWindow.subtract(Duration(days: dateWindowSize)),
+        GlobalContext.toDateWindow.subtract(Duration(days: 1)));
+    // timeTableData.data.forEach((key, value) {
+    //   print(value.keys);
+    // });
+    // print("==============================");
+    _load(GlobalContext.fromDateWindow.add(Duration(days: dateWindowSize + 1)),
+        GlobalContext.toDateWindow.add(Duration(days: 2 * dateWindowSize)));
+    // timeTableData.data.forEach((key, value) {
+    //   print(value.keys);
+    // });
+    // print("==============================");
+
+    _fromDate =
+        GlobalContext.fromDateWindow.subtract(Duration(days: dateWindowSize));
+    _toDate = GlobalContext.toDateWindow.add(Duration(days: dateWindowSize));
+
     _summary();
   }
 
-  DateTime fromDate() => _fromDate;
-  DateTime toDate() => _toDate;
-  int dateRange() => _toDate.difference(_fromDate).inDays.abs();
+  // DateTime fromDate() => _fromDate;
+  // DateTime toDate() => _toDate;
+  // int dateRange() => _toDate.difference(_fromDate).inDays.abs();
 
   void _summary() {
-    summaryData = Data<TSummaryData>.fromJsonStr(
-        DataGen.testDataSummaryView(_fromDate, _toDate));
+    // summaryData = Data<TSummaryData>.fromJsonStr(DataGen.testDataSummaryView(
+    //     GlobalContext.fromDateWindow, GlobalContext.toDateWindow));
+
+    int fromDate = DataUtils.dateTime2Int(GlobalContext.fromDateWindow);
+    int toDate = DataUtils.dateTime2Int(GlobalContext.toDateWindow);
+
+    summaryData.data.clear();
+    for (var subjectId in timeTableData.data.keys) {
+      double planed = 0;
+      double recorded = 0;
+      String subjectName = "";
+      var subject = timeTableData.data[subjectId]!;
+      for (var date in subject.keys) {
+        if (subjectName == "") {
+          subjectName = subject[date]!.subject;
+        }
+        if (date < fromDate || date > toDate) continue;
+        planed += subject[date]!.planed;
+        recorded += subject[date]!.recorded;
+      }
+      var pack = {
+        ColumnName.subjectId: subjectId,
+        ColumnName.planed: planed,
+        ColumnName.recorded: recorded,
+        ColumnName.subject: subjectName
+      };
+      // print(pack);
+      summaryData.data.add(SummaryData(pack));
+    }
+
     summaryData.data.sort((a, b) => a.subject.compareTo(b.subject));
 
     for (var element in summaryData.data) {
@@ -206,7 +264,13 @@ class GlobalData {
   void _load(DateTime fromDate, DateTime toDate) {
     var ttimeTableData = Data<TTimeTableData>.fromJsonStr(
         DataGen.testDataTimeTableView(fromDate, toDate));
-    timeTableData.data.addAll(ttimeTableData.data);
+    for (var subjectId in ttimeTableData.data.keys) {
+      if (timeTableData.data[subjectId] != null) {
+        timeTableData.data[subjectId]!.addAll(ttimeTableData.data[subjectId]!);
+      } else {
+        timeTableData.data[subjectId] = ttimeTableData.data[subjectId]!;
+      }
+    }
 
     var tschedulePlanData = Data<TSchedulePlanData>.fromJsonStr(
         DataGen.testDateScheduleViewPlan(fromDate, toDate));
@@ -226,7 +290,16 @@ class GlobalData {
     schedulePlanData.data.remove(DataUtils.dateTime2Int(day));
   }
 
-  void load(DateTime fromDate, DateTime toDate) {
+  void load() {
+    int dateWindowSize = GlobalContext.toDateWindow
+        .difference(GlobalContext.fromDateWindow)
+        .inDays
+        .abs();
+    DateTime fromDate =
+        GlobalContext.fromDateWindow.subtract(Duration(days: dateWindowSize));
+    DateTime toDate =
+        GlobalContext.toDateWindow.add(Duration(days: dateWindowSize));
+
     if (fromDate.compareTo(_fromDate) < 0) {
       // add new data on this side
       _load(fromDate, _fromDate.subtract(Duration(days: 1)));

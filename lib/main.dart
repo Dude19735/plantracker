@@ -117,6 +117,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           setState(() {
             GlobalContext.fromDateWindow = notification.from;
             GlobalContext.toDateWindow = notification.to;
+            GlobalContext.data.load();
           });
           return true;
         } else if (notification is PageScrolledNotification) {
@@ -137,6 +138,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               GlobalContext.toDateWindow =
                   GlobalContext.toDateWindow.subtract(d);
             }
+            GlobalContext.data.load();
           });
           return true;
         } else if (notification is ChangePageNotification) {
