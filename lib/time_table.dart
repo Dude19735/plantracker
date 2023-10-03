@@ -1,53 +1,68 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split_controller.dart';
+import 'package:scheduler/time_table_box.dart';
+import 'package:scheduler/data_columns.dart';
+import 'package:scheduler/work_schedule.dart';
 
-class TimeTable extends StatelessWidget {
+class TimeTable extends StatefulWidget {
   final ScrollController _scrollController;
   final SplitController _splitController;
+  final List<List<TimeTableCellState>> _edit =
+      List<List<TimeTableCellState>>.generate(
+          GlobalContext.data.summaryData.data.length,
+          (i) => List<TimeTableCellState>.generate(
+              DataUtils.getWindowSize(
+                  GlobalContext.fromDateWindow, GlobalContext.toDateWindow),
+              (index) => TimeTableCellState.inactive,
+              growable: false),
+          growable: false);
 
-  TimeTable(this._scrollController, this._splitController) : super() {
-    print("create table view");
-  }
+  TimeTable(this._scrollController, this._splitController);
 
-  Widget _getFullContainer(BuildContext context, TimeTableData subject) {
-    return Container(
-        color: Colors.transparent,
-        child: Text(
-          subject.toString(),
-          overflow: TextOverflow.visible,
-        ));
-  }
+  @override
+  State<TimeTable> createState() => _TimeTable();
+}
+
+class _TimeTable extends State<TimeTable> {
+  int _lastPressedX = -1;
+  int _lastPressedY = -1;
 
   int _getColDate(int dayOffset) {
-    var d = GlobalContext.fromDateWindow.add(Duration(days: dayOffset));
-    // print("fromDate $d");
-    return DataUtils.dateTime2Int(d);
+    return DataUtils.dateTime2Int(
+        GlobalContext.fromDateWindow.add(Duration(days: dayOffset)));
   }
 
-  SizedBox _getRowBox(double width, double height, BuildContext context,
-      Map<int, TimeTableData>? subject, int dayOffset) {
+  Widget _getRowBox(
+      int x,
+      int y,
+      double width,
+      double height,
+      BuildContext context,
+      int subjectId,
+      Map<int, TimeTableData>? subject,
+      int dayOffset) {
     int date = _getColDate(dayOffset);
-    bool fill = subject != null && subject[date] != null;
-    return SizedBox(
-      width: width,
-      child: GlobalStyle.createShadowContainer(
-          context, fill ? _getFullContainer(context, subject[date]!) : null,
-          height: height,
-          margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
-          shadow: fill ? true : false,
-          border: fill ? false : true,
-          color: GlobalStyle.timeTableCellColor(context),
-          shadowColor: fill
-              ? GlobalStyle.timeTableCellShadeColorFull(context)
-              : GlobalStyle.timeTableCellShadeColorEmpty(context)),
-    );
+
+    TimeTableData s = subject != null && subject[date] != null
+        ? subject[date]!
+        : TimeTableData({
+            ColumnName.subjectId: subjectId,
+            ColumnName.date: date,
+            ColumnName.planed: 0.0,
+            ColumnName.recorded: 0.0,
+            ColumnName.subject: DataValues.subjectNames[subjectId]
+          });
+    return TimeTableBox(x, y, width, height, s, widget._edit);
   }
 
-  Widget _getRow(BuildContext context, BoxConstraints constraints, int numCells,
-      double height, int subjectId, int pageOffset) {
+  Widget _getRow(int x, BuildContext context, BoxConstraints constraints,
+      int numCells, double height, int subjectId, int pageOffset) {
     double cellWidth = (constraints.maxWidth) / numCells;
     var subject = GlobalContext.data.timeTableData.data[subjectId];
     int dayOffset = pageOffset *
@@ -58,26 +73,87 @@ class TimeTable extends StatelessWidget {
       Row(
         children: [
           for (int i = 0; i < numCells; i++)
-            _getRowBox(cellWidth, height, context, subject, i + dayOffset)
+            _getRowBox(x, i, cellWidth, height, context, subjectId, subject,
+                i + dayOffset)
         ],
       )
     ]);
   }
 
   @override
-  Widget build(BuildContext context) {
-    int numCells = GlobalContext.fromDateWindow
-            .difference(GlobalContext.toDateWindow)
-            .inDays
-            .abs() +
-        1;
-    var data = GlobalContext.data.summaryData.data;
+  void initState() {
+    super.initState();
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    int numCells = DataUtils.getWindowSize(
+        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+
+    var data = GlobalContext.data.summaryData.data;
     Widget table(int pageOffset) {
       return NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollNotification) {
             return true;
+          } else if (notification is BoxApproveNotification) {
+            setState(() {
+              print(notification.data.toString());
+              var subj = GlobalContext
+                  .data.timeTableData.data[notification.data.subjectId];
+              // check of we have a subject
+              if (subj != null) {
+                // insert this particular date for the subject
+                subj[notification.data.date] = notification.data;
+              } else {
+                GlobalContext
+                    .data.timeTableData.data[notification.data.subjectId] = {
+                  notification.data.date: notification.data
+                };
+              }
+
+              DateChangedNotification(
+                      GlobalContext.fromDateWindow, GlobalContext.toDateWindow)
+                  .dispatch(context);
+
+              widget._edit[notification.x][notification.y] =
+                  TimeTableCellState.inactive;
+              _lastPressedX = -1;
+              _lastPressedY = -1;
+            });
+          } else if (notification is BoxCancelNotification) {
+            setState(() {
+              widget._edit[notification.x][notification.y] =
+                  TimeTableCellState.inactive;
+              _lastPressedX = -1;
+              _lastPressedY = -1;
+            });
+          } else if (notification is BoxPressedNotification) {
+            setState(() {
+              if (_lastPressedX != -1) {
+                widget._edit[_lastPressedX][_lastPressedY] =
+                    TimeTableCellState.inactive;
+              }
+
+              widget._edit[notification.x][notification.y] =
+                  TimeTableCellState.pressed;
+              _lastPressedX = notification.x;
+              _lastPressedY = notification.y;
+            });
+          } else if (notification is BoxEnterNotification &&
+              widget._edit[notification.x][notification.y] !=
+                  TimeTableCellState.pressed) {
+            setState(() {
+              widget._edit[notification.x][notification.y] =
+                  TimeTableCellState.hover;
+            });
+          } else if (notification is BoxLeaveNotification &&
+              widget._edit[notification.x][notification.y] !=
+                  TimeTableCellState.pressed) {
+            setState(() {
+              widget._edit[notification.x][notification.y] =
+                  TimeTableCellState.inactive;
+            });
           }
           return false;
         },
@@ -91,17 +167,17 @@ class TimeTable extends StatelessWidget {
                 return ListView.builder(
                   clipBehavior: Clip.none,
                   padding: EdgeInsets.zero,
-                  controller: _scrollController,
+                  controller: widget._scrollController,
                   itemCount: data.length,
-                  itemBuilder: (BuildContext context, int subjecIndex) {
-                    int subjectId = data[subjecIndex].subjectId;
+                  itemBuilder: (BuildContext context, int subjectIndex) {
+                    int subjectId = data[subjectIndex].subjectId;
                     double height = GlobalContext.showSubjectsInSummary
                         ? GlobalContext.data.minSubjectTextHeight[subjectId]!
                         : 0;
                     height += 2 * GlobalStyle.summaryEntryBarHeight;
                     height += 2 * GlobalStyle.summaryCardPadding;
-                    return _getRow(context, constraints, numCells, height,
-                        subjectId, pageOffset);
+                    return _getRow(subjectIndex, context, constraints, numCells,
+                        height, subjectId, pageOffset);
                   },
                 );
               },
@@ -114,8 +190,8 @@ class TimeTable extends StatelessWidget {
     return Padding(
       padding:
           const EdgeInsets.only(right: GlobalStyle.splitterVGrabberSize / 2),
-      child: _splitController.widget(
-          context, table, SplitControllerLocation.bottom),
+      child: widget._splitController
+          .widget(context, table, SplitControllerLocation.bottom),
     );
   }
 }

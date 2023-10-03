@@ -22,7 +22,7 @@ class TimeTableData {
 
   @override
   String toString() {
-    return "${ColumnName.date}: $date\n${ColumnName.subject}: $subject\n${ColumnName.planed}: $planed\n${ColumnName.recorded}: $recorded\n";
+    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.date}: $date\n${ColumnName.subject}: $subject\n${ColumnName.planed}: $planed\n${ColumnName.recorded}: $recorded\n";
   }
 }
 
@@ -251,19 +251,19 @@ class GlobalData {
     var to = GlobalContext.toDateWindow;
     var adj = DataUtils.getAdjacentTimePeriods(from, to);
 
-    print("========================");
-    print("new time interval:");
-    print(adj);
+    // print("========================");
+    // print("new time interval:");
+    // print(adj);
     var newFrom = adj["prev_from"];
     if (newFrom.compareTo(_fromDate) < 0) {
       // add new data on this side
-      print(
-          "load new data: $newFrom to ${_fromDate.subtract(Duration(days: 1))}");
+      // print(
+      //     "load new data: $newFrom to ${_fromDate.subtract(Duration(days: 1))}");
       _load(newFrom, _fromDate.subtract(Duration(days: 1)));
     } else if (newFrom.compareTo(_fromDate) > 0) {
       // remove unused data on this side
-      print(
-          "remove old data: $_fromDate to ${newFrom.subtract(Duration(days: 1))}");
+      // print(
+      //     "remove old data: $_fromDate to ${newFrom.subtract(Duration(days: 1))}");
       for (DateTime d = _fromDate;
           d.compareTo(newFrom) < 0;
           d = d.add(Duration(days: 1))) {
@@ -274,7 +274,7 @@ class GlobalData {
     var newTo = adj["next_to"];
     if (newTo.compareTo(_toDate) < 0) {
       // remove unused data on this side
-      print("remove old data: ${newTo.add(Duration(days: 1))} to $_toDate");
+      // print("remove old data: ${newTo.add(Duration(days: 1))} to $_toDate");
       for (DateTime d = newTo.add(Duration(days: 1));
           d.compareTo(_toDate) <= 0;
           d = d.add(Duration(days: 1))) {
@@ -282,11 +282,13 @@ class GlobalData {
       }
     } else if (newTo.compareTo(_toDate) > 0) {
       // add new data on this side
-      print("load new data: ${_toDate.add(Duration(days: 1))} to $newTo");
+      // print("load new data: ${_toDate.add(Duration(days: 1))} to $newTo");
       _load(_toDate.add(Duration(days: 1)), newTo);
     }
 
     _fromDate = newFrom;
     _toDate = newTo;
+
+    _summary();
   }
 }

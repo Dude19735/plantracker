@@ -19,7 +19,6 @@ class ColumnName {
 
 class DataValues {
   static const List<String> subjectNames = [
-    "Sub_0",
     "0_Mo",
     "1_Tu",
     "2_We",
@@ -29,6 +28,25 @@ class DataValues {
     "6_Su"
   ];
 
-  static const double planedTime = 5.0;
-  static const double recordedTime = 4.7;
+  static const double _maxPlanedTime = 5.0;
+  static const List<double> planedTime = [
+    _maxPlanedTime,
+    _maxPlanedTime,
+    _maxPlanedTime,
+    _maxPlanedTime,
+    _maxPlanedTime,
+    _maxPlanedTime,
+    _maxPlanedTime,
+    _maxPlanedTime
+  ];
+  static const List<double> recordedTime = [
+    _maxPlanedTime * 0,
+    _maxPlanedTime * 0,
+    _maxPlanedTime * 0.16,
+    _maxPlanedTime * 0.32,
+    _maxPlanedTime * 0.48,
+    _maxPlanedTime * 0.64,
+    _maxPlanedTime * 0.80,
+    _maxPlanedTime * 1.0
+  ];
 }

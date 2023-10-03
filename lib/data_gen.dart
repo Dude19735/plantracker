@@ -124,12 +124,13 @@ class DataGen {
     for (var d = fromDate;
         d.compareTo(toDate) <= 0;
         d = d.add(Duration(days: 1))) {
+      int subjectId = d.weekday - 1;
       entries.add({
-        ColumnName.subjectId: d.weekday,
+        ColumnName.subjectId: subjectId,
         ColumnName.date: DataUtils.dateTime2Int(d),
-        ColumnName.planed: DataValues.planedTime,
-        ColumnName.recorded: DataValues.recordedTime,
-        ColumnName.subject: DataValues.subjectNames[d.weekday]
+        ColumnName.planed: DataValues.planedTime[d.weekday],
+        ColumnName.recorded: DataValues.recordedTime[d.weekday],
+        ColumnName.subject: DataValues.subjectNames[subjectId]
       });
     }
 
@@ -146,44 +147,44 @@ class DataGen {
     return DataUtils.mapOfListsToStr(tdata);
   }
 
-  static String testDataSummaryView(DateTime fromDate, DateTime toDate) {
-    return """[
-        {
-          "${ColumnName.subjectId}": 1,
-          "${ColumnName.planed}": 15.0,
-          "${ColumnName.recorded}": 17.5,
-          "${ColumnName.subject}": "Sub1"
-        },
-        {
-          "${ColumnName.subjectId}": 2,
-          "${ColumnName.planed}": 14.0,
-          "${ColumnName.recorded}": 13.9,
-          "${ColumnName.subject}": "Sub2"
-        },
-        {
-          "${ColumnName.subjectId}": 3,
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 12.0,
-          "${ColumnName.subject}": "Sub3"
-        },
-        {
-          "${ColumnName.subjectId}": 4,
-          "${ColumnName.planed}": 11.0,
-          "${ColumnName.recorded}": 0.0,
-          "${ColumnName.subject}": "Sub4"
-        },  
-        {
-          "${ColumnName.subjectId}": 5,
-          "${ColumnName.planed}": 0.0,
-          "${ColumnName.recorded}": 12.0,
-          "${ColumnName.subject}": "Sub5"
-        },
-        {
-          "${ColumnName.subjectId}": 6,
-          "${ColumnName.planed}": 0.0,
-          "${ColumnName.recorded}": 0.0,
-          "${ColumnName.subject}": "ijsöldkjfopiqwejmociavjoirjewmojcoawiefmaowoijewf"
-        }
-      ]""";
-  }
+  // static String testDataSummaryView(DateTime fromDate, DateTime toDate) {
+  //   return """[
+  //       {
+  //         "${ColumnName.subjectId}": 1,
+  //         "${ColumnName.planed}": 15.0,
+  //         "${ColumnName.recorded}": 17.5,
+  //         "${ColumnName.subject}": "Sub1"
+  //       },
+  //       {
+  //         "${ColumnName.subjectId}": 2,
+  //         "${ColumnName.planed}": 14.0,
+  //         "${ColumnName.recorded}": 13.9,
+  //         "${ColumnName.subject}": "Sub2"
+  //       },
+  //       {
+  //         "${ColumnName.subjectId}": 3,
+  //         "${ColumnName.planed}": 11.0,
+  //         "${ColumnName.recorded}": 12.0,
+  //         "${ColumnName.subject}": "Sub3"
+  //       },
+  //       {
+  //         "${ColumnName.subjectId}": 4,
+  //         "${ColumnName.planed}": 11.0,
+  //         "${ColumnName.recorded}": 0.0,
+  //         "${ColumnName.subject}": "Sub4"
+  //       },
+  //       {
+  //         "${ColumnName.subjectId}": 5,
+  //         "${ColumnName.planed}": 0.0,
+  //         "${ColumnName.recorded}": 12.0,
+  //         "${ColumnName.subject}": "Sub5"
+  //       },
+  //       {
+  //         "${ColumnName.subjectId}": 6,
+  //         "${ColumnName.planed}": 0.0,
+  //         "${ColumnName.recorded}": 0.0,
+  //         "${ColumnName.subject}": "ijsöldkjfopiqwejmociavjoirjewmojcoawiefmaowoijewf"
+  //       }
+  //     ]""";
+  // }
 }

@@ -64,7 +64,7 @@ class SplitController {
       },
       child: PageView.builder(
         clipBehavior: Clip.none,
-        allowImplicitScrolling: true,
+        // allowImplicitScrolling: true, // apparently this is not necessary
         onPageChanged: (page) {
           if (page != _currentPage) {
             bool backwards = page < _currentPage;

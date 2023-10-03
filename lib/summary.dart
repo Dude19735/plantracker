@@ -21,13 +21,13 @@ class SummaryEntry extends StatelessWidget {
               widthFactor: fraction,
               heightFactor: 1.0,
               child: DecoratedBox(
-                decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: color)),
-              ),
+                  decoration: BoxDecoration(
+                      color: color, borderRadius: BorderRadius.circular(3))),
             ),
-            Text(text),
+            Padding(
+              padding: const EdgeInsets.only(left: 3.0),
+              child: Text(text),
+            ),
           ],
         ));
   }
@@ -48,12 +48,12 @@ class SummaryEntry extends StatelessWidget {
         _getBar(
             GlobalStyle.summaryEntryBarHeight,
             _getFraction(_maxTime, data[_index].recorded),
-            Colors.blue,
+            GlobalStyle.summaryRecordedTimeBarColor(context, data[_index]),
             "${data[_index].recorded}"),
         _getBar(
             GlobalStyle.summaryEntryBarHeight,
             _getFraction(_maxTime, data[_index].planed),
-            Colors.orange,
+            GlobalStyle.summaryPlanedTimeBarColor(context),
             "${data[_index].planed}"),
       ]),
     );
