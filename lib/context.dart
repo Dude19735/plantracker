@@ -10,8 +10,7 @@ class GlobalContext {
       fromDateWindow.add(Duration(days: GlobalSettings.initDateWindowSize));
 
   static bool showSubjectsInSummary = true;
-  static GlobalData data = GlobalData(DataUtils.getLastMonday(DateTime.now()),
-      DataUtils.getNextSunday(DateTime.now()));
+  static GlobalData data = GlobalData();
 
   static Rect scheduleWindowOutlineRect = Rect.fromLTWH(0, 0, 1, 1);
   static Rect scheduleWindowInlineRect = Rect.fromLTWH(0, 0, 1, 1);

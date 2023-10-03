@@ -120,15 +120,27 @@ class DataGen {
   static String testDataTimeTableView(DateTime fromDate, DateTime toDate) {
     int range = fromDate.difference(toDate).inDays.abs() + 1;
     Random rand = Random();
-    rand.nextInt(range);
 
-    int s1 = rand.nextInt(range);
-    int s2 = rand.nextInt(range);
-    int s3 = rand.nextInt(range);
-    int s4 = rand.nextInt(range);
-    int s5 = rand.nextInt(range);
-    int s6 = rand.nextInt(range);
+    const int s1 = 0; //rand.nextInt(range);
+    const int s2 = 1; //rand.nextInt(range);
+    const int s3 = 2; //rand.nextInt(range);
+    const int s4 = 3; //rand.nextInt(range);
+    const int s5 = 4; //rand.nextInt(range);
+    const int s6 = 5; //rand.nextInt(range);
 
+    const int o1 = 1; //rand.nextInt(range);
+    const int o2 = 1; //rand.nextInt(range);
+    const int o3 = 1; //rand.nextInt(range);
+    const int o4 = 1; //rand.nextInt(range);
+    const int o5 = 1; //rand.nextInt(range);
+    const int o6 = 1; //rand.nextInt(range);
+    const int o61 = 2;
+
+    const int mod = 7;
+    // print("data gen $fromDate");
+    // print("data gen off ${fromDate.add(Duration(days: s1))}");
+    // print(
+    //     "data gen int ${DataUtils.dateTime2Int(fromDate.add(Duration(days: s1)))}");
     return """[
         {
           "${ColumnName.subjectId}": 1,
@@ -174,49 +186,49 @@ class DataGen {
         },
         {
           "${ColumnName.subjectId}": 1,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s1 + 2) % 7)))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s1 + o1) % mod)))},
           "${ColumnName.planed}": 15.0,
           "${ColumnName.recorded}": 17.5,
           "${ColumnName.subject}": "Sub1"
         },
         {
           "${ColumnName.subjectId}": 2,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s2 + 3) % 7)))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s2 + o2) % mod)))},
           "${ColumnName.planed}": 14.0,
           "${ColumnName.recorded}": 13.9,
           "${ColumnName.subject}": "Sub2"
         },
         {
           "${ColumnName.subjectId}": 3,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s3 + 1) % 7)))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s3 + o3) % mod)))},
           "${ColumnName.planed}": 11.0,
           "${ColumnName.recorded}": 12.0,
           "${ColumnName.subject}": "Sub3"
         },
         {
           "${ColumnName.subjectId}": 4,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s4 + 4) % 7)))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s4 + o4) % mod)))},
           "${ColumnName.planed}": 11.0,
           "${ColumnName.recorded}": 0.0,
           "${ColumnName.subject}": "Sub4"
         },  
         {
           "${ColumnName.subjectId}": 5,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s5 + 2) % 7)))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s5 + o5) % mod)))},
           "${ColumnName.planed}": 0.0,
           "${ColumnName.recorded}": 12.0,
           "${ColumnName.subject}": "Sub5"
         },
         {
           "${ColumnName.subjectId}": 6,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s6 + 1) % 7)))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s6 + o6) % mod)))},
           "${ColumnName.planed}": 11.0,
           "${ColumnName.recorded}": 6.0,
           "${ColumnName.subject}": "Sub6"
         },
         {
           "${ColumnName.subjectId}": 6,
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s6 + 3) % 7)))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: (s6 + o61) % mod)))},
           "${ColumnName.planed}": 11.0,
           "${ColumnName.recorded}": 6.0,
           "${ColumnName.subject}": "Sub6"
@@ -230,7 +242,7 @@ class DataGen {
           "${ColumnName.subjectId}": 1,
           "${ColumnName.planed}": 15.0,
           "${ColumnName.recorded}": 17.5,
-          "${ColumnName.subject}": "jslkjopivmlkaoiesoairejlökmvaoijseoijasoeihoivnkcoieklllöksamoivoie"
+          "${ColumnName.subject}": "Sub1"
         },
         {
           "${ColumnName.subjectId}": 2,
@@ -260,7 +272,7 @@ class DataGen {
           "${ColumnName.subjectId}": 6,
           "${ColumnName.planed}": 0.0,
           "${ColumnName.recorded}": 0.0,
-          "${ColumnName.subject}": "Sub6"
+          "${ColumnName.subject}": "ijsöldkjfopiqwejmociavjoirjewmojcoawiefmaowoijewf"
         }
       ]""";
   }
