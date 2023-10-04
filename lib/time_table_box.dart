@@ -7,17 +7,48 @@ import 'package:scheduler/data.dart';
 import 'package:scheduler/data_columns.dart';
 import 'dart:math';
 
+class ScrollAndFocusNotification extends Notification {
+  final void Function() doAfter;
+  final double offset;
+  ScrollAndFocusNotification(this.offset, this.doAfter);
+}
+
 enum TimeTableCellState { inactive, hover, pressed }
 
 class TimeTableCellStateEncapsulation {
   int _lastX = -1;
   int _lastY = -1;
+  final ScrollController _scrollController;
   late final List<List<void Function(TimeTableCellState state)?>> setState;
   late final List<List<TimeTableCellState>> state;
+
+  int lastY() => _lastY;
+  int lastX() => _lastX;
 
   void resetLast() {
     _lastX = -1;
     _lastY = -1;
+  }
+
+  bool pressAt(int oldX, int oldY, int dx, int dy, FocusNode? node) {
+    if (oldX + dx >= 0 &&
+        oldY + dy >= 0 &&
+        oldX + dx < setState.length &&
+        oldY + dy < setState[0].length) {
+      if (state[oldX][oldY] != TimeTableCellState.inactive) {
+        setState[oldX][oldY]!(TimeTableCellState.inactive);
+        if (node != null && node.hasFocus) {
+          node.unfocus();
+        }
+      }
+
+      _lastX = oldX + dx;
+      _lastY = oldY + dy;
+
+      setState[_lastX][_lastY]!(TimeTableCellState.pressed);
+      return true;
+    }
+    return false;
   }
 
   bool moveActiveStateTo(int x, int y, TimeTableCellState newStateOfLast,
@@ -37,7 +68,8 @@ class TimeTableCellStateEncapsulation {
     return res;
   }
 
-  TimeTableCellStateEncapsulation(int sRows, int sCols) {
+  TimeTableCellStateEncapsulation(
+      int sRows, int sCols, this._scrollController) {
     state = List<List<TimeTableCellState>>.generate(
         sRows,
         (i) => List<TimeTableCellState>.generate(
@@ -135,13 +167,41 @@ class _TimeTableBox extends State<TimeTableBox> {
   void initState() {
     super.initState();
     _planed = "";
+    // ServicesBinding.instance.keyboard.addHandler(_onKey);
+  }
+
+  void _esc() {
+    setState(() {
+      widget._state.state[widget._x][widget._y] = TimeTableCellState.inactive;
+      widget._state.resetLast();
+    });
+  }
+
+  void _enter() {
+    if (!_formKey.currentState!.validate()) {
+      Helpers.showAlertDialog(context, "Input must be a number!");
+    } else {
+      setState(() {
+        if (_planed.compareTo("") != 0) {
+          _setSubjectPlanTime(context, double.parse(_planed));
+        }
+        widget._state.state[widget._x][widget._y] = TimeTableCellState.inactive;
+      });
+    }
+  }
+
+  bool _move(int ox, int oy, FocusNode node) {
+    return widget._state
+        .pressAt(widget._state.lastX(), widget._state.lastY(), ox, oy, node);
+  }
+
+  _unfocus(FocusNode node) {
+    if (node.hasFocus) {
+      node.unfocus();
+    }
   }
 
   Widget _getEditContainer(BuildContext context, TimeTableData? subject) {
-    var focusNode = FocusNode();
-    // FocusScope.of(context).requestFocus(focusNode);
-    // focusNode.requestFocus();
-
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       double ratio = constraints.maxWidth / constraints.maxHeight;
@@ -150,6 +210,14 @@ class _TimeTableBox extends State<TimeTableBox> {
       if (subject != null) {
         _planed = subject.planed.toString();
       }
+
+      var focusNode = FocusNode();
+      double offset = widget._x * widget._height;
+      ScrollAndFocusNotification(offset, () {
+        FocusScope.of(context).requestFocus(focusNode);
+      }).dispatch(context);
+      // widget._state._scrollController.jumpTo(offset);
+
       var textField = Form(
         key: _formKey,
         child: TextFormField(
@@ -157,15 +225,16 @@ class _TimeTableBox extends State<TimeTableBox> {
             //   print("tabbed outside");
             //   // focusNode.previousFocus();
             // },
+            focusNode: focusNode,
             validator: (value) {
-              print("validate");
+              // print("validate");
+              if (value != null && value.compareTo("") == 0) return null;
               var val = double.tryParse(value!);
               return val != null ? null : "";
             },
             onChanged: (value) {
               _planed = value;
             },
-            focusNode: focusNode,
             initialValue: subject != null ? _planed.toString() : "",
             textAlign: TextAlign.center,
             decoration: InputDecoration(
@@ -179,71 +248,79 @@ class _TimeTableBox extends State<TimeTableBox> {
           height: constraints.maxHeight,
           width: constraints.maxWidth,
           child: Center(
-            child: Focus(
-              onFocusChange: (value) {
-                // FocusScope.of(context).requestFocus(focusNode);
-              },
-              autofocus: true,
-              child: Column(
-                children: [
-                  Expanded(child: textField),
-                  if (ratio > 0.48)
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: constraints.maxWidth / 2,
-                          child: IconButton(
-                            onPressed: () {
-                              if (!_formKey.currentState!.validate()) {
-                                Helpers.showAlertDialog(
-                                    context, "Input must be a number!");
-                              } else {
-                                setState(() {
-                                  _setSubjectPlanTime(
-                                      context, double.parse(_planed));
-                                  widget._state.state[widget._x][widget._y] =
-                                      TimeTableCellState.inactive;
-                                  widget._state.resetLast();
-                                });
-                              }
-                            },
-                            style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.zero))),
-                            icon: Icon(Icons.check),
-                            iconSize: min(constraints.maxHeight / 3,
-                                constraints.maxWidth / 3),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ),
-                        SizedBox(
-                          width: constraints.maxWidth / 2,
-                          child: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                widget._state.state[widget._x][widget._y] =
-                                    TimeTableCellState.inactive;
+            child: RawKeyboardListener(
+                focusNode: FocusNode(),
+                autofocus: true,
+                onKey: (event) {
+                  if (event is! RawKeyUpEvent) return;
+
+                  if (event.logicalKey == LogicalKeyboardKey.escape) {
+                    _unfocus(focusNode);
+                    _esc();
+                  } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+                    _enter();
+                    _move(0, 1, focusNode);
+                  } else if (event.isShiftPressed) {
+                    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                      _move(0, -1, focusNode);
+                    } else if (event.logicalKey ==
+                        LogicalKeyboardKey.arrowRight) {
+                      _move(0, 1, focusNode);
+                    } else if (event.logicalKey ==
+                        LogicalKeyboardKey.arrowDown) {
+                      _move(1, 0, focusNode);
+                    } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                      _move(-1, 0, focusNode);
+                    }
+                  }
+                },
+                child: Column(
+                  children: [
+                    Expanded(child: textField),
+                    if (ratio > 0.48)
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: constraints.maxWidth / 2,
+                            child: IconButton(
+                              onPressed: () {
+                                _unfocus(focusNode);
+                                _enter();
                                 widget._state.resetLast();
-                              });
-                            },
-                            style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.zero))),
-                            icon: Icon(Icons.cancel),
-                            iconSize: min(constraints.maxHeight / 3,
-                                constraints.maxWidth / 3),
-                            padding: EdgeInsets.zero,
+                              },
+                              style: ButtonStyle(
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.zero))),
+                              icon: Icon(Icons.check),
+                              iconSize: min(constraints.maxHeight / 3,
+                                  constraints.maxWidth / 3),
+                              padding: EdgeInsets.zero,
+                            ),
                           ),
-                        )
-                      ],
-                    )
-                ],
-              ),
-            ),
+                          SizedBox(
+                            width: constraints.maxWidth / 2,
+                            child: IconButton(
+                              onPressed: () {
+                                _unfocus(focusNode);
+                                _esc();
+                              },
+                              style: ButtonStyle(
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.zero))),
+                              icon: Icon(Icons.cancel),
+                              iconSize: min(constraints.maxHeight / 3,
+                                  constraints.maxWidth / 3),
+                              padding: EdgeInsets.zero,
+                            ),
+                          )
+                        ],
+                      )
+                  ],
+                )),
           ));
     });
   }

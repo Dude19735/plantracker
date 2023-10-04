@@ -5,7 +5,6 @@ import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/time_table_box.dart';
-import 'package:scheduler/data_columns.dart';
 
 class TimeTable extends StatefulWidget {
   final ScrollController _scrollController;
@@ -18,7 +17,7 @@ class TimeTable extends StatefulWidget {
     int sRow = GlobalContext.data.summaryData.data.length;
     int sCol = DataUtils.getWindowSize(
         GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
-    _edit = TimeTableCellStateEncapsulation(sRow, sCol);
+    _edit = TimeTableCellStateEncapsulation(sRow, sCol, _scrollController);
   }
 
   @override
