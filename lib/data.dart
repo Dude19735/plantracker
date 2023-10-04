@@ -6,11 +6,39 @@ import 'package:scheduler/data_columns.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:collection/collection.dart';
 
+class DataChangedNotification extends Notification {}
+
+class DataChangedNotificationSubjectData extends DataChangedNotification {}
+
+class SubjectData {
+  final int subjectId;
+  String subjectAcronym;
+  String subject;
+  int active;
+  int activeFromDate;
+  int activeToDate;
+
+  SubjectData(Map<String, dynamic> data)
+      : subjectId = data[ColumnName.subjectId],
+        subjectAcronym = data[ColumnName.subjectAcronym],
+        subject = data[ColumnName.subject],
+        active = data[ColumnName.active],
+        activeFromDate = data[ColumnName.activeFromDate],
+        activeToDate = data[ColumnName.activeToDate];
+
+  @override
+  String toString() {
+    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.subject}: $subject${ColumnName.active}: $active\n${ColumnName.activeFromDate}: $activeFromDate\n${ColumnName.activeToDate}: $activeToDate\n";
+  }
+}
+
+class DataChangedNotificationTimeTableData extends DataChangedNotification {}
+
 class TimeTableData {
   final int subjectId;
   final int date;
-  final double planed;
-  final double recorded;
+  double planed;
+  double recorded;
   final String subject;
 
   TimeTableData(Map<String, dynamic> data)
@@ -25,6 +53,8 @@ class TimeTableData {
     return "${ColumnName.subjectId}: $subjectId\n${ColumnName.date}: $date\n${ColumnName.subject}: $subject\n${ColumnName.planed}: $planed\n${ColumnName.recorded}: $recorded\n";
   }
 }
+
+class DataChangedNotificationSchedulePlanData extends DataChangedNotification {}
 
 class SchedulePlanData {
   final int subjectId;
@@ -80,6 +110,7 @@ class SummaryData {
   }
 }
 
+typedef TSubjectData = Map<int, SubjectData>;
 typedef TSummaryData = List<SummaryData>;
 // map by SubjectId then by Date
 typedef TTimeTableData = Map<int, Map<int, TimeTableData>>;
@@ -90,6 +121,9 @@ class Data<D> {
   late final D data;
 
   Data() {
+    if (D == TSubjectData) {
+      data = <int, SubjectData>{} as D;
+    }
     if (D == TSummaryData) {
       data = TSummaryData.empty(growable: true) as D;
     } else if (D == TTimeTableData) {
@@ -134,6 +168,14 @@ class Data<D> {
       List<SchedulePlanData> d =
           json.map((item) => SchedulePlanData(item)).toList();
       data = groupBy(d, (SchedulePlanData elem) => elem.date) as D;
+    } else if (D == TSubjectData) {
+      List<SubjectData> temp = json.map((item) => SubjectData(item)).toList();
+      var temp2 = groupBy(temp, (SubjectData elem) => elem.subjectId);
+      var temp3 = <int, SubjectData>{};
+      for (var k in temp2.keys) {
+        temp3[k] = temp2[k]![0];
+      }
+      data = temp3 as D;
     } else {
       throw Exception("Message type [$D] not defined in data parser");
     }
@@ -154,6 +196,7 @@ class GlobalData {
   late Data<TSummaryData> summaryData;
   late Data<TTimeTableData> timeTableData;
   late Data<TSchedulePlanData> schedulePlanData;
+  late Data<TSubjectData> subjectData;
 
   late DateTime _fromDate;
   late DateTime _toDate;
@@ -175,13 +218,11 @@ class GlobalData {
     _fromDate = adj["prev_from"];
     _toDate = adj["next_to"];
 
-    _summary();
+    summary();
+    _subjects(_fromDate, _toDate);
   }
 
-  void _summary() {
-    // summaryData = Data<TSummaryData>.fromJsonStr(DataGen.testDataSummaryView(
-    //     GlobalContext.fromDateWindow, GlobalContext.toDateWindow));
-
+  void summary() {
     int fromDate = DataUtils.dateTime2Int(GlobalContext.fromDateWindow);
     int toDate = DataUtils.dateTime2Int(GlobalContext.toDateWindow);
 
@@ -214,6 +255,11 @@ class GlobalData {
     for (var element in summaryData.data) {
       minSubjectTextHeight[element.subjectId] = 0;
     }
+  }
+
+  void _subjects(DateTime fromDate, DateTime toDate) {
+    subjectData = Data<TSubjectData>.fromJsonStr(
+        DataGen.testDataSubjects(fromDate, toDate));
   }
 
   void _load(DateTime fromDate, DateTime toDate) {
@@ -289,6 +335,7 @@ class GlobalData {
     _fromDate = newFrom;
     _toDate = newTo;
 
-    _summary();
+    summary();
+    _subjects(_fromDate, _toDate);
   }
 }

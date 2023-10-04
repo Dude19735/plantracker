@@ -117,6 +117,23 @@ class DataGen {
       ]""";
   }
 
+  static String testDataSubjects(DateTime fromDate, DateTime toDate) {
+    String res = "[";
+    for (int i = 0; i < DataValues.subjectNames.length; i++) {
+      res += """{
+          "${ColumnName.subjectId}": $i,
+          "${ColumnName.subjectAcronym}": "${DataValues.subjectNames[i]}",
+          "${ColumnName.subject}": "${DataValues.subjectNames[i]}",
+          "${ColumnName.active}": 1,
+          "${ColumnName.activeFromDate}": ${DataUtils.dateTime2Int(fromDate)},
+          "${ColumnName.activeToDate}": ${DataUtils.dateTime2Int(toDate)}
+        },""";
+    }
+    res = res.substring(0, res.length - 1);
+    res += "]";
+    return res;
+  }
+
   static String testDataTimeTableView(DateTime fromDate, DateTime toDate) {
     // int range = DataUtils.getWindowSize(fromDate, toDate);
 

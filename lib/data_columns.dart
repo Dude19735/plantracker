@@ -15,6 +15,9 @@ class ColumnName {
   static const String seriesToDate = "SeriesToDate";
   static const String noteId = "NoteId";
   static const String note = "Note";
+  static const String active = "Active";
+  static const String activeFromDate = "ActiveFromDate";
+  static const String activeToDate = "ActiveToDate";
 }
 
 class DataValues {

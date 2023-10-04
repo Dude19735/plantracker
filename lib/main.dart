@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:scheduler/context.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
+import 'package:scheduler/data.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -109,6 +110,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         SplitController(animationMs: GlobalSettings.pageChangeDurationMS);
   }
 
+  void _dealWithDataChangedNotification(DataChangedNotification notification) {
+    if (notification is DataChangedNotificationTimeTableData) {
+      print("DataChanged_Notification_TimeTableData");
+      GlobalContext.data.summary();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var split = NotificationListener(
@@ -120,6 +128,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             GlobalContext.data.load();
           });
           return true;
+        } else if (notification is DataChangedNotification) {
+          setState(() {
+            _dealWithDataChangedNotification(notification);
+          });
         } else if (notification is PageScrolledNotification) {
           setState(() {
             if (!notification.backwards) {
