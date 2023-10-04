@@ -10,14 +10,45 @@ import 'dart:math';
 enum TimeTableCellState { inactive, hover, pressed }
 
 class TimeTableCellStateEncapsulation {
-  void Function()? revertLast;
+  int _lastX = -1;
+  int _lastY = -1;
+  late final List<List<void Function(TimeTableCellState state)?>> setState;
   late final List<List<TimeTableCellState>> state;
+
+  void resetLast() {
+    _lastX = -1;
+    _lastY = -1;
+  }
+
+  bool moveActiveStateTo(int x, int y, TimeTableCellState newStateOfLast,
+      TimeTableCellState newStateOfThis) {
+    bool res = true;
+    if (_lastX == -1) {
+      res = false;
+    } else {
+      setState[_lastX][_lastY]!(newStateOfLast);
+    }
+
+    _lastX = x;
+    _lastY = y;
+    // print("moveActiveStateTo $_lastX $_lastY ${setState[x][y]}");
+    setState[x][y]!(newStateOfThis);
+
+    return res;
+  }
 
   TimeTableCellStateEncapsulation(int sRows, int sCols) {
     state = List<List<TimeTableCellState>>.generate(
         sRows,
         (i) => List<TimeTableCellState>.generate(
             sCols, (index) => TimeTableCellState.inactive,
+            growable: false),
+        growable: false);
+
+    setState = List<List<void Function(TimeTableCellState state)?>>.generate(
+        sRows,
+        (i) => List<void Function(TimeTableCellState state)?>.generate(
+            sCols, (index) => null,
             growable: false),
         growable: false);
   }
@@ -40,7 +71,8 @@ class TimeTableBox extends StatefulWidget {
 }
 
 class _TimeTableBox extends State<TimeTableBox> {
-  late double _planed;
+  late String _planed;
+  final _formKey = GlobalKey<FormState>();
 
   TimeTableData? _getSubject() {
     var subj = GlobalContext.data.timeTableData.data[widget._subjectId];
@@ -55,13 +87,20 @@ class _TimeTableBox extends State<TimeTableBox> {
 
   void _setSubjectPlanTime(BuildContext context, double planed) {
     var subj = GlobalContext.data.timeTableData.data[widget._subjectId];
+    bool send = false;
     if (subj != null) {
       var sDate = subj[widget._date];
       {
         if (sDate != null) {
+          var old = GlobalContext.data.timeTableData
+              .data[widget._subjectId]![widget._date]!.planed;
           GlobalContext.data.timeTableData
               .data[widget._subjectId]![widget._date]!.planed = planed;
-        } else {
+          if (old == planed) {
+            send = false;
+          }
+        } else if (planed != 0) {
+          send = true;
           GlobalContext.data.timeTableData
               .data[widget._subjectId]![widget._date] = TimeTableData({
             ColumnName.subjectId: widget._subjectId,
@@ -73,7 +112,7 @@ class _TimeTableBox extends State<TimeTableBox> {
           });
         }
       }
-    } else {
+    } else if (planed != 0) {
       GlobalContext.data.timeTableData.data[widget._subjectId] = {
         widget._date: TimeTableData({
           ColumnName.subjectId: widget._subjectId,
@@ -84,15 +123,18 @@ class _TimeTableBox extends State<TimeTableBox> {
               GlobalContext.data.subjectData.data[widget._subjectId]!.subject
         })
       };
+      send = true;
     }
 
-    DataChangedNotificationTimeTableData().dispatch(context);
+    if (send) {
+      DataChangedNotificationTimeTableData().dispatch(context);
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    _planed = 0;
+    _planed = "";
   }
 
   Widget _getEditContainer(BuildContext context, TimeTableData? subject) {
@@ -106,25 +148,31 @@ class _TimeTableBox extends State<TimeTableBox> {
       if (ratio < 0.359) return SizedBox();
 
       if (subject != null) {
-        _planed = subject.planed;
+        _planed = subject.planed.toString();
       }
-      var textField = TextFormField(
-          onChanged: (value) {
-            try {
-              _planed = double.parse(value);
-            } on FormatException {
-              Helpers.showAlertDialog(
-                  context, "Input [$value] is not a number!");
-            } catch (e) {
-              Helpers.showAlertDialog(context, "Unknown error!");
-            }
-          },
-          focusNode: focusNode,
-          initialValue: subject != null ? _planed.toString() : "",
-          textAlign: TextAlign.center,
-          decoration: InputDecoration(
-            hintText: subject == null ? "..." : "",
-          ));
+      var textField = Form(
+        key: _formKey,
+        child: TextFormField(
+            // onTapOutside: (event) {
+            //   print("tabbed outside");
+            //   // focusNode.previousFocus();
+            // },
+            validator: (value) {
+              print("validate");
+              var val = double.tryParse(value!);
+              return val != null ? null : "";
+            },
+            onChanged: (value) {
+              _planed = value;
+            },
+            focusNode: focusNode,
+            initialValue: subject != null ? _planed.toString() : "",
+            textAlign: TextAlign.center,
+            decoration: InputDecoration(
+              errorStyle: TextStyle(height: 0),
+              hintText: subject == null ? "..." : "",
+            )),
+      );
 
       return Container(
           color: Colors.white,
@@ -146,12 +194,18 @@ class _TimeTableBox extends State<TimeTableBox> {
                           width: constraints.maxWidth / 2,
                           child: IconButton(
                             onPressed: () {
-                              setState(() {
-                                _setSubjectPlanTime(context, _planed);
-                                widget._state.state[widget._x][widget._y] =
-                                    TimeTableCellState.inactive;
-                                widget._state.revertLast = null;
-                              });
+                              if (!_formKey.currentState!.validate()) {
+                                Helpers.showAlertDialog(
+                                    context, "Input must be a number!");
+                              } else {
+                                setState(() {
+                                  _setSubjectPlanTime(
+                                      context, double.parse(_planed));
+                                  widget._state.state[widget._x][widget._y] =
+                                      TimeTableCellState.inactive;
+                                  widget._state.resetLast();
+                                });
+                              }
                             },
                             style: ButtonStyle(
                                 shape: MaterialStateProperty.all<
@@ -169,7 +223,9 @@ class _TimeTableBox extends State<TimeTableBox> {
                           child: IconButton(
                             onPressed: () {
                               setState(() {
-                                widget._state.revertLast = null;
+                                widget._state.state[widget._x][widget._y] =
+                                    TimeTableCellState.inactive;
+                                widget._state.resetLast();
                               });
                             },
                             style: ButtonStyle(
@@ -294,6 +350,13 @@ class _TimeTableBox extends State<TimeTableBox> {
 
   @override
   Widget build(BuildContext context) {
+    // make sure the cell has an entry
+    widget._state.setState[widget._x][widget._y] = (TimeTableCellState state) {
+      setState(() {
+        widget._state.state[widget._x][widget._y] = state;
+      });
+    };
+
     var subject = _getSubject();
     bool fill =
         subject != null && (subject.planed != 0 || subject.recorded != 0);
@@ -302,19 +365,8 @@ class _TimeTableBox extends State<TimeTableBox> {
       child: GestureDetector(
         onTapUp: (details) {
           setState(() {
-            if (widget._state.revertLast != null) {
-              widget._state.revertLast!();
-            }
-
-            widget._state.revertLast = () {
-              setState(() {
-                widget._state.state[widget._x][widget._y] =
-                    TimeTableCellState.inactive;
-              });
-            };
-
-            widget._state.state[widget._x][widget._y] =
-                TimeTableCellState.pressed;
+            widget._state.moveActiveStateTo(widget._x, widget._y,
+                TimeTableCellState.inactive, TimeTableCellState.pressed);
           });
         },
         child: MouseRegion(
