@@ -84,7 +84,7 @@ class GlobalStyle {
   // ===========================================================================
   static Color timeTableCellShadeColorFull(
       BuildContext context, TimeTableData data) {
-    double workRatio = clampDouble(data.recorded / data.planed, 0, 1.0);
+    double workRatio = DataUtils.getWorkRatio(data.recorded, data.planed);
     return Color.lerp(Colors.red, Colors.green, workRatio)!;
   }
 
@@ -134,7 +134,7 @@ class GlobalStyle {
 
   static Color summaryRecordedTimeBarColor(
       BuildContext context, SummaryData data) {
-    double workRatio = clampDouble(data.recorded / data.planed, 0, 1.0);
+    double workRatio = DataUtils.getWorkRatio(data.recorded, data.planed);
     return Color.lerp(Colors.red, Colors.green, workRatio)!;
   }
 
@@ -218,5 +218,34 @@ class GlobalStyle {
 
     // print("$numLines, ${numLines * textPainter.height}: $text");
     return numLines * textPainter.height;
+  }
+}
+
+class Helpers {
+  static void showAlertDialog(BuildContext context, String errorMsg) {
+    // set up the button
+    Widget okButton = TextButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Error"),
+      content: Text(errorMsg),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }

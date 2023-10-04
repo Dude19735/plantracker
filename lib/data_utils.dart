@@ -1,4 +1,17 @@
+import 'dart:ui';
+
 class DataUtils {
+  static double getWorkRatio(double recorded, double planed) {
+    double workRatio = 0;
+    if (planed != 0) {
+      workRatio = clampDouble(recorded / planed, 0, 1.0);
+    } else if (recorded > 0) {
+      workRatio = 1.0;
+    }
+
+    return workRatio;
+  }
+
   static String mapOfListsToStr(Map<int, List<Map<String, dynamic>>> data) {
     String res = """[""";
     for (var elemKey in data.keys) {
