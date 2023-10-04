@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:scheduler/context.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:scheduler/data.dart';
+import 'package:scheduler/time_table_box.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -163,6 +164,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           setState(
             () {},
           );
+        } else if (notification is ScrollAndFocusNotification) {
+          // _controllerGroup.jumpTo(notification.offset);
         }
 
         return false;
