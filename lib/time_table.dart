@@ -17,7 +17,7 @@ class TimeTable extends StatefulWidget {
     int sRow = GlobalContext.data.summaryData.data.length;
     int sCol = DataUtils.getWindowSize(
         GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
-    _edit = TimeTableCellStateEncapsulation(sRow, sCol, _scrollController);
+    _edit = TimeTableCellStateEncapsulation(sRow, sCol);
   }
 
   @override

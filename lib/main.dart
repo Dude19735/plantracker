@@ -165,6 +165,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             () {},
           );
         } else if (notification is ScrollAndFocusNotification) {
+          _controllerGroup.animateTo(notification.offset,
+              curve: Curves.linear, duration: Duration(milliseconds: 150));
+          notification.doAfter();
           // _controllerGroup.jumpTo(notification.offset);
         }
 
