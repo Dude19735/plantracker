@@ -18,7 +18,6 @@ enum TimeTableCellState { inactive, hover, pressed }
 class TimeTableCellStateEncapsulation {
   int _lastX = -1;
   int _lastY = -1;
-  final ScrollController _scrollController;
   late final List<List<void Function(TimeTableCellState state)?>> setState;
   late final List<List<TimeTableCellState>> state;
 
@@ -68,8 +67,7 @@ class TimeTableCellStateEncapsulation {
     return res;
   }
 
-  TimeTableCellStateEncapsulation(
-      int sRows, int sCols, this._scrollController) {
+  TimeTableCellStateEncapsulation(int sRows, int sCols) {
     state = List<List<TimeTableCellState>>.generate(
         sRows,
         (i) => List<TimeTableCellState>.generate(
@@ -84,6 +82,16 @@ class TimeTableCellStateEncapsulation {
             growable: false),
         growable: false);
   }
+}
+
+class SettableFocusNode extends FocusNode {
+  bool _focus = true;
+  set focus(bool value) {
+    _focus = value;
+  }
+
+  @override
+  bool get hasFocus => _focus;
 }
 
 class TimeTableBox extends StatefulWidget {
@@ -105,6 +113,7 @@ class TimeTableBox extends StatefulWidget {
 class _TimeTableBox extends State<TimeTableBox> {
   late String _planed;
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _controller = TextEditingController();
 
   TimeTableData? _getSubject() {
     var subj = GlobalContext.data.timeTableData.data[widget._subjectId];
@@ -212,36 +221,61 @@ class _TimeTableBox extends State<TimeTableBox> {
       }
 
       var focusNode = FocusNode();
-      double offset = widget._x * widget._height;
-      ScrollAndFocusNotification(offset, () {
-        FocusScope.of(context).requestFocus(focusNode);
-      }).dispatch(context);
+      // onKey: (FocusNode node, RawKeyEvent event) {
+      //   print("focus node handler");
+      //   if (event.logicalKey == LogicalKeyboardKey.enter) {
+      //     return KeyEventResult.ignored;
+      //   }
+      //   return KeyEventResult.handled;
+      // });
+
+      // onKey: (FocusNode node, RawKeyEvent event) {
+      // if (event.logicalKey == LogicalKeyboardKey.escape)
+      // {
+      //   return KeyEventResult.handled;
+      // }
+      // return KeyEventResult.ignored;
       // widget._state._scrollController.jumpTo(offset);
 
-      var textField = Form(
-        key: _formKey,
-        child: TextFormField(
-            // onTapOutside: (event) {
-            //   print("tabbed outside");
-            //   // focusNode.previousFocus();
-            // },
-            focusNode: focusNode,
-            validator: (value) {
-              // print("validate");
-              if (value != null && value.compareTo("") == 0) return null;
-              var val = double.tryParse(value!);
-              return val != null ? null : "";
-            },
-            onChanged: (value) {
-              _planed = value;
-            },
-            initialValue: subject != null ? _planed.toString() : "",
-            textAlign: TextAlign.center,
-            decoration: InputDecoration(
-              errorStyle: TextStyle(height: 0),
-              hintText: subject == null ? "..." : "",
-            )),
-      );
+      _controller.text = subject != null ? _planed.toString() : "";
+      _controller.selection = TextSelection(
+          baseOffset: 0, extentOffset: _controller.value.text.length);
+
+      var textField = TextFormField(
+          focusNode: focusNode,
+          controller: _controller,
+          validator: (value) {
+            if (value != null && value.compareTo("") == 0) return null;
+            var val = double.tryParse(value!);
+            return val != null ? null : "";
+          },
+          onChanged: (value) {
+            _planed = value;
+          },
+          // initialValue: subject != null ? _planed.toString() : "",
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            errorStyle: TextStyle(height: 0),
+            hintText: subject == null ? "..." : "",
+          ));
+
+      var textForm = Form(key: _formKey, child: textField);
+
+      double offset = widget._x * widget._height;
+      ScrollAndFocusNotification(offset, () {
+        // focusNode.requestFocus();
+        // Note: this is not the same as focusNode.requestFocus()
+        //       with focusNode.requestFocus() the enter key doesn't work right
+        FocusScope.of(context).requestFocus(focusNode);
+      }).dispatch(context);
+
+      // var keyboardFocus = FocusNode(onKey: (FocusNode node, RawKeyEvent event) {
+      //   if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+      //     print("focus node handler");
+      //     return KeyEventResult.handled;
+      //   }
+      //   return KeyEventResult.ignored;
+      // });
 
       return Container(
           color: Colors.white,
@@ -252,14 +286,18 @@ class _TimeTableBox extends State<TimeTableBox> {
                 focusNode: FocusNode(),
                 autofocus: true,
                 onKey: (event) {
+                  // print("keyup ${event.logicalKey.keyLabel}");
+
+                  // print(
+                  //     "${event.logicalKey.keyLabel} ${event is RawKeyUpEvent}");
                   if (event is! RawKeyUpEvent) return;
 
-                  if (event.logicalKey == LogicalKeyboardKey.escape) {
-                    _unfocus(focusNode);
-                    _esc();
-                  } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+                  if (event.logicalKey == LogicalKeyboardKey.enter) {
                     _enter();
                     _move(0, 1, focusNode);
+                  } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+                    _unfocus(focusNode);
+                    _esc();
                   } else if (event.isShiftPressed) {
                     if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
                       _move(0, -1, focusNode);
@@ -276,7 +314,7 @@ class _TimeTableBox extends State<TimeTableBox> {
                 },
                 child: Column(
                   children: [
-                    Expanded(child: textField),
+                    Expanded(child: textForm),
                     if (ratio > 0.48)
                       Row(
                         children: [
