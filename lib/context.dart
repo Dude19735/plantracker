@@ -21,6 +21,8 @@ class GlobalContext {
   static Rect scheduleWindowCell = Rect.fromLTWH(0, 0, 1, 1);
   static Rect? scheduleWindowSelectionBox;
   static double scheduleWindowScrollOffset = 500.0;
+
+  static double timeTableWindowScrollOffset = 0;
 }
 
 class GlobalSettings {

@@ -5,15 +5,17 @@ import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/time_table_box.dart';
+import 'package:scheduler/joined_scroller.dart';
+// import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 
 class TimeTable extends StatefulWidget {
-  final ScrollController _scrollController;
   final SplitController _splitController;
+  final JoinedScroller _joinedScroller;
 
   // recreate every time we redraw the whole thing...
   late final TimeTableCellStateEncapsulation _edit;
 
-  TimeTable(this._scrollController, this._splitController) {
+  TimeTable(this._joinedScroller, this._splitController) {
     int sRow = GlobalContext.data.summaryData.data.length;
     int sCol = DataUtils.getWindowSize(
         GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
@@ -66,6 +68,28 @@ class _TimeTable extends State<TimeTable> {
   @override
   void initState() {
     super.initState();
+    // _controller = widget._controllerGroup.addAndGet();
+  }
+
+  // @override
+  // void dispose(){
+  // }
+
+  Widget _rowBuilder(
+      List<SummaryData> data,
+      int subjectIndex,
+      BuildContext context,
+      BoxConstraints constraints,
+      int numCells,
+      int pageOffset) {
+    int subjectId = data[subjectIndex].subjectId;
+    double height = GlobalContext.showSubjectsInSummary
+        ? GlobalContext.data.minSubjectTextHeight[subjectId]!
+        : 0;
+    height += 2 * GlobalStyle.summaryEntryBarHeight;
+    height += 2 * GlobalStyle.summaryCardPadding;
+    return _getRow(subjectIndex, context, constraints, numCells, height,
+        subjectId, pageOffset);
   }
 
   @override
@@ -75,9 +99,21 @@ class _TimeTable extends State<TimeTable> {
 
     var data = GlobalContext.data.summaryData.data;
     Widget table(int pageOffset) {
+      ScrollController controller = ScrollController(
+          initialScrollOffset: GlobalContext.timeTableWindowScrollOffset,
+          keepScrollOffset: true);
+
+      widget._joinedScroller
+          .register(JoinedScrollerIdentifier.right, controller);
+
       return NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollNotification) {
+            double px = notification.metrics.pixels;
+            GlobalContext.timeTableWindowScrollOffset = px;
+
+            widget._joinedScroller.jumpTo(JoinedScrollerIdentifier.left, px);
+
             return true;
           }
           return false;
@@ -89,22 +125,17 @@ class _TimeTable extends State<TimeTable> {
               minChildSize: 0.999999,
               builder:
                   (BuildContext context, ScrollController scrollController) {
-                return ListView.builder(
-                  clipBehavior: Clip.none,
-                  padding: EdgeInsets.zero,
-                  controller: widget._scrollController,
-                  itemCount: data.length,
-                  itemBuilder: (BuildContext context, int subjectIndex) {
-                    int subjectId = data[subjectIndex].subjectId;
-                    double height = GlobalContext.showSubjectsInSummary
-                        ? GlobalContext.data.minSubjectTextHeight[subjectId]!
-                        : 0;
-                    height += 2 * GlobalStyle.summaryEntryBarHeight;
-                    height += 2 * GlobalStyle.summaryCardPadding;
-                    return _getRow(subjectIndex, context, constraints, numCells,
-                        height, subjectId, pageOffset);
-                  },
-                );
+                return ListView(
+                    clipBehavior: Clip.none,
+                    padding: EdgeInsets.zero,
+                    controller: controller,
+                    // itemCount: data.length,
+                    // itemBuilder: (BuildContext context, int subjectIndex) {
+                    children: [
+                      for (int i = 0; i < data.length; i++)
+                        _rowBuilder(
+                            data, i, context, constraints, numCells, pageOffset)
+                    ]);
               },
             );
           },

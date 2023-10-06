@@ -7,6 +7,8 @@ import 'package:scheduler/data.dart';
 import 'package:scheduler/data_columns.dart';
 import 'dart:math';
 
+import 'package:scheduler/data_utils.dart';
+
 class ScrollAndFocusNotification extends Notification {
   final void Function() doAfter;
   final double offset;
@@ -123,7 +125,17 @@ class _TimeTableBox extends State<TimeTableBox> {
     LogicalKeyboardKey.digit9,
     // LogicalKeyboardKey.colon,
     // LogicalKeyboardKey.comma,
-    LogicalKeyboardKey.period
+    LogicalKeyboardKey.period,
+    LogicalKeyboardKey.numpad0,
+    LogicalKeyboardKey.numpad1,
+    LogicalKeyboardKey.numpad2,
+    LogicalKeyboardKey.numpad3,
+    LogicalKeyboardKey.numpad4,
+    LogicalKeyboardKey.numpad5,
+    LogicalKeyboardKey.numpad6,
+    LogicalKeyboardKey.numpad7,
+    LogicalKeyboardKey.numpad8,
+    LogicalKeyboardKey.numpad9,
   };
 
   TimeTableData? _getSubject() {
@@ -223,7 +235,9 @@ class _TimeTableBox extends State<TimeTableBox> {
         return true;
       }
       if (_digits.contains(event.logicalKey)) {
-        _controller.text += event.logicalKey.keyLabel;
+        String label = event.logicalKey.keyLabel;
+        String num = label.substring(label.length - 1, label.length);
+        _controller.text += num;
         return true;
       }
     }
@@ -284,6 +298,9 @@ class _TimeTableBox extends State<TimeTableBox> {
           // focusNode: focusNode,
           controller: _controller,
           enabled: false,
+          onTapOutside: (event) {
+            _esc();
+          },
           validator: (value) {
             if (value != null && value.compareTo("") == 0) return null;
             var val = double.tryParse(value!);
@@ -298,14 +315,7 @@ class _TimeTableBox extends State<TimeTableBox> {
       var textForm = Form(key: _formKey, child: textField);
 
       double offset = widget._x * widget._height;
-      ScrollAndFocusNotification(offset, () {
-        // focusNode.requestFocus();
-        // Note: this is not the same as focusNode.requestFocus()
-        //       with focusNode.requestFocus() the enter key doesn't work right
-
-        // FocusScope.of(context).requestFocus(focusNode);
-      })
-          .dispatch(context);
+      ScrollAndFocusNotification(offset, () {}).dispatch(context);
 
       var keyboardFocus = FocusNode(onKey: (FocusNode node, RawKeyEvent event) {
         if (!_onKey(event)) {
@@ -377,8 +387,10 @@ class _TimeTableBox extends State<TimeTableBox> {
   Widget _getFullContainer(BuildContext context, TimeTableData subject) {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
+      var date = DataUtils.int2DateTime(subject.date);
       Widget box;
-      if (constraints.maxWidth / constraints.maxHeight >= 1.0) {
+      double aspect = constraints.maxWidth / constraints.maxHeight;
+      if (aspect >= 1.0) {
         box = SizedBox(
             height: GlobalStyle.summaryEntryBarHeight,
             child: Align(
@@ -388,6 +400,10 @@ class _TimeTableBox extends State<TimeTableBox> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        if (aspect >= 2.0)
+                          Text(
+                              "${date.day.toString().padLeft(2, "0")}.${date.month.toString().padLeft(2, "0")}.${date.year.toString().padLeft(4, "0")}"),
+                        if (aspect >= 2.0) Spacer(),
                         Text(subject.recorded.toString(),
                             style: TextStyle(fontSize: 16)),
                         Text("/"),
@@ -440,7 +456,7 @@ class _TimeTableBox extends State<TimeTableBox> {
                     ])
                   ],
                 )));
-      } else if (constraints.maxWidth / constraints.maxHeight > 0.5) {
+      } else if (aspect > 0.5) {
         box = SizedBox(
             height: GlobalStyle.summaryEntryBarHeight,
             child: Align(
@@ -466,14 +482,14 @@ class _TimeTableBox extends State<TimeTableBox> {
   Widget? _mux(BuildContext context, bool fill, TimeTableData? subject) {
     if (widget._state.state[widget._x][widget._y] ==
         TimeTableCellState.pressed) {
-      print("created pressed state container ${widget._x} ${widget._y}");
+      // print("created pressed state container ${widget._x} ${widget._y}");
       return _getEditContainer(context, subject);
     }
     if (fill) {
-      print("   created filled state container ${widget._x} ${widget._y}");
+      // print("   created filled state container ${widget._x} ${widget._y}");
       return _getFullContainer(context, subject!);
     }
-    print("      create empty state container ${widget._x} ${widget._y}");
+    // print("      create empty state container ${widget._x} ${widget._y}");
     return null;
   }
 

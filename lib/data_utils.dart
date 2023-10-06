@@ -41,6 +41,19 @@ class DataUtils {
     return from.difference(to).inDays.abs() + 1;
   }
 
+  static Map<String, DateTime> getNextPage(DateTime from, DateTime to) {
+    var d = getWindowSize(from, to);
+    return {"from": to.add(Duration(days: 1)), "to": to.add(Duration(days: d))};
+  }
+
+  static Map<String, DateTime> getPreviousPage(DateTime from, DateTime to) {
+    var d = getWindowSize(from, to);
+    return {
+      "from": from.subtract(Duration(days: d)),
+      "to": from.subtract(Duration(days: 1))
+    };
+  }
+
   static Map getAdjacentTimePeriods(DateTime from, DateTime to) {
     int dateWindowSize = DataUtils.getWindowSize(from, to);
 
