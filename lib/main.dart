@@ -115,6 +115,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   void _dealWithDataChangedNotification(DataChangedNotification notification) {
+    /**
+     * This is the place where the data should be saved
+     */
     if (notification is DataChangedNotificationTimeTableData) {
       SplitContainer.setComponentState(CrossSplitComponent.bl, () {
         GlobalContext.data.summary();
