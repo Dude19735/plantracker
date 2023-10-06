@@ -325,9 +325,14 @@ class _TimeTableBox extends State<TimeTableBox> {
       });
 
       return Container(
-          color: Colors.white,
           height: constraints.maxHeight,
           width: constraints.maxWidth,
+          decoration: BoxDecoration(
+              color: GlobalStyle.timeTableActiveCellBackground(context),
+              border: Border.all(
+                  width: 1, color: GlobalStyle.scheduleGridColorBox(context)),
+              borderRadius:
+                  BorderRadius.circular(GlobalStyle.summaryCardBorderRadius)),
           child: Center(
             child: RawKeyboardListener(
                 focusNode: keyboardFocus,
@@ -340,7 +345,7 @@ class _TimeTableBox extends State<TimeTableBox> {
                       Row(
                         children: [
                           SizedBox(
-                            width: constraints.maxWidth / 2,
+                            width: constraints.maxWidth / 2 - 1,
                             child: IconButton(
                               onPressed: () {
                                 _unfocus(focusNode);
@@ -359,7 +364,7 @@ class _TimeTableBox extends State<TimeTableBox> {
                             ),
                           ),
                           SizedBox(
-                            width: constraints.maxWidth / 2,
+                            width: constraints.maxWidth / 2 - 1,
                             child: IconButton(
                               onPressed: () {
                                 _unfocus(focusNode);

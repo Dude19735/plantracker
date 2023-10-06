@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
-import 'package:scheduler/time_table.dart';
 import 'dart:ui';
 
 import 'package:scheduler/time_table_box.dart';
@@ -93,6 +92,9 @@ class GlobalStyle {
   static Color timeTableCellBarColor(BuildContext context, double ratio) {
     return Color.lerp(Colors.brown, Colors.yellowAccent, ratio)!;
   }
+
+  static Color timeTableActiveCellBackground(BuildContext context) =>
+      Colors.white;
 
   static Color timeTableCellShadeColorEmpty(
           BuildContext context, TimeTableCellState state) =>
