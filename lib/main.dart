@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:scheduler/context.dart';
-import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/time_table_box.dart';
 import 'package:window_manager/window_manager.dart';
@@ -18,6 +17,8 @@ import 'package:scheduler/time_table.dart';
 import 'package:scheduler/watch_manager.dart';
 import 'package:scheduler/work_schedule.dart';
 import 'package:scheduler/split_controller.dart';
+import 'package:scheduler/data_utils.dart';
+import 'package:scheduler/joined_scroller.dart';
 
 Future<void> main() async {
   const String title = "Just something...";
@@ -95,19 +96,20 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   GlobalContext globalContext = GlobalContext();
-  LinkedScrollControllerGroup _controllerGroup = LinkedScrollControllerGroup();
+  // LinkedScrollControllerGroup _controllerGroup = LinkedScrollControllerGroup();
   late CrossSplit _crossSplit;
-  late ScrollController _summary;
-  late ScrollController _timeTable;
+  // late ScrollController _summary;
+  // late ScrollController _timeTable;
   late final TabController _controller;
   late final SplitController _splitController;
+  final JoinedScroller _joinedScroller = JoinedScroller();
 
   @override
   void initState() {
     super.initState();
     _controller = TabController(vsync: this, length: 3);
-    _summary = _controllerGroup.addAndGet();
-    _timeTable = _controllerGroup.addAndGet();
+    // _summary = _controllerGroup.addAndGet();
+    // _timeTable = _controllerGroup.addAndGet();
     _splitController =
         SplitController(animationMs: GlobalSettings.pageChangeDurationMS);
   }
@@ -129,8 +131,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       verticalGrabberSize: GlobalStyle.splitterVGrabberSize,
       topLeft: () => SizedBox(),
       topRight: () => WorkSchedule(_splitController),
-      bottomLeft: () => Summary(_summary),
-      bottomRight: () => TimeTable(_timeTable, _splitController),
+      bottomLeft: () => Summary(_joinedScroller),
+      bottomRight: () => TimeTable(_joinedScroller, _splitController),
     );
 
     var split = NotificationListener(
@@ -139,6 +141,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           setState(() {
             GlobalContext.fromDateWindow = notification.from;
             GlobalContext.toDateWindow = notification.to;
+            print("${notification.from} ${notification.to}");
             GlobalContext.data.load();
           });
           return true;
@@ -146,21 +149,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           _dealWithDataChangedNotification(notification);
         } else if (notification is PageScrolledNotification) {
           setState(() {
-            if (!notification.backwards) {
-              Duration d = GlobalContext.toDateWindow
-                      .difference(GlobalContext.fromDateWindow) +
-                  Duration(days: 1);
-              GlobalContext.fromDateWindow =
-                  GlobalContext.fromDateWindow.add(d);
-              GlobalContext.toDateWindow = GlobalContext.toDateWindow.add(d);
+            DateTime from = GlobalContext.fromDateWindow;
+            DateTime to = GlobalContext.toDateWindow;
+            if (notification.backwards) {
+              var prev = DataUtils.getPreviousPage(from, to);
+              GlobalContext.fromDateWindow = prev["from"]!;
+              GlobalContext.toDateWindow = prev["to"]!;
             } else {
-              Duration d = GlobalContext.toDateWindow
-                      .difference(GlobalContext.fromDateWindow) +
-                  Duration(days: 1);
-              GlobalContext.fromDateWindow =
-                  GlobalContext.fromDateWindow.subtract(d);
-              GlobalContext.toDateWindow =
-                  GlobalContext.toDateWindow.subtract(d);
+              var prev = DataUtils.getNextPage(from, to);
+              GlobalContext.fromDateWindow = prev["from"]!;
+              GlobalContext.toDateWindow = prev["to"]!;
             }
             GlobalContext.data.load();
           });
@@ -176,8 +174,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             () {},
           );
         } else if (notification is ScrollAndFocusNotification) {
-          _controllerGroup.animateTo(notification.offset,
-              curve: Curves.linear, duration: Duration(milliseconds: 150));
+          // _controllerGroup.animateTo(notification.offset,
+          //     curve: Curves.linear, duration: Duration(milliseconds: 150));
+          _joinedScroller.animateBothTo(
+              notification.offset, Curves.linear, Duration(milliseconds: 150));
           notification.doAfter();
           // _controllerGroup.jumpTo(notification.offset);
         }

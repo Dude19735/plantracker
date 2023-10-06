@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
+import 'package:scheduler/joined_scroller.dart';
 
 class SummaryEntry extends StatelessWidget {
   final double _maxWidth;
@@ -63,9 +64,10 @@ class SummaryEntry extends StatelessWidget {
 }
 
 class Summary extends StatelessWidget {
-  final ScrollController _scrollController;
+  final JoinedScrollerIdentifier _identifier = JoinedScrollerIdentifier.left;
+  final JoinedScroller _joinedScroller;
 
-  Summary(this._scrollController);
+  Summary(this._joinedScroller) {}
 
   @override
   Widget build(BuildContext context) {
@@ -76,22 +78,34 @@ class Summary extends StatelessWidget {
       if (item.recorded > maxTime) maxTime = item.recorded;
     }
 
+    var controller = ScrollController();
+    _joinedScroller.register(JoinedScrollerIdentifier.left, controller);
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        return DraggableScrollableSheet(
-          initialChildSize: 1.0,
-          minChildSize: 0.999999,
-          builder: (BuildContext context, ScrollController scrollController) {
-            return ListView.builder(
-              clipBehavior: Clip.none,
-              controller: _scrollController,
-              itemCount: data.length,
-              itemBuilder: (BuildContext context, int index) {
-                Widget x = SummaryEntry(constraints.maxWidth, maxTime, index);
-                return x;
-              },
-            );
+        return NotificationListener(
+          onNotification: (notification) {
+            if (notification is ScrollNotification) {
+              _joinedScroller.jumpTo(
+                  JoinedScrollerIdentifier.right, notification.metrics.pixels);
+            }
+            return false;
           },
+          child: DraggableScrollableSheet(
+            initialChildSize: 1.0,
+            minChildSize: 0.999999,
+            builder: (BuildContext context, ScrollController scrollController) {
+              return ListView(
+                  clipBehavior: Clip.none,
+                  controller: controller,
+                  // itemCount: data.length,
+                  // itemBuilder: (BuildContext context, int index) {
+                  children: [
+                    for (int i = 0; i < data.length; ++i)
+                      SummaryEntry(constraints.maxWidth, maxTime, i)
+                  ]);
+            },
+          ),
         );
       },
     );
