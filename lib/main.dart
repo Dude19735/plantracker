@@ -96,6 +96,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   GlobalContext globalContext = GlobalContext();
   LinkedScrollControllerGroup _controllerGroup = LinkedScrollControllerGroup();
+  late CrossSplit _crossSplit;
   late ScrollController _summary;
   late ScrollController _timeTable;
   late final TabController _controller;
@@ -113,13 +114,25 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   void _dealWithDataChangedNotification(DataChangedNotification notification) {
     if (notification is DataChangedNotificationTimeTableData) {
-      print("DataChanged_Notification_TimeTableData");
-      GlobalContext.data.summary();
+      SplitContainer.setComponentState(CrossSplitComponent.bl, () {
+        GlobalContext.data.summary();
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    _crossSplit = CrossSplit(
+      horizontalInitRatio: GlobalStyle.splitterHInitRatio,
+      horizontalGrabberSize: GlobalStyle.splitterHGrabberSize,
+      verticalInitRatio: GlobalStyle.splitterVInitRatio,
+      verticalGrabberSize: GlobalStyle.splitterVGrabberSize,
+      topLeft: () => SizedBox(),
+      topRight: () => WorkSchedule(_splitController),
+      bottomLeft: () => Summary(_summary),
+      bottomRight: () => TimeTable(_timeTable, _splitController),
+    );
+
     var split = NotificationListener(
       onNotification: (notification) {
         if (notification is DateChangedNotification) {
@@ -130,9 +143,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           });
           return true;
         } else if (notification is DataChangedNotification) {
-          setState(() {
-            _dealWithDataChangedNotification(notification);
-          });
+          _dealWithDataChangedNotification(notification);
         } else if (notification is PageScrolledNotification) {
           setState(() {
             if (!notification.backwards) {
@@ -173,16 +184,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
         return false;
       },
-      child: CrossSplit(
-        horizontalInitRatio: GlobalStyle.splitterHInitRatio,
-        horizontalGrabberSize: GlobalStyle.splitterHGrabberSize,
-        verticalInitRatio: GlobalStyle.splitterVInitRatio,
-        verticalGrabberSize: GlobalStyle.splitterVGrabberSize,
-        topLeft: SizedBox(),
-        topRight: WorkSchedule(_splitController),
-        bottomLeft: Summary(_summary),
-        bottomRight: TimeTable(_timeTable, _splitController),
-      ),
+      child: _crossSplit,
     );
 
     return Scaffold(
