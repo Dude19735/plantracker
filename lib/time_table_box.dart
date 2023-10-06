@@ -29,16 +29,13 @@ class TimeTableCellStateEncapsulation {
     _lastY = -1;
   }
 
-  bool pressAt(int oldX, int oldY, int dx, int dy, FocusNode? node) {
+  bool pressAt(int oldX, int oldY, int dx, int dy) {
     if (oldX + dx >= 0 &&
         oldY + dy >= 0 &&
         oldX + dx < setState.length &&
         oldY + dy < setState[0].length) {
       if (state[oldX][oldY] != TimeTableCellState.inactive) {
         setState[oldX][oldY]!(TimeTableCellState.inactive);
-        if (node != null && node.hasFocus) {
-          node.unfocus();
-        }
       }
 
       _lastX = oldX + dx;
@@ -61,7 +58,6 @@ class TimeTableCellStateEncapsulation {
 
     _lastX = x;
     _lastY = y;
-    // print("moveActiveStateTo $_lastX $_lastY ${setState[x][y]}");
     setState[x][y]!(newStateOfThis);
 
     return res;
@@ -111,9 +107,24 @@ class TimeTableBox extends StatefulWidget {
 }
 
 class _TimeTableBox extends State<TimeTableBox> {
-  late String _planed;
+  // late String _planed;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _controller = TextEditingController();
+  final Set<LogicalKeyboardKey> _digits = {
+    LogicalKeyboardKey.digit0,
+    LogicalKeyboardKey.digit1,
+    LogicalKeyboardKey.digit2,
+    LogicalKeyboardKey.digit3,
+    LogicalKeyboardKey.digit4,
+    LogicalKeyboardKey.digit5,
+    LogicalKeyboardKey.digit6,
+    LogicalKeyboardKey.digit7,
+    LogicalKeyboardKey.digit8,
+    LogicalKeyboardKey.digit9,
+    // LogicalKeyboardKey.colon,
+    // LogicalKeyboardKey.comma,
+    LogicalKeyboardKey.period
+  };
 
   TimeTableData? _getSubject() {
     var subj = GlobalContext.data.timeTableData.data[widget._subjectId];
@@ -175,7 +186,7 @@ class _TimeTableBox extends State<TimeTableBox> {
   @override
   void initState() {
     super.initState();
-    _planed = "";
+    // _planed = "";
     // ServicesBinding.instance.keyboard.addHandler(_onKey);
   }
 
@@ -191,17 +202,64 @@ class _TimeTableBox extends State<TimeTableBox> {
       Helpers.showAlertDialog(context, "Input must be a number!");
     } else {
       setState(() {
-        if (_planed.compareTo("") != 0) {
-          _setSubjectPlanTime(context, double.parse(_planed));
+        if (_controller.text.compareTo("") != 0) {
+          _setSubjectPlanTime(context, double.parse(_controller.text));
         }
         widget._state.state[widget._x][widget._y] = TimeTableCellState.inactive;
       });
     }
   }
 
-  bool _move(int ox, int oy, FocusNode node) {
+  bool _move(int ox, int oy) {
     return widget._state
-        .pressAt(widget._state.lastX(), widget._state.lastY(), ox, oy, node);
+        .pressAt(widget._state.lastX(), widget._state.lastY(), ox, oy);
+  }
+
+  bool _onKey(RawKeyEvent event) {
+    if (event is RawKeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.backspace) {
+        _controller.text =
+            _controller.text.substring(0, _controller.text.length - 1);
+        return true;
+      }
+      if (_digits.contains(event.logicalKey)) {
+        _controller.text += event.logicalKey.keyLabel;
+        return true;
+      }
+    }
+
+    if (event is! RawKeyUpEvent) return false;
+
+    if (event.logicalKey == LogicalKeyboardKey.enter) {
+      _enter();
+      _move(0, 1);
+      return true;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.escape) {
+      _esc();
+      return true;
+    }
+
+    if (event.isShiftPressed) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        _move(0, -1);
+        return true;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        _move(0, 1);
+        return true;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        _move(1, 0);
+        return true;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        _move(-1, 0);
+        return true;
+      }
+    }
+    return false;
   }
 
   _unfocus(FocusNode node) {
@@ -216,43 +274,21 @@ class _TimeTableBox extends State<TimeTableBox> {
       double ratio = constraints.maxWidth / constraints.maxHeight;
       if (ratio < 0.359) return SizedBox();
 
-      if (subject != null) {
-        _planed = subject.planed.toString();
-      }
-
       var focusNode = FocusNode();
-      // onKey: (FocusNode node, RawKeyEvent event) {
-      //   print("focus node handler");
-      //   if (event.logicalKey == LogicalKeyboardKey.enter) {
-      //     return KeyEventResult.ignored;
-      //   }
-      //   return KeyEventResult.handled;
-      // });
 
-      // onKey: (FocusNode node, RawKeyEvent event) {
-      // if (event.logicalKey == LogicalKeyboardKey.escape)
-      // {
-      //   return KeyEventResult.handled;
-      // }
-      // return KeyEventResult.ignored;
-      // widget._state._scrollController.jumpTo(offset);
-
-      _controller.text = subject != null ? _planed.toString() : "";
+      _controller.text = subject != null ? subject.planed.toString() : "";
       _controller.selection = TextSelection(
           baseOffset: 0, extentOffset: _controller.value.text.length);
 
       var textField = TextFormField(
-          focusNode: focusNode,
+          // focusNode: focusNode,
           controller: _controller,
+          enabled: false,
           validator: (value) {
             if (value != null && value.compareTo("") == 0) return null;
             var val = double.tryParse(value!);
             return val != null ? null : "";
           },
-          onChanged: (value) {
-            _planed = value;
-          },
-          // initialValue: subject != null ? _planed.toString() : "",
           textAlign: TextAlign.center,
           decoration: InputDecoration(
             errorStyle: TextStyle(height: 0),
@@ -266,16 +302,17 @@ class _TimeTableBox extends State<TimeTableBox> {
         // focusNode.requestFocus();
         // Note: this is not the same as focusNode.requestFocus()
         //       with focusNode.requestFocus() the enter key doesn't work right
-        FocusScope.of(context).requestFocus(focusNode);
-      }).dispatch(context);
 
-      // var keyboardFocus = FocusNode(onKey: (FocusNode node, RawKeyEvent event) {
-      //   if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-      //     print("focus node handler");
-      //     return KeyEventResult.handled;
-      //   }
-      //   return KeyEventResult.ignored;
-      // });
+        // FocusScope.of(context).requestFocus(focusNode);
+      })
+          .dispatch(context);
+
+      var keyboardFocus = FocusNode(onKey: (FocusNode node, RawKeyEvent event) {
+        if (!_onKey(event)) {
+          return KeyEventResult.ignored;
+        }
+        return KeyEventResult.handled;
+      });
 
       return Container(
           color: Colors.white,
@@ -283,35 +320,9 @@ class _TimeTableBox extends State<TimeTableBox> {
           width: constraints.maxWidth,
           child: Center(
             child: RawKeyboardListener(
-                focusNode: FocusNode(),
+                focusNode: keyboardFocus,
                 autofocus: true,
-                onKey: (event) {
-                  // print("keyup ${event.logicalKey.keyLabel}");
-
-                  // print(
-                  //     "${event.logicalKey.keyLabel} ${event is RawKeyUpEvent}");
-                  if (event is! RawKeyUpEvent) return;
-
-                  if (event.logicalKey == LogicalKeyboardKey.enter) {
-                    _enter();
-                    _move(0, 1, focusNode);
-                  } else if (event.logicalKey == LogicalKeyboardKey.escape) {
-                    _unfocus(focusNode);
-                    _esc();
-                  } else if (event.isShiftPressed) {
-                    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                      _move(0, -1, focusNode);
-                    } else if (event.logicalKey ==
-                        LogicalKeyboardKey.arrowRight) {
-                      _move(0, 1, focusNode);
-                    } else if (event.logicalKey ==
-                        LogicalKeyboardKey.arrowDown) {
-                      _move(1, 0, focusNode);
-                    } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                      _move(-1, 0, focusNode);
-                    }
-                  }
-                },
+                // onKey: _onKey,
                 child: Column(
                   children: [
                     Expanded(child: textForm),
@@ -455,11 +466,14 @@ class _TimeTableBox extends State<TimeTableBox> {
   Widget? _mux(BuildContext context, bool fill, TimeTableData? subject) {
     if (widget._state.state[widget._x][widget._y] ==
         TimeTableCellState.pressed) {
+      print("created pressed state container ${widget._x} ${widget._y}");
       return _getEditContainer(context, subject);
     }
     if (fill) {
+      print("   created filled state container ${widget._x} ${widget._y}");
       return _getFullContainer(context, subject!);
     }
+    print("      create empty state container ${widget._x} ${widget._y}");
     return null;
   }
 
