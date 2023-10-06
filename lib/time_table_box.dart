@@ -521,13 +521,17 @@ class _TimeTableBox extends State<TimeTableBox> {
               context, _mux(context, fill, subject),
               height: widget._height,
               margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
-              shadow: fill ? true : false,
+              shadow: false, // fill ? true : false,
               border: true, // fill ? false : true,
-              color: GlobalStyle.timeTableCellColor(
-                  context, widget._state.state[widget._x][widget._y]),
-              shadowColor: fill
+              color: fill
                   ? GlobalStyle.timeTableCellShadeColorFull(context, subject)
-                  : GlobalStyle.timeTableCellShadeColorEmpty(context)),
+                  : GlobalStyle.timeTableCellShadeColorEmpty(
+                      context, widget._state.state[widget._x][widget._y])),
+          // color: GlobalStyle.timeTableCellColor(
+          //     context, widget._state.state[widget._x][widget._y]),
+          // shadowColor: fill
+          //     ? GlobalStyle.timeTableCellShadeColorFull(context, subject)
+          //     : GlobalStyle.timeTableCellShadeColorEmpty(context)),
         ),
       ),
     );

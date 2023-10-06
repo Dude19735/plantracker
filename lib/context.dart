@@ -92,8 +92,12 @@ class GlobalStyle {
     return Color.lerp(Colors.brown, Colors.yellowAccent, ratio)!;
   }
 
-  static Color timeTableCellShadeColorEmpty(BuildContext context) =>
-      Colors.transparent;
+  static Color timeTableCellShadeColorEmpty(
+          BuildContext context, TimeTableCellState state) =>
+      state == TimeTableCellState.inactive
+          ? Colors.transparent
+          : Colors.black12;
+
   static Color timeTableCellColor(
           BuildContext context, TimeTableCellState state) =>
       state == TimeTableCellState.inactive

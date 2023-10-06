@@ -6,28 +6,29 @@ import 'package:scheduler/context.dart';
 
 enum SplitDirection { vertical, horizontal }
 
+enum CrossSplitComponent {
+  none,
+  top,
+  bottom,
+  tl,
+  tr,
+  bl,
+  br,
+  vSeparatorTop,
+  vSeparatorBottom,
+  hSeparator
+}
+
+typedef TSetComponentState
+    = Map<CrossSplitComponent, void Function(void Function()?)?>;
+
 class SyncNotification extends Notification {}
 
-// class EnterNotification extends SyncNotification {
-//   final String name;
-//   final PointerEnterEvent details;
-//   final BoxConstraints constraints;
-//   EnterNotification(this.name, this.details, this.constraints);
-// }
-
-// class LeaveNotification extends SyncNotification {
-//   final String name;
-//   final BoxConstraints constraints;
-//   LeaveNotification(this.name, this.constraints);
-// }
-
-class UpdateNotification extends Notification {}
-
 class PanNotification extends SyncNotification {
-  final String name;
+  final SplitDirection direction;
   final DragUpdateDetails details;
   final BoxConstraints constraints;
-  PanNotification(this.name, this.details, this.constraints);
+  PanNotification(this.direction, this.details, this.constraints);
 }
 
 class StartNotification extends SyncNotification {
@@ -47,11 +48,6 @@ class DragCursor {
   MouseCursor cursor;
   DragCursor(this.cursor);
 }
-
-enum CrossSplitComponent { none, top, bottom, tl, tr, bl, br }
-
-typedef TSetComponentState
-    = Map<CrossSplitComponent, void Function(void Function()?)?>;
 
 class CrossSplit extends StatefulWidget {
   final double verticalInitRatio;
@@ -85,13 +81,8 @@ class CrossSplit extends StatefulWidget {
 class _CrossSplit extends State<CrossSplit> {
   late final Split hTop;
   late final Split hBottom;
-
-  // late final Ratio vRatio;
-  // late final Ratio hRatio;
   late final Ratio ratio;
-
   late final DragCursor cursor;
-
   bool _tabbedCenter = false;
 
   void _vSync(PanNotification notification) {
@@ -123,39 +114,13 @@ class _CrossSplit extends State<CrossSplit> {
         if (_tabbedCenter) {
           _vSync(notification);
           _hSync(notification);
-        } else if (notification.name.startsWith("v")) {
+        } else if (notification.direction == SplitDirection.vertical) {
           _vSync(notification);
         } else {
           _hSync(notification);
         }
       });
     }
-    // else if (notification is StartNotification) {
-    //   if (_CrossSplit._mouseInCenter(vRatio, notification.constraints.maxWidth,
-    //       notification.details.globalPosition.dx, notification.name)) {
-    //     _tabbedCenter = true;
-    //   } else {
-    //     _tabbedCenter = false;
-    //   }
-    // } else if (notification is EnterNotification) {
-    //   setState(() {
-    //     if (_CrossSplit._mouseInCenter(
-    //         vRatio,
-    //         notification.constraints.maxWidth,
-    //         notification.details.position.dx,
-    //         notification.name)) {
-    //       cursor.cursor = SystemMouseCursors.move;
-    //     } else if (notification.name.startsWith("v")) {
-    //       cursor.cursor = SystemMouseCursors.resizeColumn;
-    //     } else if (notification.name.startsWith("h")) {
-    //       cursor.cursor = SystemMouseCursors.resizeRow;
-    //     }
-    //   });
-    // } else if (notification is LeaveNotification) {
-    //   setState(() {
-    //     cursor.cursor = SystemMouseCursors.basic;
-    //   });
-    // }
 
     // we moved the thing => clear the width lists
     for (var item in GlobalContext.data.summaryData.data) {
@@ -167,24 +132,9 @@ class _CrossSplit extends State<CrossSplit> {
   @override
   void initState() {
     super.initState();
-    // cursor = DragCursor(SystemMouseCursors.allScroll);
-    // vRatio = Ratio(widget.horizontalInitRatio, widget.verticalGrabberSize);
-    // hRatio = Ratio(widget.verticalInitRatio, widget.horizontalGrabberSize);
     ratio = Ratio(widget.horizontalInitRatio, widget.verticalInitRatio,
         widget.verticalGrabberSize, widget.horizontalGrabberSize);
   }
-
-  // bool _mouseInCenter(double width, double dx, String name) {
-  //   double x1 = vRatio.ratio * (width - vRatio.grabSize);
-  //   double x2 = vRatio.ratio * (width - vRatio.grabSize) + vRatio.grabSize;
-
-  //   // add the clockBarWidth because it's inside the same parent
-  //   double px = dx - GlobalStyle.clockBarWidth;
-
-  //   bool center = name.startsWith("h") && x1 <= px && px <= x2;
-
-  //   return center;
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -280,21 +230,7 @@ class _SplitContainer extends State<SplitContainer> {
       };
     }
 
-    if (widget._place == CrossSplitComponent.none) {
-      return NotificationListener(
-          onNotification: (notification) {
-            print("notification $notification");
-            if (notification is UpdateNotification) {
-              print("got update request");
-              setState(() {});
-              return true;
-            }
-            return false;
-          },
-          child: widget.child != null ? widget.child!() : Placeholder());
-    } else {
-      return widget.child != null ? widget.child!() : Placeholder();
-    }
+    return widget.child != null ? widget.child!() : Placeholder();
   }
 }
 
@@ -318,6 +254,7 @@ class Split extends StatefulWidget {
 class _Split extends State<Split> {
   DragCursor _cursor = DragCursor(SystemMouseCursors.allScroll);
   bool _center = false;
+  CrossSplitComponent _crossSplitComponent = CrossSplitComponent.none;
 
   Map getSizes(BoxConstraints constraints) {
     double ratio = widget._name.startsWith("v")
@@ -344,6 +281,11 @@ class _Split extends State<Split> {
 
   @override
   Widget build(BuildContext context) {
+    _crossSplitComponent = widget._direction == SplitDirection.horizontal
+        ? CrossSplitComponent.hSeparator
+        : (widget._name.compareTo(CrossSplit._vTop) == 0
+            ? CrossSplitComponent.vSeparatorTop
+            : CrossSplitComponent.vSeparatorBottom);
     return Expanded(
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -377,7 +319,7 @@ class _Split extends State<Split> {
                         widget.topOrLeft == null ? null : widget.topOrLeft!()),
               ),
               SplitContainer(
-                  CrossSplitComponent.none,
+                  _crossSplitComponent,
                   () => MouseRegion(
                         cursor: _cursor.cursor,
                         child: GestureDetector(
@@ -405,59 +347,45 @@ class _Split extends State<Split> {
                                       )),
                             onPanUpdate: (DragUpdateDetails details) {
                               PanNotification(
-                                      widget._name, details, constraints)
+                                      widget._direction, details, constraints)
                                   .dispatch(context);
                             },
                             onTapDown: (TapDownDetails details) {
                               StartNotification(_center).dispatch(context);
                             }),
                         onHover: (event) {
-                          if (widget._name.startsWith("h")) {
-                            double x1 = widget._ratio.vRatio *
-                                (constraints.maxWidth -
-                                    widget._ratio.vGrabSize);
-                            double x2 = widget._ratio.vRatio *
-                                    (constraints.maxWidth -
-                                        widget._ratio.vGrabSize) +
-                                widget._ratio.vGrabSize;
+                          SplitContainer.setComponentState(_crossSplitComponent,
+                              () {
+                            if (widget._direction ==
+                                SplitDirection.horizontal) {
+                              double x1 =
+                                  widget._ratio.vRatio * constraints.maxWidth -
+                                      widget._ratio.vGrabSize / 2;
+                              double x2 =
+                                  widget._ratio.vRatio * constraints.maxWidth +
+                                      widget._ratio.vGrabSize / 2;
 
-                            // add the clockBarWidth because it's inside the same parent
-                            double px = event.localPosition.dx -
-                                GlobalStyle.clockBarWidth;
+                              double px = event.localPosition.dx;
 
-                            _center = x1 <= px && px <= x2;
-                            print("$x1 $px $x2 ${widget._name} $_center");
-                          } else {
-                            _center = false;
-                          }
+                              _center = x1 <= px && px <= x2;
+                            } else {
+                              _center = false;
+                            }
 
-                          if (_center) {
-                            _cursor.cursor = SystemMouseCursors.move;
-                          } else if (widget._name.startsWith("v")) {
-                            _cursor.cursor = SystemMouseCursors.resizeColumn;
-                          } else if (widget._name.startsWith("h")) {
-                            _cursor.cursor = SystemMouseCursors.resizeRow;
-                          }
-                          UpdateNotification().dispatch(context);
-                        },
-                        onEnter: (PointerEnterEvent details) {
-                          // EnterNotification(widget._name, details, constraints)
-                          //     .dispatch(context);
-
-                          // setState(() {
-                          //   if (_center) {
-                          //     _cursor.cursor = SystemMouseCursors.move;
-                          //   } else if (widget._name.startsWith("v")) {
-                          //     _cursor.cursor = SystemMouseCursors.resizeColumn;
-                          //   } else if (widget._name.startsWith("h")) {
-                          //     _cursor.cursor = SystemMouseCursors.resizeRow;
-                          //   }
-                          // });
+                            if (_center) {
+                              _cursor.cursor = SystemMouseCursors.move;
+                            } else if (widget._direction ==
+                                SplitDirection.vertical) {
+                              _cursor.cursor = SystemMouseCursors.resizeColumn;
+                            } else if (widget._direction ==
+                                SplitDirection.horizontal) {
+                              _cursor.cursor = SystemMouseCursors.resizeRow;
+                            }
+                          });
                         },
                         onExit: (event) {
-                          // LeaveNotification(widget._name, constraints)
-                          //     .dispatch(context);
-                          setState(() {
+                          SplitContainer.setComponentState(_crossSplitComponent,
+                              () {
                             _cursor.cursor = SystemMouseCursors.basic;
                           });
                         },
@@ -476,16 +404,3 @@ class _Split extends State<Split> {
     );
   }
 }
-
-// else if (notification is StartNotification) {
-//       if (_CrossSplit._mouseInCenter(vRatio, notification.constraints.maxWidth,
-//           notification.details.globalPosition.dx, notification.name)) {
-//         _tabbedCenter = true;
-//       } else {
-//         _tabbedCenter = false;
-//       }
-//     } else if (notification is EnterNotification) {
-
-//     } else if (notification is LeaveNotification) {
-
-//     }
