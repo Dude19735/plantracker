@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scheduler/context.dart';
 
 enum SplitControllerLocation { top, bottom }
 
@@ -17,15 +18,15 @@ class PageScrolledNotification extends Notification {
 class SplitController {
   bool _bottomPageScrolling = false;
   late final int animationMs;
-  int _currentPage = 2 << 31;
+  int _currentPage = GlobalSettings.splitControllerInitPage;
   final PageController _topPageController =
-      PageController(initialPage: 2 << 31);
+      PageController(initialPage: GlobalSettings.splitControllerInitPage);
   final PageController _bottomPageController =
-      PageController(initialPage: 2 << 31);
+      PageController(initialPage: GlobalSettings.splitControllerInitPage);
 
   bool emitNotificationOnPageChanged = true;
 
-  SplitController({this.animationMs = 250});
+  SplitController({this.animationMs = 125});
 
   void nextPage({Curve curve = Curves.linear}) {
     _topPageController.nextPage(
