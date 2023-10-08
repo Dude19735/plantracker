@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data.dart';
@@ -198,8 +197,6 @@ class _TimeTableBox extends State<TimeTableBox> {
   @override
   void initState() {
     super.initState();
-    // _planed = "";
-    // ServicesBinding.instance.keyboard.addHandler(_onKey);
   }
 
   void _esc() {
@@ -304,7 +301,6 @@ class _TimeTableBox extends State<TimeTableBox> {
           baseOffset: 0, extentOffset: _controller.value.text.length);
 
       var textField = TextFormField(
-          // focusNode: focusNode,
           controller: _controller,
           enabled: false,
           onTapOutside: (event) {
@@ -493,14 +489,11 @@ class _TimeTableBox extends State<TimeTableBox> {
   Widget? _mux(BuildContext context, bool fill, TimeTableData? subject) {
     if (widget._state.state[widget._x][widget._y] ==
         TimeTableCellState.pressed) {
-      // print("created pressed state container ${widget._x} ${widget._y}");
       return _getEditContainer(context, subject);
     }
     if (fill) {
-      // print("   created filled state container ${widget._x} ${widget._y}");
       return _getFullContainer(context, subject!);
     }
-    // print("      create empty state container ${widget._x} ${widget._y}");
     return null;
   }
 
@@ -550,17 +543,12 @@ class _TimeTableBox extends State<TimeTableBox> {
               context, _mux(context, fill, subject),
               height: widget._height,
               margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
-              shadow: false, // fill ? true : false,
-              border: true, // fill ? false : true,
+              shadow: false,
+              border: true,
               color: fill
                   ? GlobalStyle.timeTableCellShadeColorFull(context, subject)
                   : GlobalStyle.timeTableCellShadeColorEmpty(
                       context, widget._state.state[widget._x][widget._y])),
-          // color: GlobalStyle.timeTableCellColor(
-          //     context, widget._state.state[widget._x][widget._y]),
-          // shadowColor: fill
-          //     ? GlobalStyle.timeTableCellShadeColorFull(context, subject)
-          //     : GlobalStyle.timeTableCellShadeColorEmpty(context)),
         ),
       ),
     );

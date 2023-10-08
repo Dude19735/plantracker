@@ -65,7 +65,6 @@ class SplitController {
       },
       child: PageView.builder(
         clipBehavior: Clip.none,
-        // allowImplicitScrolling: true, // apparently this is not necessary
         onPageChanged: (page) {
           if (page != _currentPage) {
             bool backwards = page < _currentPage;
@@ -78,8 +77,6 @@ class SplitController {
             : _bottomPageController,
         pageSnapping: true,
         itemBuilder: (context, index) {
-          // print("build page $index $_currentPage ${index - _currentPage}");
-          // child.setPageOffset(_currentPage - index);
           return Center(
             child: childBuilder(index - _currentPage),
           );
