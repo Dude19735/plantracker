@@ -160,11 +160,8 @@ class Data<D> {
             (data as Map)[subjectId][elemK] = elem[0];
           }
         }
-        // (data as Map)[subjectId]
       }
     } else if (D == TSchedulePlanData) {
-      // data = <int, List<SchedulePlanData>>{} as D;
-
       List<SchedulePlanData> d =
           json.map((item) => SchedulePlanData(item)).toList();
       data = groupBy(d, (SchedulePlanData elem) => elem.date) as D;
@@ -179,10 +176,6 @@ class Data<D> {
     } else {
       throw Exception("Message type [$D] not defined in data parser");
     }
-    // data = (json['data'] as List)
-    //     .map((item) => (item as Map<String, dynamic>)
-    //         .map((key, value) => MapEntry(key, value.toString())))
-    //     .toList();
   }
 
   @override
@@ -246,7 +239,7 @@ class GlobalData {
         ColumnName.recorded: recorded,
         ColumnName.subject: subjectName
       };
-      // print(pack);
+
       summaryData.data.add(SummaryData(pack));
     }
 
@@ -277,14 +270,6 @@ class GlobalData {
     var tschedulePlanData = Data<TSchedulePlanData>.fromJsonStr(
         DataGen.testDateScheduleViewPlan(fromDate, toDate));
     schedulePlanData.data.addAll(tschedulePlanData.data);
-
-    // requirement
-    // timeTableData.data.forEach((key, value) {
-    //   value.sort((a, b) => a.subject.compareTo(b.subject));
-    // });
-    // schedulePlanData.data.forEach((key, value) {
-    //   value.sort((a, b) => a.subject.compareTo(b.subject));
-    // });
   }
 
   void _remove(DateTime day) {
@@ -297,19 +282,12 @@ class GlobalData {
     var to = GlobalContext.toDateWindow;
     var adj = DataUtils.getAdjacentTimePeriods(from, to);
 
-    // print("========================");
-    // print("new time interval:");
-    // print(adj);
     var newFrom = adj["prev_from"];
     if (newFrom.compareTo(_fromDate) < 0) {
       // add new data on this side
-      // print(
-      //     "load new data: $newFrom to ${_fromDate.subtract(Duration(days: 1))}");
       _load(newFrom, _fromDate.subtract(Duration(days: 1)));
     } else if (newFrom.compareTo(_fromDate) > 0) {
       // remove unused data on this side
-      // print(
-      //     "remove old data: $_fromDate to ${newFrom.subtract(Duration(days: 1))}");
       for (DateTime d = _fromDate;
           d.compareTo(newFrom) < 0;
           d = d.add(Duration(days: 1))) {
@@ -320,7 +298,6 @@ class GlobalData {
     var newTo = adj["next_to"];
     if (newTo.compareTo(_toDate) < 0) {
       // remove unused data on this side
-      // print("remove old data: ${newTo.add(Duration(days: 1))} to $_toDate");
       for (DateTime d = newTo.add(Duration(days: 1));
           d.compareTo(_toDate) <= 0;
           d = d.add(Duration(days: 1))) {
@@ -328,7 +305,6 @@ class GlobalData {
       }
     } else if (newTo.compareTo(_toDate) > 0) {
       // add new data on this side
-      // print("load new data: ${_toDate.add(Duration(days: 1))} to $newTo");
       _load(_toDate.add(Duration(days: 1)), newTo);
     }
 

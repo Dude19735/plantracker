@@ -1,6 +1,4 @@
 import 'dart:math';
-
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 
@@ -239,7 +237,6 @@ class Split extends StatefulWidget {
   final String _name;
   final Color color;
   late final Ratio _ratio;
-  // bool Function(double width, double dx, String name)? _mouseInCenter;
 
   late final Widget Function()? topOrLeft;
   late final Widget Function()? bottomOrRight;

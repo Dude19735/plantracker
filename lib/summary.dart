@@ -76,7 +76,6 @@ class Summary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("======================== build summary ========================");
     double maxTime = 0;
     var data = GlobalContext.data.summaryData.data;
     for (var item in data) {
@@ -100,8 +99,6 @@ class Summary extends StatelessWidget {
               return ListView(
                   clipBehavior: Clip.none,
                   controller: _controller,
-                  // itemCount: data.length,
-                  // itemBuilder: (BuildContext context, int index) {
                   children: [
                     for (int i = 0; i < data.length; ++i)
                       SummaryEntry(constraints.maxWidth, maxTime, i)

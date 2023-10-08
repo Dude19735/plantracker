@@ -5,7 +5,6 @@ import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/time_table_box.dart';
 import 'package:scheduler/joined_scroller.dart';
-// import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 
 class TimeTable extends StatefulWidget {
   final SplitController _splitController;
@@ -71,7 +70,6 @@ class _TimeTable extends State<TimeTable> {
   @override
   void initState() {
     super.initState();
-    // _controller = widget._controllerGroup.addAndGet();
   }
 
   Widget _rowBuilder(
@@ -93,15 +91,12 @@ class _TimeTable extends State<TimeTable> {
 
   @override
   void dispose() {
-    print(
-        "@@@@@@@@@@@@@@@@@@@@@@@@@ dispose page $_controller @@@@@@@@@@@@@@@@@@@@@@@@");
     super.dispose();
     widget._joinedScroller.remove(_controller, _side);
   }
 
   @override
   Widget build(BuildContext context) {
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@ build page @@@@@@@@@@@@@@@@@@@@@@@@");
     int numCells = DataUtils.getWindowSize(
         GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
@@ -134,8 +129,6 @@ class _TimeTable extends State<TimeTable> {
                     clipBehavior: Clip.none,
                     padding: EdgeInsets.zero,
                     controller: cPair.value,
-                    // itemCount: data.length,
-                    // itemBuilder: (BuildContext context, int subjectIndex) {
                     children: [
                       for (int i = 0; i < data.length; i++)
                         _rowBuilder(
