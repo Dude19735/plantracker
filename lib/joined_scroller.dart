@@ -1,114 +1,221 @@
 import 'package:flutter/material.dart';
 
-enum JoinedScrollerIdentifier { left, right }
+enum JoinedScrollerSide { left, right }
+
+typedef TControllerHash = int;
+typedef TJumpTo = Map<TControllerHash, void Function(double offset)?>;
+typedef TAnimTo = Map<TControllerHash,
+    Future<void> Function(double offset, Curve curve, Duration duration)?>;
+typedef TJumpToRegEntryNullable = Map<JoinedScrollerSide, TJumpTo?>;
+typedef TAnimToRegEntryNullable = Map<JoinedScrollerSide, TAnimTo?>;
+typedef TJumpToRegEntry = Map<JoinedScrollerSide, TJumpTo>;
+typedef TAnimToRegEntry = Map<JoinedScrollerSide, TAnimTo>;
 
 class JoinedScrollerNotification extends Notification {}
 
 class JoinedScroller {
   final Duration _afterDelay = Duration(milliseconds: 3);
+  bool _inAnimation = false;
+  // final Map<JoinedScrollerSide, int> _keep;
+  Map<TControllerHash, ScrollController> _controller = {};
+  // Map<JoinedScrollerSide, List<TControllerHash>> _log = {
+  //   JoinedScrollerSide.left: [],
+  //   JoinedScrollerSide.right: []
+  // };
 
-  Map<JoinedScrollerIdentifier, void Function(double offset)?> _jumpTo = {
-    JoinedScrollerIdentifier.left: null,
-    JoinedScrollerIdentifier.right: null
+  TJumpToRegEntryNullable _jumpTo = {
+    JoinedScrollerSide.left: {},
+    JoinedScrollerSide.right: {}
+  };
+  TAnimToRegEntryNullable _animateTo = {
+    JoinedScrollerSide.left: {},
+    JoinedScrollerSide.right: {}
+  };
+  TJumpToRegEntry _jumpToHidden = {
+    JoinedScrollerSide.left: {},
+    JoinedScrollerSide.right: {}
+  };
+  TAnimToRegEntry _animateToHidden = {
+    JoinedScrollerSide.left: {},
+    JoinedScrollerSide.right: {}
   };
 
-  Map<JoinedScrollerIdentifier,
-          void Function(double offset, Curve curve, Duration duration)?>
-      _animateTo = {
-    JoinedScrollerIdentifier.left: null,
-    JoinedScrollerIdentifier.right: null
-  };
+  // JoinedScroller(int keepLeft, int keepRight)
+  //     : _keep = {
+  //         JoinedScrollerSide.left: keepLeft,
+  //         JoinedScrollerSide.right: keepRight
+  //       };
 
-  Map<JoinedScrollerIdentifier, void Function(double offset)?> _jumpToHidden = {
-    JoinedScrollerIdentifier.left: null,
-    JoinedScrollerIdentifier.right: null
-  };
-
-  Map<JoinedScrollerIdentifier,
-          void Function(double offset, Curve curve, Duration duration)?>
-      _animateToHidden = {
-    JoinedScrollerIdentifier.left: null,
-    JoinedScrollerIdentifier.right: null
-  };
-
-  void _disable(JoinedScrollerIdentifier side) {
+  void _disable(JoinedScrollerSide side) {
+    print("****** disable $side ******");
     _jumpTo[side] = null;
     _animateTo[side] = null;
   }
 
-  void _enable(JoinedScrollerIdentifier side) {
-    _jumpTo[side] = _jumpToHidden[side];
-    _animateTo[side] = _animateToHidden[side];
+  void _enable(JoinedScrollerSide side) {
+    print(
+        "****** enable $side ${_jumpToHidden[side] != null} ${_animateToHidden[side] != null} ******");
+    _jumpTo[side] = _jumpToHidden[side]!;
+    _animateTo[side] = _animateToHidden[side]!;
+  }
+
+  // bool _available(JoinedScrollerSide side) {
+  //   return _jumpTo[side] != null;
+  // }
+
+  JoinedScrollerSide _otherSide(JoinedScrollerSide side) {
+    return side == JoinedScrollerSide.left
+        ? JoinedScrollerSide.right
+        : JoinedScrollerSide.left;
+  }
+
+  void _clean() {
+    var left = JoinedScrollerSide.left;
+    var right = JoinedScrollerSide.right;
+
+    var keys = _jumpToHidden[left]!.keys.toList();
+    for (var key in keys) {
+      if (!_controller[key]!.hasClients) {
+        remove(key, left);
+      }
+    }
+
+    keys = _jumpToHidden[right]!.keys.toList();
+    for (var key in keys) {
+      if (!_controller[key]!.hasClients) {
+        remove(key, right);
+      }
+    }
+  }
+
+  void remove(TControllerHash hash, JoinedScrollerSide side) {
+    print("### remove $hash ### ${side.toString()}");
+    _controller[hash]!.dispose();
+    _controller.remove(hash);
+    _jumpTo[side]?.remove(hash);
+    _jumpToHidden[side]!.remove(hash);
+    _animateTo[side]?.remove(hash);
+    _animateToHidden[side]!.remove(hash);
+  }
+
+  MapEntry<TControllerHash, ScrollController> register(
+      double initOffset, JoinedScrollerSide side) {
+    ScrollController controller = ScrollController(
+        initialScrollOffset: initOffset, keepScrollOffset: true);
+
+    int hash = controller.hashCode;
+    // var keys = _controller.keys.toList();
+    // for (var h in keys) {
+    //   if (!(_controller[h]!.hasClients)) {
+    //     remove(h, side);
+    //   }
+    // }
+    _controller[hash] = controller;
+
+    print(
+        "### register $hash ### ${side.toString()} ${_jumpTo[side] != null} ${_animateTo[side] != null}");
+
+    _jumpToHidden[side]![hash] = (double offset) {
+      if (controller.hasClients) {
+        print("### jumpTo ### ${side.toString()} $hash");
+        controller.jumpTo(offset);
+      } else {
+        print("### jumpTo: no client ### ${side.toString()} $hash");
+      }
+    };
+    _jumpTo[side]?[hash] = _jumpToHidden[side]![hash];
+    _animateToHidden[side]![hash] =
+        (double offset, Curve curve, Duration duration) async {
+      if (controller.hasClients) {
+        print("### animateTo ### ${side.toString()} $hash");
+        return controller.animateTo(offset, duration: duration, curve: curve);
+      } else {
+        print("### animateTo: no client ### ${side.toString()} $hash");
+        return Future<void>(() => {});
+      }
+    };
+    _animateTo[side]?[hash] = _animateToHidden[side]![hash];
+    return MapEntry(hash, controller);
+  }
+
+  void jumpTo(JoinedScrollerSide side, double offset) {
+    if (_inAnimation) return;
+
+    if (_jumpTo[side] != null) {
+      _inAnimation = true;
+      var oSide = _otherSide(side);
+
+      _disable(oSide);
+      _clean();
+      var keys = _jumpTo[side]!.keys.toList();
+      for (var key in keys) {
+        _jumpTo[side]![key]!(offset);
+      }
+      _clean();
+      _enable(oSide);
+      _inAnimation = false;
+    }
+  }
+
+  Stream<void> _animStream(
+      double offset, Curve curve, Duration duration) async* {
+    var left = JoinedScrollerSide.left;
+    var right = JoinedScrollerSide.right;
+
+    for (var key in _animateToHidden[left]!.keys) {
+      yield _animateToHidden[left]![key]!(offset, curve, duration);
+    }
+    for (var key in _animateToHidden[right]!.keys) {
+      yield _animateToHidden[right]![key]!(offset, curve, duration);
+    }
+  }
+
+  Future<void> _animHelper(Stream<void> stream) async {
+    await stream.last;
   }
 
   void animateBothTo(double offset, Curve curve, Duration duration) {
-    var left = JoinedScrollerIdentifier.left;
-    var right = JoinedScrollerIdentifier.right;
+    if (_inAnimation) return;
+
+    var left = JoinedScrollerSide.left;
+    var right = JoinedScrollerSide.right;
+    _inAnimation = true;
+
     _disable(left);
     _disable(right);
-
-    _animateToHidden[left]!(offset, curve, duration);
-    _animateToHidden[right]!(offset, curve, duration);
-
-    Future.delayed(duration + _afterDelay, () {
+    _clean();
+    _animHelper(_animStream(offset, curve, duration)).then((value) {
+      _clean();
       _enable(left);
       _enable(right);
+      _inAnimation = false;
     });
-
-    // var f1 = _setState[JoinedScrollerIdentifier.left];
-    // var f2 = _setState[JoinedScrollerIdentifier.right];
-    // _setState[JoinedScrollerIdentifier.right] = null;
-    // _setState[JoinedScrollerIdentifier.left] = null;
   }
 
-  void register(
-      JoinedScrollerIdentifier identifier, ScrollController? controller) {
-    if (controller != null) {
-      _jumpTo[identifier] = (double offset) {
-        controller.jumpTo(offset);
-      };
-      _jumpToHidden[identifier] = _jumpTo[identifier];
+  // void animateBothTo(double offset, Curve curve, Duration duration) {
+  //   if (_inAnimation) return;
 
-      _animateTo[identifier] = (double offset, Curve curve, Duration duration) {
-        controller.animateTo(offset, duration: duration, curve: curve);
-      };
-      _animateToHidden[identifier] = _animateTo[identifier];
-    } else {
-      _jumpTo[identifier] = null;
-      _jumpToHidden[identifier] = null;
-      _animateTo[identifier] = null;
-      _animateToHidden[identifier] = null;
-    }
-  }
+  //   var left = JoinedScrollerSide.left;
+  //   var right = JoinedScrollerSide.right;
 
-  bool jumpTo(JoinedScrollerIdentifier scroller, double offset) {
-    if (_jumpTo[scroller] != null) {
-      var dSide = scroller == JoinedScrollerIdentifier.left
-          ? JoinedScrollerIdentifier.right
-          : JoinedScrollerIdentifier.left;
+  //   // _inAnimation = true;
+  //   // _disable(left);
+  //   // _disable(right);
 
-      _disable(dSide);
-      _jumpTo[scroller]!(offset);
-      _enable(dSide);
+  //   var keys = _animateTo[left]!.keys.toList();
+  //   for (var key in keys) {
+  //     _animateTo[left]![key]!(offset, curve, duration);
+  //   }
 
-      return true;
-    }
-    return false;
-  }
+  //   keys = _animateTo[right]!.keys.toList();
+  //   for (var key in keys) {
+  //     _animateTo[right]![key]!(offset, curve, duration);
+  //   }
 
-  bool animateTo(JoinedScrollerIdentifier scroller, double offset, Curve curve,
-      Duration duration) {
-    if (_animateTo[scroller] != null) {
-      var dSide = scroller == JoinedScrollerIdentifier.left
-          ? JoinedScrollerIdentifier.right
-          : scroller;
-
-      _disable(dSide);
-      _animateTo[scroller]!(offset, curve, duration);
-      Future.delayed(duration + _afterDelay, () => _enable(dSide));
-
-      return true;
-    }
-    return false;
-  }
+  //   // Future.delayed(duration + _afterDelay, () {
+  //   //   _enable(left);
+  //   //   _enable(right);
+  //   //   _inAnimation = false;
+  //   // });
+  // }
 }

@@ -28,8 +28,10 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     super.initState();
     _curXPos = -1;
     _curYPos = -1;
-    _controller =
-        AnimationController(duration: Duration(milliseconds: 125), vsync: this);
+    _controller = AnimationController(
+        duration:
+            Duration(milliseconds: GlobalSettings.animationScheduleSelectorMS),
+        vsync: this);
     _animation = Tween<double>(begin: 0, end: 1).animate(_controller)
       ..addListener(() {
         setState(() {

@@ -96,10 +96,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   GlobalContext globalContext = GlobalContext();
-  // LinkedScrollControllerGroup _controllerGroup = LinkedScrollControllerGroup();
   late CrossSplit _crossSplit;
-  // late ScrollController _summary;
-  // late ScrollController _timeTable;
   late final TabController _controller;
   late final SplitController _splitController;
   final JoinedScroller _joinedScroller = JoinedScroller();
@@ -108,10 +105,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _controller = TabController(vsync: this, length: 3);
-    // _summary = _controllerGroup.addAndGet();
-    // _timeTable = _controllerGroup.addAndGet();
-    _splitController =
-        SplitController(animationMs: GlobalSettings.pageChangeDurationMS);
+    _splitController = SplitController();
   }
 
   void _dealWithDataChangedNotification(DataChangedNotification notification) {
@@ -180,7 +174,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           // _controllerGroup.animateTo(notification.offset,
           //     curve: Curves.linear, duration: Duration(milliseconds: 150));
           _joinedScroller.animateBothTo(
-              notification.offset, Curves.linear, Duration(milliseconds: 150));
+              notification.offset,
+              Curves.linear,
+              Duration(
+                  milliseconds:
+                      GlobalSettings.animationFocusScrollTimeTableMS));
           notification.doAfter();
           // _controllerGroup.jumpTo(notification.offset);
         }

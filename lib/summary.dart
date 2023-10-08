@@ -64,13 +64,19 @@ class SummaryEntry extends StatelessWidget {
 }
 
 class Summary extends StatelessWidget {
-  final JoinedScrollerIdentifier _identifier = JoinedScrollerIdentifier.left;
+  final JoinedScrollerSide _otherSide = JoinedScrollerSide.right;
   final JoinedScroller _joinedScroller;
+  final ScrollController _controller;
 
-  Summary(this._joinedScroller) {}
+  Summary(this._joinedScroller)
+      : _controller = _joinedScroller
+            .register(GlobalContext.timeTableWindowScrollOffset,
+                JoinedScrollerSide.left)
+            .value;
 
   @override
   Widget build(BuildContext context) {
+    print("======================== build summary ========================");
     double maxTime = 0;
     var data = GlobalContext.data.summaryData.data;
     for (var item in data) {
@@ -78,16 +84,12 @@ class Summary extends StatelessWidget {
       if (item.recorded > maxTime) maxTime = item.recorded;
     }
 
-    var controller = ScrollController();
-    _joinedScroller.register(JoinedScrollerIdentifier.left, controller);
-
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return NotificationListener(
           onNotification: (notification) {
             if (notification is ScrollNotification) {
-              _joinedScroller.jumpTo(
-                  JoinedScrollerIdentifier.right, notification.metrics.pixels);
+              _joinedScroller.jumpTo(_otherSide, notification.metrics.pixels);
             }
             return false;
           },
@@ -97,7 +99,7 @@ class Summary extends StatelessWidget {
             builder: (BuildContext context, ScrollController scrollController) {
               return ListView(
                   clipBehavior: Clip.none,
-                  controller: controller,
+                  controller: _controller,
                   // itemCount: data.length,
                   // itemBuilder: (BuildContext context, int index) {
                   children: [

@@ -203,10 +203,13 @@ class _TimeTableBox extends State<TimeTableBox> {
   }
 
   void _esc() {
-    setState(() {
-      widget._state.state[widget._x][widget._y] = TimeTableCellState.inactive;
-      widget._state.resetLast();
-    });
+    if (widget._state.state[widget._x][widget._y] !=
+        TimeTableCellState.inactive) {
+      setState(() {
+        widget._state.state[widget._x][widget._y] = TimeTableCellState.inactive;
+        widget._state.resetLast();
+      });
+    }
   }
 
   void _enter() {
@@ -265,10 +268,14 @@ class _TimeTableBox extends State<TimeTableBox> {
         return true;
       }
       if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        double offset = (widget._x + 1) * widget._height;
+        ScrollAndFocusNotification(offset, () {}).dispatch(context);
         _move(1, 0);
         return true;
       }
       if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        double offset = (widget._x - 1) * widget._height;
+        ScrollAndFocusNotification(offset, () {}).dispatch(context);
         _move(-1, 0);
         return true;
       }
@@ -283,6 +290,8 @@ class _TimeTableBox extends State<TimeTableBox> {
   }
 
   Widget _getEditContainer(BuildContext context, TimeTableData? subject) {
+    // make sure that new text fields are always created in inactive state
+    // to avoid exceptions during sideways scrolling
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       double ratio = constraints.maxWidth / constraints.maxHeight;
@@ -313,9 +322,6 @@ class _TimeTableBox extends State<TimeTableBox> {
           ));
 
       var textForm = Form(key: _formKey, child: textField);
-
-      double offset = widget._x * widget._height;
-      ScrollAndFocusNotification(offset, () {}).dispatch(context);
 
       var keyboardFocus = FocusNode(onKey: (FocusNode node, RawKeyEvent event) {
         if (!_onKey(event)) {
@@ -517,6 +523,8 @@ class _TimeTableBox extends State<TimeTableBox> {
           setState(() {
             widget._state.moveActiveStateTo(widget._x, widget._y,
                 TimeTableCellState.inactive, TimeTableCellState.pressed);
+            double offset = widget._x * widget._height;
+            ScrollAndFocusNotification(offset, () {}).dispatch(context);
           });
         },
         child: MouseRegion(

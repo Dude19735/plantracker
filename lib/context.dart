@@ -38,12 +38,18 @@ class GlobalSettings {
     "fr-CH": Locale('fr', 'CH')
   };
 
+  // initial pages
+  static const int splitControllerInitPage = 2 << 31;
+
   // schedule widget configs
   static const int scheduleHourOffset = 5; // start at 5am
   static const int scheduleBoxRangeS = 60 * 15; // 15 mins schedule box size
   static const int initDateWindowSize = 7;
-  static const int pageChangeDurationMS = 250;
   static const double scheduleWindowAutoScrollOffset = 0;
+
+  // animation timers
+  static const int animationFocusScrollTimeTableMS = 250;
+  static const int animationScheduleSelectorMS = 125;
 }
 
 class GlobalStyle {

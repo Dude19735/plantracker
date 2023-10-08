@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
@@ -27,6 +26,10 @@ class TimeTable extends StatefulWidget {
 }
 
 class _TimeTable extends State<TimeTable> {
+  TControllerHash _controller = 0;
+  final JoinedScrollerSide _side = JoinedScrollerSide.right;
+  final JoinedScrollerSide _otherSide = JoinedScrollerSide.left;
+
   int _getColDate(int dayOffset) {
     return DataUtils.dateTime2Int(
         GlobalContext.fromDateWindow.add(Duration(days: dayOffset)));
@@ -71,10 +74,6 @@ class _TimeTable extends State<TimeTable> {
     // _controller = widget._controllerGroup.addAndGet();
   }
 
-  // @override
-  // void dispose(){
-  // }
-
   Widget _rowBuilder(
       List<SummaryData> data,
       int subjectIndex,
@@ -93,26 +92,32 @@ class _TimeTable extends State<TimeTable> {
   }
 
   @override
+  void dispose() {
+    print(
+        "@@@@@@@@@@@@@@@@@@@@@@@@@ dispose page $_controller @@@@@@@@@@@@@@@@@@@@@@@@");
+    super.dispose();
+    widget._joinedScroller.remove(_controller, _side);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@ build page @@@@@@@@@@@@@@@@@@@@@@@@");
     int numCells = DataUtils.getWindowSize(
         GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     var data = GlobalContext.data.summaryData.data;
     Widget table(int pageOffset) {
-      ScrollController controller = ScrollController(
-          initialScrollOffset: GlobalContext.timeTableWindowScrollOffset,
-          keepScrollOffset: true);
+      var cPair = widget._joinedScroller
+          .register(GlobalContext.timeTableWindowScrollOffset, _side);
 
-      widget._joinedScroller
-          .register(JoinedScrollerIdentifier.right, controller);
-
+      _controller = cPair.key;
       return NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollNotification) {
             double px = notification.metrics.pixels;
             GlobalContext.timeTableWindowScrollOffset = px;
 
-            widget._joinedScroller.jumpTo(JoinedScrollerIdentifier.left, px);
+            widget._joinedScroller.jumpTo(_otherSide, px);
 
             return true;
           }
@@ -128,7 +133,7 @@ class _TimeTable extends State<TimeTable> {
                 return ListView(
                     clipBehavior: Clip.none,
                     padding: EdgeInsets.zero,
-                    controller: controller,
+                    controller: cPair.value,
                     // itemCount: data.length,
                     // itemBuilder: (BuildContext context, int subjectIndex) {
                     children: [
