@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
+import 'package:scheduler/data_utils.dart';
 
 class WorkScheduleDateBar extends StatelessWidget {
+  final int _pageOffset;
+
+  WorkScheduleDateBar(this._pageOffset);
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -12,7 +17,7 @@ class WorkScheduleDateBar extends StatelessWidget {
             margin: EdgeInsets.only(
                 left: GlobalStyle.summaryCardMargin,
                 right: GlobalStyle.summaryCardMargin),
-            child: CustomPaint(painter: _GridPainter(context)));
+            child: CustomPaint(painter: _GridPainter(context, _pageOffset)));
       },
     );
   }
@@ -22,8 +27,9 @@ class _GridPainter extends CustomPainter {
   Paint backgroundPainter = Paint();
   Paint gridPainter = Paint();
   final BuildContext _context;
+  final int _pageOffset;
 
-  _GridPainter(this._context) {
+  _GridPainter(this._context, this._pageOffset) {
     backgroundPainter.color = Colors.white;
     backgroundPainter.style = PaintingStyle.fill;
 
@@ -34,11 +40,8 @@ class _GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    int ccsbx = GlobalContext.fromDateWindow
-            .difference(GlobalContext.toDateWindow)
-            .inDays
-            .abs() +
-        1;
+    int ccsbx = DataUtils.getWindowSize(
+        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     double boxWidth =
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
@@ -53,10 +56,12 @@ class _GridPainter extends CustomPainter {
 
     gridPainter.color = GlobalStyle.scheduleGridColorBox(_context);
     gridPainter.strokeWidth = 1;
-    while (xOffset < size.width - boxWidth / 2) {
+    double end = size.width - boxWidth / 2;
+    double delta = boxWidth + GlobalStyle.scheduleGridStrokeWidth;
+    while (xOffset < end) {
       canvas.drawLine(
           Offset(xOffset, 0), Offset(xOffset, size.height), gridPainter);
-      xOffset += boxWidth + GlobalStyle.scheduleGridStrokeWidth;
+      xOffset += delta;
     }
 
     gridPainter.strokeWidth = 2;
@@ -70,26 +75,40 @@ class _GridPainter extends CustomPainter {
 
     // =========================================================================
 
-    final textStyle = TextStyle(
+    int dayOffset = DataUtils.page2DayOffset(
+        _pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+
+    TextStyle textStyle = TextStyle(
       color: Colors.black,
       fontSize: 16,
     );
-    final textSpan = TextSpan(
-      text: 'Hello, world.',
-      style: textStyle,
-    );
+
     final textPainter = TextPainter(
-      text: textSpan,
+      textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
     );
-    textPainter.layout(
-      minWidth: 0,
-      maxWidth: GlobalContext.scheduleWindowCell.width,
-    );
-    final xCenter = (size.width - textPainter.width) / 2;
-    final yCenter = (size.height - textPainter.height) / 2;
-    final offset = Offset(xCenter, yCenter);
-    textPainter.paint(canvas, offset);
+
+    const double yCenter = GlobalStyle.scheduleDateBarHeight / 2;
+    xOffset = (boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2) / 2;
+    end = size.width - boxWidth / 4;
+    while (xOffset < end) {
+      DateTime day = DataUtils.addDays(GlobalContext.fromDateWindow, dayOffset);
+      textPainter.text = TextSpan(
+        text: DataUtils.dateTime2Str(day),
+        style: textStyle,
+      );
+
+      textPainter.layout(
+        minWidth: 0,
+        maxWidth: boxWidth,
+      );
+      final offset = Offset(
+          xOffset - textPainter.width / 2, yCenter - textPainter.height / 2);
+      textPainter.paint(canvas, offset);
+
+      xOffset += delta;
+      dayOffset++;
+    }
   }
 
   @override

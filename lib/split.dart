@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 
@@ -22,6 +21,20 @@ typedef TSetComponentState
 
 class SyncNotification extends Notification {}
 
+class VerticalSplitMoved extends Notification {
+  final String name;
+  final double leftWidth;
+  final double rightWidth;
+  VerticalSplitMoved(this.name, this.leftWidth, this.rightWidth);
+}
+
+class HorizontalSplitMoved extends Notification {
+  final String name;
+  final double topHeight;
+  final double bottomBeight;
+  HorizontalSplitMoved(this.name, this.topHeight, this.bottomBeight);
+}
+
 class PanNotification extends SyncNotification {
   final SplitDirection direction;
   final DragUpdateDetails details;
@@ -32,6 +45,23 @@ class PanNotification extends SyncNotification {
 class StartNotification extends SyncNotification {
   final bool center;
   StartNotification(this.center);
+}
+
+class SplitMetrics {
+  final double tlWidth;
+  final double tlHeight;
+  final double brWidth;
+  final double brHeight;
+  SplitMetrics(
+      {this.tlWidth = 0,
+      this.tlHeight = 0,
+      this.brWidth = 0,
+      this.brHeight = 0});
+
+  @override
+  String toString() {
+    return "\ntop/left\t[w,h]:\t[$tlWidth,$tlHeight]\nbottom/right\t[w,h]:\t[$brWidth,$brHeight]";
+  }
 }
 
 class Ratio {
@@ -53,14 +83,14 @@ class CrossSplit extends StatefulWidget {
   final double horizontalInitRatio;
   final double horizontalGrabberSize;
 
-  final Widget Function()? topLeft;
-  final Widget Function()? bottomLeft;
-  final Widget Function()? topRight;
-  final Widget Function()? bottomRight;
+  final Widget Function(SplitMetrics metrics)? topLeft;
+  final Widget Function(SplitMetrics metrics)? bottomLeft;
+  final Widget Function(SplitMetrics metrics)? topRight;
+  final Widget Function(SplitMetrics metrics)? bottomRight;
 
-  static const String _hAll = "hAll";
-  static const String _vTop = "vTop";
-  static const String _vBottom = "vBottom";
+  static const String hAll = "hAll";
+  static const String vTop = "vTop";
+  static const String vBottom = "vBottom";
 
   CrossSplit(
       {this.horizontalInitRatio = GlobalStyle.splitterHInitRatio,
@@ -141,34 +171,39 @@ class _CrossSplit extends State<CrossSplit> {
       child: Column(
         children: [
           Split(
-            CrossSplit._hAll,
+            CrossSplit.hAll,
             ratio, //hRatio,
             SplitDirection.horizontal,
             color: GlobalStyle.splitterHGrabberColor(context),
-            topOrLeft: () => SplitContainer(
+            topOrLeft: (SplitMetrics metrics) => SplitContainer(
+                metrics,
                 CrossSplitComponent.top,
-                () => Row(children: [
+                (SplitMetrics metrics) => Row(children: [
                       Split(
-                        CrossSplit._vTop,
+                        CrossSplit.vTop,
                         ratio, //vRatio,
                         SplitDirection.vertical,
                         color: GlobalStyle.splitterVGrabberColor(context),
-                        topOrLeft: () => SplitContainer(
-                            CrossSplitComponent.tl, widget.topLeft),
-                        bottomOrRight: () => SplitContainer(
-                            CrossSplitComponent.tr, widget.topRight),
+                        topOrLeft: (SplitMetrics metrics) => SplitContainer(
+                            metrics, CrossSplitComponent.tl, widget.topLeft),
+                        bottomOrRight: (SplitMetrics metrics) => SplitContainer(
+                            metrics, CrossSplitComponent.tr, widget.topRight),
                       )
                     ])),
-            bottomOrRight: () => SplitContainer(
+            bottomOrRight: (SplitMetrics metrics) => SplitContainer(
+                metrics,
                 CrossSplitComponent.bottom,
-                () => Row(children: [
-                      Split(CrossSplit._vBottom, ratio,
+                (SplitMetrics metrics) => Row(children: [
+                      Split(CrossSplit.vBottom, ratio,
                           /*vRatio,*/ SplitDirection.vertical,
                           color: GlobalStyle.splitterVGrabberColor(context),
-                          topOrLeft: () => SplitContainer(
-                              CrossSplitComponent.bl, widget.bottomLeft),
-                          bottomOrRight: () => SplitContainer(
-                              CrossSplitComponent.br, widget.bottomRight))
+                          topOrLeft: (SplitMetrics metrics) => SplitContainer(
+                              metrics,
+                              CrossSplitComponent.bl,
+                              widget.bottomLeft),
+                          bottomOrRight: (SplitMetrics metrics) =>
+                              SplitContainer(metrics, CrossSplitComponent.br,
+                                  widget.bottomRight))
                     ])),
           ),
         ],
@@ -178,8 +213,9 @@ class _CrossSplit extends State<CrossSplit> {
 }
 
 class SplitContainer extends StatefulWidget {
-  final Widget Function()? child;
+  final Widget Function(SplitMetrics metrics)? child;
   final CrossSplitComponent _place;
+  final SplitMetrics _metrics;
   static final TSetComponentState _setState = {
     CrossSplitComponent.top: null,
     CrossSplitComponent.bottom: null,
@@ -189,7 +225,7 @@ class SplitContainer extends StatefulWidget {
     CrossSplitComponent.br: null
   };
 
-  SplitContainer(this._place, this.child);
+  SplitContainer(this._metrics, this._place, this.child);
 
   static bool setComponentState(
       CrossSplitComponent component, void Function()? stateUpdate) {
@@ -228,7 +264,9 @@ class _SplitContainer extends State<SplitContainer> {
       };
     }
 
-    return widget.child != null ? widget.child!() : Placeholder();
+    return widget.child != null
+        ? widget.child!(widget._metrics)
+        : Placeholder();
   }
 }
 
@@ -238,8 +276,8 @@ class Split extends StatefulWidget {
   final Color color;
   late final Ratio _ratio;
 
-  late final Widget Function()? topOrLeft;
-  late final Widget Function()? bottomOrRight;
+  late final Widget Function(SplitMetrics metrics)? topOrLeft;
+  late final Widget Function(SplitMetrics metrics)? bottomOrRight;
 
   Split(this._name, this._ratio, this._direction,
       {this.color = Colors.transparent, this.topOrLeft, this.bottomOrRight});
@@ -280,7 +318,7 @@ class _Split extends State<Split> {
   Widget build(BuildContext context) {
     _crossSplitComponent = widget._direction == SplitDirection.horizontal
         ? CrossSplitComponent.hSeparator
-        : (widget._name.compareTo(CrossSplit._vTop) == 0
+        : (widget._name.compareTo(CrossSplit.vTop) == 0
             ? CrossSplitComponent.vSeparatorTop
             : CrossSplitComponent.vSeparatorBottom);
     return Expanded(
@@ -288,18 +326,34 @@ class _Split extends State<Split> {
           builder: (BuildContext context, BoxConstraints constraints) {
         var sizes = getSizes(constraints);
 
-        if (sizes["sb1_w"] != null) {
-          for (var item in GlobalContext.data.summaryData.data) {
-            double width = (sizes["sb1_w"]! as double) -
-                2 * GlobalStyle.splitterCellMargin;
-            double oldHeight =
-                GlobalContext.data.minSubjectTextHeight[item.subjectId]!;
-            double height =
-                GlobalStyle.getTextHeight(item.subject, context, width);
-            GlobalContext.data.minSubjectTextHeight[item.subjectId] =
-                max(oldHeight, height);
-          }
-        }
+        // double m = 2 * GlobalStyle.splitterCellMargin;
+        // if (widget._direction == SplitDirection.vertical) {
+        //   VerticalSplitMoved(widget._name, (sizes["sb1_w"]! as double) - m,
+        //           (sizes["sb2_w"]! as double) - m)
+        //       .dispatch(context);
+        // } else {
+        //   HorizontalSplitMoved(widget._name, (sizes["sb1_h"]! as double) - m,
+        //           (sizes["sb2_h"]! as double) - m)
+        //       .dispatch(context);
+        // }
+
+        //   for (var item in GlobalContext.data.summaryData.data) {
+        //     double width = (sizes["sb1_w"]! as double) -
+        //         2 * GlobalStyle.splitterCellMargin;
+        //     double oldHeight =
+        //         GlobalContext.data.minSubjectTextHeight[item.subjectId]!;
+        //     double height =
+        //         GlobalStyle.getTextHeight(item.subject, context, width);
+        //     GlobalContext.data.minSubjectTextHeight[item.subjectId] =
+        //         max(oldHeight, height);
+        //   }
+
+        var metrics = SplitMetrics(
+          tlWidth: sizes["sb1_w"] ?? 0,
+          tlHeight: sizes["sb1_h"] ?? 0,
+          brWidth: sizes["sb2_w"] ?? 0,
+          brHeight: sizes["sb2_h"] ?? 0,
+        );
 
         return SizedBox(
           height: constraints.maxHeight,
@@ -312,12 +366,14 @@ class _Split extends State<Split> {
                 width: sizes["sb1_w"],
                 height: sizes["sb1_h"],
                 child: ClipRect(
-                    child:
-                        widget.topOrLeft == null ? null : widget.topOrLeft!()),
+                    child: widget.topOrLeft == null
+                        ? null
+                        : widget.topOrLeft!(metrics)),
               ),
               SplitContainer(
+                  SplitMetrics(),
                   _crossSplitComponent,
-                  () => MouseRegion(
+                  (SplitMetrics metrics) => MouseRegion(
                         cursor: _cursor.cursor,
                         child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
@@ -393,7 +449,7 @@ class _Split extends State<Split> {
                   child: ClipRect(
                       child: widget.bottomOrRight == null
                           ? null
-                          : widget.bottomOrRight!()))
+                          : widget.bottomOrRight!(metrics)))
             ],
           ),
         );

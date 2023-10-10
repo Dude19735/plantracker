@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
+import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/work_schedule_date_bar.dart';
 
 class WorkScheduleInnerView extends StatefulWidget {
@@ -13,7 +14,7 @@ class WorkScheduleInnerView extends StatefulWidget {
 class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     with SingleTickerProviderStateMixin {
   final double _topFrame = 0;
-  final double _sideFrame = GlobalStyle.splitterCellMargin;
+  final double _sideFrame = 0;
 
   late Animation<double> _animation;
   late AnimationController _controller;
@@ -203,7 +204,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
                 surfaceTintColor: Colors.transparent,
                 foregroundColor: Colors.transparent,
                 shadowColor: Colors.black,
-                flexibleSpace: WorkScheduleDateBar(),
+                flexibleSpace: WorkScheduleDateBar(widget._pageDaysOffset),
               ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
@@ -254,11 +255,8 @@ class _GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    int ccsbx = GlobalContext.fromDateWindow
-            .difference(GlobalContext.toDateWindow)
-            .inDays
-            .abs() +
-        1;
+    int ccsbx = DataUtils.getWindowSize(
+        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     double boxWidth =
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /

@@ -30,6 +30,11 @@ class TimeTableCellStateEncapsulation {
     _lastY = -1;
   }
 
+  @override
+  String toString() {
+    return "${setState.hashCode} ${state.hashCode}";
+  }
+
   bool pressAt(int oldX, int oldY, int dx, int dy) {
     if (oldX + dx >= 0 &&
         oldY + dy >= 0 &&
@@ -102,6 +107,10 @@ class TimeTableBox extends StatefulWidget {
 
   TimeTableBox(this._x, this._y, this._width, this._height, this._subjectId,
       this._date, this._state);
+  //  {
+  // print(
+  //     "Create TimeTableBox $_x $_y ${_state.hashCode} ${_state.toString()}");
+  // }
 
   @override
   State<TimeTableBox> createState() => _TimeTableBox();
@@ -194,11 +203,6 @@ class _TimeTableBox extends State<TimeTableBox> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   void _esc() {
     if (widget._state.state[widget._x][widget._y] !=
         TimeTableCellState.inactive) {
@@ -287,9 +291,7 @@ class _TimeTableBox extends State<TimeTableBox> {
   }
 
   Widget _getEditContainer(BuildContext context, TimeTableData? subject) {
-    // make sure that new text fields are always created in inactive state
-    // to avoid exceptions during sideways scrolling
-    return LayoutBuilder(
+    var child = LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       double ratio = constraints.maxWidth / constraints.maxHeight;
       if (ratio < 0.359) return SizedBox();
@@ -350,7 +352,6 @@ class _TimeTableBox extends State<TimeTableBox> {
                             width: constraints.maxWidth / 2 - 1,
                             child: IconButton(
                               onPressed: () {
-                                _unfocus(focusNode);
                                 _enter();
                                 widget._state.resetLast();
                               },
@@ -369,7 +370,6 @@ class _TimeTableBox extends State<TimeTableBox> {
                             width: constraints.maxWidth / 2 - 1,
                             child: IconButton(
                               onPressed: () {
-                                _unfocus(focusNode);
                                 _esc();
                               },
                               style: ButtonStyle(
@@ -389,10 +389,20 @@ class _TimeTableBox extends State<TimeTableBox> {
                 )),
           ));
     });
+
+    // make sure that new text fields are always created in inactive state
+    // to avoid exceptions during sideways scrolling
+    return GlobalStyle.createShadowContainer(context, child,
+        height: widget._height,
+        margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
+        shadow: false,
+        border: true,
+        color: GlobalStyle.timeTableCellShadeColorEmpty(
+            context, widget._state.state[widget._x][widget._y]));
   }
 
   Widget _getFullContainer(BuildContext context, TimeTableData subject) {
-    return LayoutBuilder(
+    var outerBox = LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       var date = DataUtils.int2DateTime(subject.date);
       Widget box;
@@ -484,6 +494,36 @@ class _TimeTableBox extends State<TimeTableBox> {
       return Padding(
           padding: EdgeInsets.all(GlobalStyle.summaryCardPadding), child: box);
     });
+
+    return GestureDetector(
+        onTapUp: _f,
+        child: GlobalStyle.createShadowContainer(context, outerBox,
+            height: widget._height,
+            margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
+            shadow: false,
+            border: true,
+            color: GlobalStyle.timeTableCellShadeColorFull(context, subject)));
+  }
+
+  Widget _getEmptyContainer(context) {
+    return GestureDetector(
+        onTapUp: _f,
+        child: GlobalStyle.createShadowContainer(context, null,
+            height: widget._height,
+            margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
+            shadow: false,
+            border: true,
+            color: GlobalStyle.timeTableCellShadeColorEmpty(
+                context, widget._state.state[widget._x][widget._y])));
+  }
+
+  void _f(TapUpDetails details) {
+    setState(() {
+      widget._state.moveActiveStateTo(widget._x, widget._y,
+          TimeTableCellState.inactive, TimeTableCellState.pressed);
+      double offset = widget._x * widget._height;
+      ScrollAndFocusNotification(offset, () {}).dispatch(context);
+    });
   }
 
   Widget? _mux(BuildContext context, bool fill, TimeTableData? subject) {
@@ -494,62 +534,63 @@ class _TimeTableBox extends State<TimeTableBox> {
     if (fill) {
       return _getFullContainer(context, subject!);
     }
-    return null;
+    return _getEmptyContainer(context);
   }
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
+    // print("Init cell ${widget._x} ${widget._y} ${widget._date}");
+
     // make sure the cell has an entry
+    // print("Build cell ${widget._x} ${widget._y} ${hashCode.toRadixString(16)}");
     widget._state.setState[widget._x][widget._y] = (TimeTableCellState state) {
+      // print("Run setState of ${widget._x} ${widget._y} ${widget._date}");
       setState(() {
         widget._state.state[widget._x][widget._y] = state;
       });
     };
+  }
 
+  @override
+  void dispose() {
+    super.dispose();
+    // print(
+    // "Dispose cell ${widget._x} ${widget._y} ${hashCode.toRadixString(16)}");
+    // widget._state.setState[widget._x][widget._y] = (TimeTableCellState state) {
+    //   print(
+    //       "tried to update disposed widget ${widget._x} ${widget._y} $hashCode");
+    // };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // print("Build cell ${widget._x} ${widget._y} ${widget._date}");
     var subject = _getSubject();
     bool fill =
         subject != null && (subject.planed != 0 || subject.recorded != 0);
     return SizedBox(
       width: widget._width,
-      child: GestureDetector(
-        onTapUp: (details) {
-          setState(() {
-            widget._state.moveActiveStateTo(widget._x, widget._y,
-                TimeTableCellState.inactive, TimeTableCellState.pressed);
-            double offset = widget._x * widget._height;
-            ScrollAndFocusNotification(offset, () {}).dispatch(context);
-          });
+      child: MouseRegion(
+        onEnter: (event) {
+          if (widget._state.state[widget._x][widget._y] !=
+              TimeTableCellState.pressed) {
+            setState(() {
+              widget._state.state[widget._x][widget._y] =
+                  TimeTableCellState.hover;
+            });
+          }
         },
-        child: MouseRegion(
-          onEnter: (event) {
-            if (widget._state.state[widget._x][widget._y] !=
-                TimeTableCellState.pressed) {
-              setState(() {
-                widget._state.state[widget._x][widget._y] =
-                    TimeTableCellState.hover;
-              });
-            }
-          },
-          onExit: (event) {
-            if (widget._state.state[widget._x][widget._y] !=
-                TimeTableCellState.pressed) {
-              setState(() {
-                widget._state.state[widget._x][widget._y] =
-                    TimeTableCellState.inactive;
-              });
-            }
-          },
-          child: GlobalStyle.createShadowContainer(
-              context, _mux(context, fill, subject),
-              height: widget._height,
-              margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
-              shadow: false,
-              border: true,
-              color: fill
-                  ? GlobalStyle.timeTableCellShadeColorFull(context, subject)
-                  : GlobalStyle.timeTableCellShadeColorEmpty(
-                      context, widget._state.state[widget._x][widget._y])),
-        ),
+        onExit: (event) {
+          if (widget._state.state[widget._x][widget._y] !=
+              TimeTableCellState.pressed) {
+            setState(() {
+              widget._state.state[widget._x][widget._y] =
+                  TimeTableCellState.inactive;
+            });
+          }
+        },
+        child: _mux(context, fill, subject),
       ),
     );
   }

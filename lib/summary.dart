@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/joined_scroller.dart';
 
+import 'package:scheduler/split.dart';
+
 class SummaryEntry extends StatelessWidget {
   final double _maxWidth;
   final double _maxTime;
@@ -42,24 +44,24 @@ class SummaryEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var data = GlobalContext.data.summaryData.data;
-    Widget child = Padding(
-      padding: const EdgeInsets.all(GlobalStyle.summaryCardPadding),
-      child: Wrap(children: [
-        if (GlobalContext.showSubjectsInSummary) Text(data[_index].subject),
-        _getBar(
-            GlobalStyle.summaryEntryBarHeight,
-            _getFraction(_maxTime, data[_index].recorded),
-            GlobalStyle.summaryRecordedTimeBarColor(context, data[_index]),
-            "${data[_index].recorded}"),
-        _getBar(
-            GlobalStyle.summaryEntryBarHeight,
-            _getFraction(_maxTime, data[_index].planed),
-            GlobalStyle.summaryPlanedTimeBarColor(context),
-            "${data[_index].planed}"),
-      ]),
-    );
+    Widget child = Wrap(children: [
+      if (GlobalContext.showSubjectsInSummary)
+        Text(data[_index].subject, style: GlobalStyle.summaryTextStyle),
+      _getBar(
+          GlobalStyle.summaryEntryBarHeight,
+          _getFraction(_maxTime, data[_index].recorded),
+          GlobalStyle.summaryRecordedTimeBarColor(context, data[_index]),
+          "${data[_index].recorded}"),
+      _getBar(
+          GlobalStyle.summaryEntryBarHeight,
+          _getFraction(_maxTime, data[_index].planed),
+          GlobalStyle.summaryPlanedTimeBarColor(context),
+          "${data[_index].planed}"),
+    ]);
+
     return GlobalStyle.createShadowContainer(context, child,
-        margin: EdgeInsets.all(GlobalStyle.summaryCardMargin));
+        margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
+        padding: EdgeInsets.all(GlobalStyle.summaryCardPadding));
   }
 }
 
@@ -67,8 +69,9 @@ class Summary extends StatelessWidget {
   final JoinedScrollerSide _otherSide = JoinedScrollerSide.right;
   final JoinedScroller _joinedScroller;
   final ScrollController _controller;
+  final SplitMetrics _metrics;
 
-  Summary(this._joinedScroller)
+  Summary(this._metrics, this._joinedScroller)
       : _controller = _joinedScroller
             .register(GlobalContext.timeTableWindowScrollOffset,
                 JoinedScrollerSide.left)
@@ -76,15 +79,15 @@ class Summary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double maxTime = 0;
-    var data = GlobalContext.data.summaryData.data;
-    for (var item in data) {
-      if (item.planed > maxTime) maxTime = item.planed;
-      if (item.recorded > maxTime) maxTime = item.recorded;
-    }
-
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
+        double maxTime = 0;
+        var data = GlobalContext.data.summaryData.data;
+        for (var item in data) {
+          if (item.planed > maxTime) maxTime = item.planed;
+          if (item.recorded > maxTime) maxTime = item.recorded;
+        }
+
         return NotificationListener(
           onNotification: (notification) {
             if (notification is ScrollNotification) {

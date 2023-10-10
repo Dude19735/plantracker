@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
+import 'package:scheduler/split.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/time_table_box.dart';
 import 'package:scheduler/joined_scroller.dart';
@@ -9,16 +10,9 @@ import 'package:scheduler/joined_scroller.dart';
 class TimeTable extends StatefulWidget {
   final SplitController _splitController;
   final JoinedScroller _joinedScroller;
+  final SplitMetrics _metrics;
 
-  // recreate every time we redraw the whole thing...
-  late final TimeTableCellStateEncapsulation _edit;
-
-  TimeTable(this._joinedScroller, this._splitController) {
-    int sRow = GlobalContext.data.summaryData.data.length;
-    int sCol = DataUtils.getWindowSize(
-        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
-    _edit = TimeTableCellStateEncapsulation(sRow, sCol);
-  }
+  TimeTable(this._metrics, this._joinedScroller, this._splitController);
 
   @override
   State<TimeTable> createState() => _TimeTable();
@@ -28,10 +22,11 @@ class _TimeTable extends State<TimeTable> {
   TControllerHash _controller = 0;
   final JoinedScrollerSide _side = JoinedScrollerSide.right;
   final JoinedScrollerSide _otherSide = JoinedScrollerSide.left;
+  late TimeTableCellStateEncapsulation _edit;
 
   int _getColDate(int dayOffset) {
     return DataUtils.dateTime2Int(
-        GlobalContext.fromDateWindow.add(Duration(days: dayOffset)));
+        DataUtils.addDays(GlobalContext.fromDateWindow, dayOffset));
   }
 
   Widget _getRowBox(
@@ -45,16 +40,15 @@ class _TimeTable extends State<TimeTable> {
       int dayOffset) {
     int date = _getColDate(dayOffset);
 
-    return TimeTableBox(x, y, width, height, subjectId, date, widget._edit);
+    return TimeTableBox(x, y, width, height, subjectId, date, _edit);
   }
 
   Widget _getRow(int x, BuildContext context, BoxConstraints constraints,
       int numCells, double height, int subjectId, int pageOffset) {
     double cellWidth = (constraints.maxWidth) / numCells;
     var subject = GlobalContext.data.timeTableData.data[subjectId];
-    int dayOffset = pageOffset *
-        DataUtils.getWindowSize(
-            GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+    int dayOffset = DataUtils.page2DayOffset(
+        pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     return Stack(children: [
       Row(
@@ -67,11 +61,6 @@ class _TimeTable extends State<TimeTable> {
     ]);
   }
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   Widget _rowBuilder(
       List<SummaryData> data,
       int subjectIndex,
@@ -80,9 +69,12 @@ class _TimeTable extends State<TimeTable> {
       int numCells,
       int pageOffset) {
     int subjectId = data[subjectIndex].subjectId;
-    double height = GlobalContext.showSubjectsInSummary
-        ? GlobalContext.data.minSubjectTextHeight[subjectId]!
-        : 0;
+
+    double height = GlobalStyle.getTextHeight(
+        data[subjectIndex].subject,
+        DefaultTextStyle.of(context).style,
+        widget._metrics.tlWidth - GlobalStyle.timeTableSummaryPM());
+
     height += 2 * GlobalStyle.summaryEntryBarHeight;
     height += 2 * GlobalStyle.summaryCardPadding;
     return _getRow(subjectIndex, context, constraints, numCells, height,
@@ -96,16 +88,13 @@ class _TimeTable extends State<TimeTable> {
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    int numCells = DataUtils.getWindowSize(
-        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
-
-    var data = GlobalContext.data.summaryData.data;
     Widget table(int pageOffset) {
-      var cPair = widget._joinedScroller
-          .register(GlobalContext.timeTableWindowScrollOffset, _side);
-
-      _controller = cPair.key;
       return NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollNotification) {
@@ -120,6 +109,21 @@ class _TimeTable extends State<TimeTable> {
         },
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
+            int sRow = GlobalContext.data.summaryData.data.length;
+            int sCol = DataUtils.getWindowSize(
+                GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+            _edit = TimeTableCellStateEncapsulation(sRow, sCol);
+
+            int numCells = DataUtils.getWindowSize(
+                GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+
+            var data = GlobalContext.data.summaryData.data;
+
+            var cPair = widget._joinedScroller
+                .register(GlobalContext.timeTableWindowScrollOffset, _side);
+
+            _controller = cPair.key;
+
             return DraggableScrollableSheet(
               initialChildSize: 1.0,
               minChildSize: 0.999999,

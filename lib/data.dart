@@ -215,6 +215,14 @@ class GlobalData {
     _subjects(_fromDate, _toDate);
   }
 
+  void setSummaryTextHeight(TextStyle style, double summaryWidth) {
+    for (var item in GlobalContext.data.summaryData.data) {
+      double height =
+          GlobalStyle.getTextHeight(item.subject, style, summaryWidth);
+      GlobalContext.data.minSubjectTextHeight[item.subjectId] = height;
+    }
+  }
+
   void summary() {
     int fromDate = DataUtils.dateTime2Int(GlobalContext.fromDateWindow);
     int toDate = DataUtils.dateTime2Int(GlobalContext.toDateWindow);
@@ -246,7 +254,9 @@ class GlobalData {
     summaryData.data.sort((a, b) => a.subject.compareTo(b.subject));
 
     for (var element in summaryData.data) {
-      minSubjectTextHeight[element.subjectId] = 0;
+      if (minSubjectTextHeight[element.subjectId] == null) {
+        minSubjectTextHeight[element.subjectId] = 0;
+      }
     }
   }
 
@@ -285,12 +295,12 @@ class GlobalData {
     var newFrom = adj["prev_from"];
     if (newFrom.compareTo(_fromDate) < 0) {
       // add new data on this side
-      _load(newFrom, _fromDate.subtract(Duration(days: 1)));
+      _load(newFrom, DataUtils.subtractDays(_fromDate, 1));
     } else if (newFrom.compareTo(_fromDate) > 0) {
       // remove unused data on this side
       for (DateTime d = _fromDate;
           d.compareTo(newFrom) < 0;
-          d = d.add(Duration(days: 1))) {
+          d = DataUtils.addDays(d, 1)) {
         _remove(d);
       }
     }
@@ -298,14 +308,14 @@ class GlobalData {
     var newTo = adj["next_to"];
     if (newTo.compareTo(_toDate) < 0) {
       // remove unused data on this side
-      for (DateTime d = newTo.add(Duration(days: 1));
+      for (DateTime d = DataUtils.addDays(newTo, 1);
           d.compareTo(_toDate) <= 0;
-          d = d.add(Duration(days: 1))) {
+          d = DataUtils.addDays(d, 1)) {
         _remove(d);
       }
     } else if (newTo.compareTo(_toDate) > 0) {
       // add new data on this side
-      _load(_toDate.add(Duration(days: 1)), newTo);
+      _load(DataUtils.addDays(_toDate, 1), newTo);
     }
 
     _fromDate = newFrom;
