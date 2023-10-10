@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:scheduler/context.dart';
@@ -17,7 +18,6 @@ import 'package:scheduler/time_table.dart';
 import 'package:scheduler/watch_manager.dart';
 import 'package:scheduler/work_schedule.dart';
 import 'package:scheduler/split_controller.dart';
-import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/joined_scroller.dart';
 
 Future<void> main() async {
@@ -126,10 +126,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       horizontalGrabberSize: GlobalStyle.splitterHGrabberSize,
       verticalInitRatio: GlobalStyle.splitterVInitRatio,
       verticalGrabberSize: GlobalStyle.splitterVGrabberSize,
-      topLeft: () => SizedBox(),
-      topRight: () => WorkSchedule(_splitController),
-      bottomLeft: () => Summary(_joinedScroller),
-      bottomRight: () => TimeTable(_joinedScroller, _splitController),
+      topLeft: (SplitMetrics metrics) => SizedBox(),
+      topRight: (SplitMetrics metrics) =>
+          WorkSchedule(metrics, _splitController),
+      bottomLeft: (SplitMetrics metrics) => Summary(metrics, _joinedScroller),
+      bottomRight: (SplitMetrics metrics) =>
+          TimeTable(metrics, _joinedScroller, _splitController),
     );
 
     var split = NotificationListener(
@@ -138,28 +140,47 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           setState(() {
             GlobalContext.fromDateWindow = notification.from;
             GlobalContext.toDateWindow = notification.to;
-            print("${notification.from} ${notification.to}");
             GlobalContext.data.load();
           });
           return true;
         } else if (notification is DataChangedNotification) {
           _dealWithDataChangedNotification(notification);
+        } else if (notification is VerticalSplitMoved) {
+          // if (notification.name == CrossSplit.vBottom) {
+          //   GlobalContext.data.setSummaryTextHeight(
+          //       GlobalStyle.summaryTextStyle, notification.leftWidth);
+          // }
         } else if (notification is PageScrolledNotification) {
-          setState(() {
-            DateTime from = GlobalContext.fromDateWindow;
-            DateTime to = GlobalContext.toDateWindow;
-            if (notification.backwards) {
-              var prev = DataUtils.getPreviousPage(from, to);
-              GlobalContext.fromDateWindow = prev["from"]!;
-              GlobalContext.toDateWindow = prev["to"]!;
-            } else {
-              var prev = DataUtils.getNextPage(from, to);
-              GlobalContext.fromDateWindow = prev["from"]!;
-              GlobalContext.toDateWindow = prev["to"]!;
-            }
-            GlobalContext.data.load();
-          });
+          /**
+           * In here: change the from-to dates
+           */
+
+          // setState(() {
+          // DateTime from = GlobalContext.fromDateWindow;
+          // DateTime to = GlobalContext.toDateWindow;
+          // print("Page changed $from $to");
+          // if (notification.backwards) {
+          //   var prev = DataUtils.getPreviousPage(from, to);
+          //   GlobalContext.fromDateWindow = prev["from"]!;
+          //   GlobalContext.toDateWindow = prev["to"]!;
+          // } else {
+          //   var next = DataUtils.getNextPage(from, to);
+          //   GlobalContext.fromDateWindow = next["from"]!;
+          //   GlobalContext.toDateWindow = next["to"]!;
+          // }
+          // GlobalContext.data.load();
+          // });
           return true;
+        } else if (notification is UserScrollNotification) {
+          if (notification.direction == ScrollDirection.forward) {
+            /**
+             * load data with forward outlook
+             */
+          } else if (notification.direction == ScrollDirection.reverse) {
+            /**
+             * load data with reverse outlook
+             */
+          }
         } else if (notification is ChangePageNotification) {
           if (notification.backwards) {
             _splitController.previousPage();
@@ -179,6 +200,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       GlobalSettings.animationFocusScrollTimeTableMS));
           notification.doAfter();
         }
+        // else if (notification is UserScrollNotification) {
+        //   if (notification.direction == ScrollDirection.forward) {
+        //     return true;
+        //   } else if (notification.direction == ScrollDirection.reverse) {
+        //     return true;
+        //   }
+        // }
 
         return false;
       },

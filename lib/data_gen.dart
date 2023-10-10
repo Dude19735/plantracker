@@ -20,7 +20,7 @@ class DataGen {
           "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
           "${ColumnName.noteId}": 1,
           "${ColumnName.note}": "Note-S1-1",      
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},        
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(DataUtils.addDays(fromDate, rand.nextInt(range)))},        
           "${ColumnName.fromTime}": ${3.0 * 60 * 60},
           "${ColumnName.toTime}": ${4.5 * 60 * 60}
         },
@@ -35,7 +35,7 @@ class DataGen {
           "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
           "${ColumnName.noteId}": 2,
           "${ColumnName.note}": "Note-S1-2",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(DataUtils.addDays(fromDate, rand.nextInt(range)))},
           "${ColumnName.fromTime}": ${4.75 * 60 * 60},
           "${ColumnName.toTime}": ${6.0 * 60 * 60}
         },
@@ -50,7 +50,7 @@ class DataGen {
           "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
           "${ColumnName.noteId}": 3,
           "${ColumnName.note}": "Note-S2-1",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(DataUtils.addDays(fromDate, rand.nextInt(range)))},
           "${ColumnName.fromTime}": ${6.0 * 60 * 60},
           "${ColumnName.toTime}": ${7.25 * 60 * 60}
         },
@@ -65,7 +65,7 @@ class DataGen {
           "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
           "${ColumnName.noteId}": 4,
           "${ColumnName.note}": "Note-S2-2",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(DataUtils.addDays(fromDate, rand.nextInt(range)))},
           "${ColumnName.fromTime}": ${7.5 * 60 * 60},
           "${ColumnName.toTime}": ${8.25 * 60 * 60}
         },
@@ -80,7 +80,7 @@ class DataGen {
           "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
           "${ColumnName.noteId}": 5,
           "${ColumnName.note}": "Note-S3-1",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(DataUtils.addDays(fromDate, rand.nextInt(range)))},
           "${ColumnName.fromTime}": ${8.5 * 60 * 60},
           "${ColumnName.toTime}": ${9.75 * 60 * 60}
         },
@@ -95,7 +95,7 @@ class DataGen {
           "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
           "${ColumnName.noteId}": 6,
           "${ColumnName.note}": "Note-S4-1",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(DataUtils.addDays(fromDate, rand.nextInt(range)))},
           "${ColumnName.fromTime}": ${10.0 * 60 * 60},
           "${ColumnName.toTime}": ${12.0 * 60 * 60}
         },
@@ -110,7 +110,7 @@ class DataGen {
           "${ColumnName.seriesToDate}": ${DataUtils.dateTime2Int(fromDate)},
           "${ColumnName.noteId}": 7,
           "${ColumnName.note}": "Note-S5-1",
-          "${ColumnName.date}": ${DataUtils.dateTime2Int(fromDate.add(Duration(days: rand.nextInt(range))))},
+          "${ColumnName.date}": ${DataUtils.dateTime2Int(DataUtils.addDays(fromDate, rand.nextInt(range)))},
           "${ColumnName.fromTime}": ${13.0 * 60 * 60},
           "${ColumnName.toTime}": ${14.8 * 60 * 60}
         }
@@ -140,7 +140,7 @@ class DataGen {
     List<Map<String, dynamic>> entries = [];
     for (var d = fromDate;
         d.compareTo(toDate) <= 0;
-        d = d.add(Duration(days: 1))) {
+        d = DataUtils.addDays(d, 1)) {
       int subjectId = d.weekday - 1;
       entries.add({
         ColumnName.subjectId: subjectId,

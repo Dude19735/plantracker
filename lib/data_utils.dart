@@ -37,20 +37,47 @@ class DataUtils {
     return res;
   }
 
+  static DateTime now() {
+    DateTime cur = DateTime.now();
+    return DateTime(cur.year, cur.month, cur.day);
+  }
+
+  static String dateTime2Str(DateTime day) {
+    // TODO: do some locale stuff here
+    return "${day.day.toString().padLeft(2, '0')}.${day.month.toString().padLeft(2, '0')}.${day.year.toString().padLeft(4, '0')}";
+  }
+
+  static int page2DayOffset(int pageOffset, DateTime from, DateTime to) {
+    return pageOffset * DataUtils.getWindowSize(from, to);
+  }
+
   static int getWindowSize(DateTime from, DateTime to) {
     return from.difference(to).inDays.abs() + 1;
   }
 
+  static DateTime addDays(DateTime from, int days) {
+    var diff = from.timeZoneOffset.inHours;
+    return from.toUtc().add(Duration(days: days)).add(Duration(hours: diff));
+  }
+
+  static DateTime subtractDays(DateTime from, int days) {
+    var diff = from.timeZoneOffset.inHours;
+    return from
+        .toUtc()
+        .subtract(Duration(days: days))
+        .add(Duration(hours: diff));
+  }
+
   static Map<String, DateTime> getNextPage(DateTime from, DateTime to) {
     var d = getWindowSize(from, to);
-    return {"from": to.add(Duration(days: 1)), "to": to.add(Duration(days: d))};
+    return {"from": DataUtils.addDays(to, 1), "to": DataUtils.addDays(to, d)};
   }
 
   static Map<String, DateTime> getPreviousPage(DateTime from, DateTime to) {
     var d = getWindowSize(from, to);
     return {
-      "from": from.subtract(Duration(days: d)),
-      "to": from.subtract(Duration(days: 1))
+      "from": DataUtils.subtractDays(from, d),
+      "to": DataUtils.subtractDays(from, 1)
     };
   }
 
@@ -58,19 +85,19 @@ class DataUtils {
     int dateWindowSize = DataUtils.getWindowSize(from, to);
 
     return {
-      "prev_from": from.subtract(Duration(days: dateWindowSize)),
-      "prev_to": from.subtract(Duration(days: 1)),
-      "next_from": to.add(Duration(days: 1)),
-      "next_to": to.add(Duration(days: dateWindowSize))
+      "prev_from": DataUtils.subtractDays(from, dateWindowSize),
+      "prev_to": DataUtils.subtractDays(from, 1),
+      "next_from": DataUtils.addDays(to, 1),
+      "next_to": DataUtils.addDays(to, dateWindowSize)
     };
   }
 
   static DateTime getLastMonday(DateTime date) {
-    return date.subtract(Duration(days: date.weekday - 1));
+    return DataUtils.subtractDays(date, date.weekday - 1);
   }
 
   static DateTime getNextSunday(DateTime date) {
-    return date.add(Duration(days: 7 - date.weekday % 7));
+    return DataUtils.addDays(date, 7 - date.weekday % 7);
   }
 
   static String getFormatedDateTime(DateTime date) {

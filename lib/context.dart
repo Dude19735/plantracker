@@ -8,9 +8,9 @@ import 'package:scheduler/time_table_box.dart';
 class GlobalContext {
   static String currentLocale = 'en-GB';
 
-  static DateTime fromDateWindow = DataUtils.getLastMonday(DateTime.now());
+  static DateTime fromDateWindow = DataUtils.getLastMonday(DataUtils.now());
   static DateTime toDateWindow =
-      fromDateWindow.add(Duration(days: GlobalSettings.initDateWindowSize - 1));
+      DataUtils.addDays(fromDateWindow, GlobalSettings.initDateWindowSize - 1);
 
   static bool showSubjectsInSummary = true;
   static GlobalData data = GlobalData();
@@ -89,6 +89,9 @@ class GlobalStyle {
   // ===========================================================================
   // Time table colors and paint settings
   // ===========================================================================
+  static double timeTableSummaryPM() =>
+      2 * (GlobalStyle.summaryCardMargin + GlobalStyle.summaryCardPadding);
+
   static Color timeTableCellShadeColorFull(
       BuildContext context, TimeTableData data) {
     double workRatio = DataUtils.getWorkRatio(data.recorded, data.planed);
@@ -128,7 +131,7 @@ class GlobalStyle {
       Colors.transparent;
 
   // distance between edge of group of containers and surroundings
-  static const double splitterCellMargin = 8.0;
+  // static const double splitterCellMargin = 8.0;
   // distance between edge of group of containers and individual containers
   // static const double splitterCellPadding = 0.0; //8.0;
 
@@ -141,6 +144,9 @@ class GlobalStyle {
   static const double summaryCardPadding = 5.0; //5.0;
   static const double summaryCardBorderRadius = 5.0;
   static const double summaryEntryBarHeight = 20;
+
+  static TextStyle summaryTextStyle =
+      TextStyle(fontSize: 14, fontWeight: FontWeight.w400);
 
   static Color globalCardColor(BuildContext context) => Colors.black12;
   static Color summaryPlanedTimeBarColor(BuildContext context) =>
@@ -216,21 +222,21 @@ class GlobalStyle {
     return res;
   }
 
-  static double getTextHeight(
-      String text, BuildContext context, double maxWidth) {
-    var style = DefaultTextStyle.of(context).style;
+  static double getTextHeight(String text, TextStyle style, double maxWidth) {
+    // var style = GlobalStyle.summaryTextStyle;
     final span = TextSpan(text: text, style: style);
     final tp = TextPainter(text: span, textDirection: TextDirection.ltr);
     tp.layout(maxWidth: maxWidth);
     final numLines = tp.computeLineMetrics().length;
 
     final TextPainter textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-      textScaleFactor: MediaQuery.of(context).textScaleFactor,
-    )..layout();
+        text: TextSpan(text: text, style: style),
+        textDirection: TextDirection.ltr,
+        textScaleFactor: 1.0 // MediaQuery.of(context).textScaleFactor,
+        )
+      ..layout();
 
-    // print("$numLines, ${numLines * textPainter.height}: $text");
+    // print("$numLines, ${numLines * textPainter.height}: $text, $maxWidth");
     return numLines * textPainter.height;
   }
 }

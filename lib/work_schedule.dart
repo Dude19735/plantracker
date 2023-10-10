@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
+import 'package:scheduler/split.dart';
 import 'package:scheduler/work_schedule_inner_view.dart';
 import 'package:scheduler/split_controller.dart';
 
@@ -14,7 +15,9 @@ class ScheduleMarkedNotification extends Notification {}
 
 class WorkSchedule extends StatelessWidget {
   final SplitController _splitController;
-  WorkSchedule(this._splitController);
+  final SplitMetrics _metrics;
+
+  WorkSchedule(this._metrics, this._splitController);
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +44,8 @@ class WorkSchedule extends StatelessWidget {
               IconButton(
                   onPressed: () {
                     DateChangedNotification(
-                            GlobalContext.fromDateWindow
-                                .subtract(Duration(days: 1)),
+                            DataUtils.subtractDays(
+                                GlobalContext.fromDateWindow, 1),
                             GlobalContext.toDateWindow)
                         .dispatch(context);
                   },
@@ -78,8 +81,8 @@ class WorkSchedule extends StatelessWidget {
                             .compareTo(GlobalContext.toDateWindow) <
                         0) {
                       DateChangedNotification(
-                              GlobalContext.fromDateWindow
-                                  .add(Duration(days: 1)),
+                              DataUtils.addDays(
+                                  GlobalContext.fromDateWindow, 1),
                               GlobalContext.toDateWindow)
                           .dispatch(context);
                     }
@@ -102,9 +105,9 @@ class WorkSchedule extends StatelessWidget {
                         0) {
                       DateChangedNotification(
                               GlobalContext.fromDateWindow,
-                              GlobalContext.toDateWindow = GlobalContext
-                                  .toDateWindow
-                                  .subtract(Duration(days: 1)))
+                              GlobalContext.toDateWindow =
+                                  DataUtils.subtractDays(
+                                      GlobalContext.toDateWindow, 1))
                           .dispatch(context);
                     }
                   },
@@ -145,9 +148,8 @@ class WorkSchedule extends StatelessWidget {
                   onPressed: () {
                     DateChangedNotification(
                             GlobalContext.fromDateWindow,
-                            GlobalContext.toDateWindow = GlobalContext
-                                .toDateWindow
-                                .add(Duration(days: 1)))
+                            GlobalContext.toDateWindow = DataUtils.addDays(
+                                GlobalContext.toDateWindow, 1))
                         .dispatch(context);
                   },
                   icon: Icon(Icons.add)),
