@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/rendering.dart';
 
 class DataUtils {
   static double getWorkRatio(double recorded, double planed) {
@@ -81,14 +82,23 @@ class DataUtils {
     };
   }
 
-  static Map getAdjacentTimePeriods(DateTime from, DateTime to) {
+  static Map getAdjacentTimePeriods(
+      DateTime from, DateTime to, ScrollDirection direction) {
     int dateWindowSize = DataUtils.getWindowSize(from, to);
 
+    // swipe right is 'reverse' but the date goes forwards
+    // swipe left is 'forward' but the date goes backwards
+    int prev = direction == ScrollDirection.forward
+        ? 2 * dateWindowSize
+        : dateWindowSize;
+    int next = direction == ScrollDirection.reverse
+        ? 2 * dateWindowSize
+        : dateWindowSize;
     return {
-      "prev_from": DataUtils.subtractDays(from, dateWindowSize),
+      "prev_from": DataUtils.subtractDays(from, prev),
       "prev_to": DataUtils.subtractDays(from, 1),
       "next_from": DataUtils.addDays(to, 1),
-      "next_to": DataUtils.addDays(to, dateWindowSize)
+      "next_to": DataUtils.addDays(to, next)
     };
   }
 
@@ -110,6 +120,16 @@ class DataUtils {
           "Out-of-bounds: [$date] Years must be in [1000, 9999] range!");
     }
     return (date.year * 10000 + date.month * 100 + date.day).round();
+  }
+
+  static int dateTime2IntShort(DateTime date) {
+    // for this function we assume that this program will not be used
+    // beyond the year 2099 XD
+    if (date.year < 2000 || date.year > 2099) {
+      throw Exception(
+          "Out-of-bounds: [$date] Years must be in [1000, 9999] range!");
+    }
+    return ((date.year - 2000) * 10000 + date.month * 100 + date.day).round();
   }
 
   static DateTime int2DateTime(int date) {

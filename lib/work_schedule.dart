@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split.dart';
@@ -25,6 +26,7 @@ class WorkSchedule extends StatelessWidget {
       return WorkScheduleInnerView(dayOffset);
     }
 
+    print(" ========> rebuild work schedule");
     var view = Column(
       children: [
         Container(
@@ -37,7 +39,9 @@ class WorkSchedule extends StatelessWidget {
             children: [
               IconButton(
                   onPressed: () {
-                    ChangePageNotification(true).dispatch(context);
+                    StartChangeSplitControllerPageNotification(
+                            ScrollDirection.reverse)
+                        .dispatch(context);
                   },
                   icon: Icon(Icons.chevron_left)),
               Spacer(),
@@ -156,7 +160,9 @@ class WorkSchedule extends StatelessWidget {
               Spacer(),
               IconButton(
                 onPressed: () {
-                  ChangePageNotification(false).dispatch(context);
+                  StartChangeSplitControllerPageNotification(
+                          ScrollDirection.forward)
+                      .dispatch(context);
                 },
                 icon: Icon(Icons.chevron_right),
               ),

@@ -95,6 +95,8 @@ class _TimeTable extends State<TimeTable> {
   @override
   Widget build(BuildContext context) {
     Widget table(int pageOffset) {
+      print(
+          " ========> rebuild time table $pageOffset  from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
       return NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollNotification) {

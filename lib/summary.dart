@@ -92,6 +92,7 @@ class Summary extends StatelessWidget {
           onNotification: (notification) {
             if (notification is ScrollNotification) {
               _joinedScroller.jumpTo(_otherSide, notification.metrics.pixels);
+              return true; // don't propagate!!
             }
             return false;
           },

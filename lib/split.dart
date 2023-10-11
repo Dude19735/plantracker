@@ -21,20 +21,6 @@ typedef TSetComponentState
 
 class SyncNotification extends Notification {}
 
-class VerticalSplitMoved extends Notification {
-  final String name;
-  final double leftWidth;
-  final double rightWidth;
-  VerticalSplitMoved(this.name, this.leftWidth, this.rightWidth);
-}
-
-class HorizontalSplitMoved extends Notification {
-  final String name;
-  final double topHeight;
-  final double bottomBeight;
-  HorizontalSplitMoved(this.name, this.topHeight, this.bottomBeight);
-}
-
 class PanNotification extends SyncNotification {
   final SplitDirection direction;
   final DragUpdateDetails details;
@@ -325,28 +311,6 @@ class _Split extends State<Split> {
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         var sizes = getSizes(constraints);
-
-        // double m = 2 * GlobalStyle.splitterCellMargin;
-        // if (widget._direction == SplitDirection.vertical) {
-        //   VerticalSplitMoved(widget._name, (sizes["sb1_w"]! as double) - m,
-        //           (sizes["sb2_w"]! as double) - m)
-        //       .dispatch(context);
-        // } else {
-        //   HorizontalSplitMoved(widget._name, (sizes["sb1_h"]! as double) - m,
-        //           (sizes["sb2_h"]! as double) - m)
-        //       .dispatch(context);
-        // }
-
-        //   for (var item in GlobalContext.data.summaryData.data) {
-        //     double width = (sizes["sb1_w"]! as double) -
-        //         2 * GlobalStyle.splitterCellMargin;
-        //     double oldHeight =
-        //         GlobalContext.data.minSubjectTextHeight[item.subjectId]!;
-        //     double height =
-        //         GlobalStyle.getTextHeight(item.subject, context, width);
-        //     GlobalContext.data.minSubjectTextHeight[item.subjectId] =
-        //         max(oldHeight, height);
-        //   }
 
         var metrics = SplitMetrics(
           tlWidth: sizes["sb1_w"] ?? 0,
