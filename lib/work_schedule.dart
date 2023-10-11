@@ -26,7 +26,7 @@ class WorkSchedule extends StatelessWidget {
       return WorkScheduleInnerView(dayOffset);
     }
 
-    print(" ========> rebuild work schedule");
+    Debugger.workSchedule(" ========> rebuild work schedule");
     var view = Column(
       children: [
         Container(
@@ -44,6 +44,7 @@ class WorkSchedule extends StatelessWidget {
                         .dispatch(context);
                   },
                   icon: Icon(Icons.chevron_left)),
+              VerticalDivider(),
               Spacer(),
               IconButton(
                   onPressed: () {
@@ -99,9 +100,29 @@ class WorkSchedule extends StatelessWidget {
                         ? Colors.black
                         : Colors.black12),
                   )),
-              SizedBox(
-                width: 100,
+              VerticalDivider(),
+              IconButton(
+                onPressed: () {
+                  Future<DateTimeRange?> res = showDateRangePicker(
+                      context: context,
+                      initialDateRange: DateTimeRange(
+                          start: GlobalContext.fromDateWindow,
+                          end: GlobalContext.toDateWindow),
+                      firstDate: GlobalContext.fromDateWindow,
+                      lastDate: GlobalSettings.latestDate,
+                      locale:
+                          GlobalSettings.locals[GlobalContext.currentLocale]);
+
+                  res.then((value) {
+                    if (value != null) {
+                      DateChangedNotification(value.start, value.end)
+                          .dispatch(context);
+                    }
+                  });
+                },
+                icon: Icon(Icons.date_range),
               ),
+              VerticalDivider(),
               IconButton(
                   onPressed: () {
                     if (GlobalContext.toDateWindow
@@ -158,6 +179,7 @@ class WorkSchedule extends StatelessWidget {
                   },
                   icon: Icon(Icons.add)),
               Spacer(),
+              VerticalDivider(),
               IconButton(
                 onPressed: () {
                   StartChangeSplitControllerPageNotification(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/work_schedule_date_bar.dart';
+import 'package:scheduler/work_schedule_time_bar.dart';
 
 class WorkScheduleInnerView extends StatefulWidget {
   final int _pageDaysOffset;
@@ -21,6 +22,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
   late double _curXPos;
   late double _curYPos;
   bool _animBackwards = false;
+  late ScrollController _scrollController;
+  bool _verticalDragging = false;
 
   _WorkScheduleInnerView();
 
@@ -77,19 +80,25 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
         .contains(Offset(xMousePos, yMousePos));
   }
 
-  void _autoScroll(DragUpdateDetails details, ScrollController controller) {
-    if (details.localPosition.dy >
-        GlobalContext.scheduleWindowOutlineRect.height +
-            GlobalSettings.scheduleWindowAutoScrollOffset) {
-      controller.jumpTo(controller.offset + 5);
-    } else if (details.localPosition.dy <
-        GlobalSettings.scheduleWindowAutoScrollOffset) {
-      controller.jumpTo(controller.offset - 5);
+  void _autoScroll(double dy) {
+    if (!_verticalDragging) return;
+
+    double height = GlobalContext.scheduleWindowOutlineRect.height;
+    if (dy > height + GlobalSettings.scheduleWindowAutoScrollOffset) {
+      _scrollController.jumpTo(_scrollController.offset + 5);
+
+      // this is more of an emergency solution than something usefull!
+      // if (!_scrollController.position.atEdge) {
+      //   Future<void>.delayed(Duration(milliseconds: 100))
+      //       .then((value) => _autoScroll(dy + 5));
+      // }
+    } else if (dy < GlobalSettings.scheduleWindowAutoScrollOffset) {
+      _scrollController.jumpTo(_scrollController.offset - 5);
     }
   }
 
-  bool _resetSelection(DragUpdateDetails details) {
-    if (_resetConditions(details.delta.dy)) {
+  bool _resetSelection(double dy) {
+    if (_resetConditions(dy)) {
       return true;
     }
     return false;
@@ -153,11 +162,12 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
 
   @override
   Widget build(BuildContext context) {
-    print(
-        " ========> rebuild work schedule inner view ${widget._pageDaysOffset} from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
-    double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
+        Debugger.workScheduleInnerView(
+            " ========> rebuild work schedule inner view ${widget._pageDaysOffset} from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
+        double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
+
         GlobalContext.scheduleWindowOutlineRect =
             Rect.fromLTRB(0, 0, constraints.maxWidth, constraints.maxHeight);
 
@@ -166,22 +176,26 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
             GlobalStyle.scheduleDateBarHeight,
             constraints.maxWidth,
             GlobalStyle.scheduleCellHeightPx * numBoxes +
-                (numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth +
+                //(numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth +
                 GlobalStyle.scheduleDateBarHeight);
 
-        var controller = ScrollController(
+        _scrollController = ScrollController(
             initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
             keepScrollOffset: true);
 
         var view = GestureDetector(
             onVerticalDragUpdate: (details) {
+              double localDy = details.localPosition.dy;
+              double localDx = details.localPosition.dx;
+              double ddy = details.delta.dy;
               setState(() {
-                _autoScroll(details, controller);
+                _verticalDragging = true;
+                _autoScroll(localDy);
 
-                if (_resetSelection(details)) return;
+                if (_resetSelection(ddy)) return;
 
-                double yMousePos = details.localPosition.dy + controller.offset;
-                double xMousePos = _roundToVFrame(details.localPosition.dx);
+                double yMousePos = localDy + _scrollController.offset;
+                double xMousePos = _roundToVFrame(localDx);
 
                 if (_clampConditions(xMousePos, yMousePos)) return;
 
@@ -189,16 +203,17 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
                 if (GlobalContext.scheduleWindowSelectionBox == null) {
                   _initSelection(xMousePos, ypos);
                 } else {
-                  _continueSelection(xMousePos, ypos, details.delta.dy);
+                  _continueSelection(xMousePos, ypos, ddy);
                 }
               });
             },
             onVerticalDragEnd: (details) {
               setState(() {
+                _verticalDragging = false;
                 _reset();
               });
             },
-            child: CustomScrollView(controller: controller, slivers: [
+            child: CustomScrollView(controller: _scrollController, slivers: [
               SliverAppBar(
                 pinned: true,
                 elevation: 0,
@@ -206,16 +221,30 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
                 surfaceTintColor: Colors.transparent,
                 foregroundColor: Colors.transparent,
                 shadowColor: Colors.black,
+                // leadingWidth: GlobalStyle.scheduleTimeBarWidth +
+                //     GlobalStyle.summaryCardMargin,
+                // leading: Container(
+                //     height: GlobalStyle.scheduleDateBarHeight,
+                //     color: Colors.red),
                 flexibleSpace: WorkScheduleDateBar(widget._pageDaysOffset),
               ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
-                    return Container(
-                        margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
-                        width: constraints.maxWidth,
-                        height: GlobalContext.scheduleWindowInlineRect.height,
-                        child: CustomPaint(painter: _GridPainter(context)));
+                    return Row(
+                      children: [
+                        WorkScheduleTimeBar(),
+                        Container(
+                            margin:
+                                EdgeInsets.all(GlobalStyle.summaryCardMargin),
+                            width: constraints.maxWidth -
+                                GlobalStyle.scheduleTimeBarWidth -
+                                2 * GlobalStyle.summaryCardMargin,
+                            height:
+                                GlobalContext.scheduleWindowInlineRect.height,
+                            child: CustomPaint(painter: _GridPainter(context))),
+                      ],
+                    );
                   },
                   childCount: 1,
                 ),

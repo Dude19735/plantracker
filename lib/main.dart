@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
-  void _scrollState(Notification notification) {
+  void _padScrollState(Notification notification) {
     var from = GlobalContext.fromDateWindow;
     var to = GlobalContext.toDateWindow;
     if (notification is UserScrollNotification) {
@@ -131,39 +131,43 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           notification.direction == ScrollDirection.forward) {
         _direction = notification.direction;
         _pixels = notification.metrics.pixels;
-        // print("left");
+        Debugger.main("left");
+
         GlobalContext.data.loadFT(GlobalSettings.pageViewScrollWaitTimeMS,
             _direction, from, to, () {});
       } else if (_direction == ScrollDirection.idle &&
           notification.direction == ScrollDirection.reverse) {
         _direction = notification.direction;
         _pixels = notification.metrics.pixels;
-        // print("right");
+        Debugger.main("right");
+
         GlobalContext.data.loadFT(GlobalSettings.pageViewScrollWaitTimeMS,
             _direction, from, to, () {});
       } else if (notification.direction == ScrollDirection.idle) {
-        print("Back to idle...");
+        Debugger.main("Back to idle...");
+
         DateTime from = GlobalContext.fromDateWindow;
         DateTime to = GlobalContext.toDateWindow;
         _direction = notification.direction;
+
         if (_pixels < notification.metrics.pixels) {
           var next = DataUtils.getNextPage(from, to);
           GlobalContext.fromDateWindow = next["from"]!;
           GlobalContext.toDateWindow = next["to"]!;
-          print(
+          Debugger.main(
               "page number increased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
         } else if (_pixels > notification.metrics.pixels) {
           var prev = DataUtils.getPreviousPage(from, to);
           GlobalContext.fromDateWindow = prev["from"]!;
           GlobalContext.toDateWindow = prev["to"]!;
-          print(
+          Debugger.main(
               "page number decreased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
         }
         _pixels = -1;
         GlobalContext.data.loadFT(0, _direction, GlobalContext.fromDateWindow,
             GlobalContext.toDateWindow, () {
           setState(() {
-            print("final idle load $_direction");
+            Debugger.main("final idle load $_direction");
           });
         });
       }
@@ -171,20 +175,54 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     if (notification is ScrollUpdateNotification) {
       if (_direction == ScrollDirection.forward) {
         if (_pixels < notification.metrics.pixels) {
-          // print("left to right");
+          Debugger.main("left to right");
           _direction = ScrollDirection.reverse;
           GlobalContext.data.loadFT(GlobalSettings.pageViewScrollWaitTimeMS,
               _direction, from, to, () {});
         }
       } else if (_direction == ScrollDirection.reverse) {
         if (_pixels > notification.metrics.pixels) {
-          // print("right to left");
+          Debugger.main("right to left");
           _direction = ScrollDirection.forward;
           GlobalContext.data.loadFT(GlobalSettings.pageViewScrollWaitTimeMS,
               _direction, from, to, () {});
         }
       }
     }
+  }
+
+  void _buttonScrollState(
+      StartChangeSplitControllerPageNotification notification) {
+    Debugger.main("keep scrolling");
+    var from = GlobalContext.fromDateWindow;
+    var to = GlobalContext.toDateWindow;
+
+    Debugger.main("Scroll direction ${notification.direction}");
+    if (notification.direction == ScrollDirection.forward) {
+      var next = DataUtils.getNextPage(from, to);
+      GlobalContext.fromDateWindow = next["from"]!;
+      GlobalContext.toDateWindow = next["to"]!;
+      Debugger.main(
+          "page number increased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
+    } else if (notification.direction == ScrollDirection.reverse) {
+      var prev = DataUtils.getPreviousPage(from, to);
+      GlobalContext.fromDateWindow = prev["from"]!;
+      GlobalContext.toDateWindow = prev["to"]!;
+      Debugger.main(
+          "page number decreased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
+    }
+
+    _splitController.changePage(
+        notification.direction,
+        () => GlobalContext.data.loadFT(
+            GlobalSettings.pageViewScrollWaitTimeMS,
+            ScrollDirection.idle,
+            GlobalContext.fromDateWindow,
+            GlobalContext.toDateWindow,
+            () => setState(() {
+                  Debugger.main("finally idlying loading $_direction");
+                })));
+    SplitContainer.setComponentState(CrossSplitComponent.tr, () {});
   }
 
   @override
@@ -200,11 +238,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       bottomLeft: (SplitMetrics metrics) => Summary(metrics, _joinedScroller),
       bottomRight: (SplitMetrics metrics) =>
           TimeTable(metrics, _joinedScroller, _splitController),
+      minTopLeft: 120,
+      minTopRight: 680,
+      minBottomLeft: 120,
+      minBottomRight: 680,
     );
 
     var split = NotificationListener(
       onNotification: (notification) {
         if (notification is DateChangedNotification) {
+          Debugger.main("date changed");
           GlobalContext.fromDateWindow = notification.from;
           GlobalContext.toDateWindow = notification.to;
           GlobalContext.data.loadFT(
@@ -212,106 +255,21 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               ScrollDirection.idle,
               GlobalContext.fromDateWindow,
               GlobalContext.toDateWindow,
-              () => () => setState(() {}));
+              () => setState(() {}));
           return true;
         } else if (notification is DataChangedNotification) {
           _dealWithDataChangedNotification(notification);
-        }
-        // else if (notification is PageScrolledNotification) {
-        //   /**
-        //    * In here: change the from-to dates
-        //    */
-        //   _pixels = -1;
-        //   _direction = ScrollDirection.idle;
-        //   setState(() {
-        //     DateTime from = GlobalContext.fromDateWindow;
-        //     DateTime to = GlobalContext.toDateWindow;
-        //     print("Page changed $from $to");
-        //     if (notification.backwards) {
-        //       var prev = DataUtils.getPreviousPage(from, to);
-        //       GlobalContext.fromDateWindow = prev["from"]!;
-        //       GlobalContext.toDateWindow = prev["to"]!;
-        //     } else {
-        //       var next = DataUtils.getNextPage(from, to);
-        //       GlobalContext.fromDateWindow = next["from"]!;
-        //       GlobalContext.toDateWindow = next["to"]!;
-        //     }
-        //     // GlobalContext.data.load();
-        //   });
-        //   return true;
-        // }
-        else if (notification is ScrollNotification) {
-          _scrollState(notification);
+        } else if (notification is ScrollNotification) {
+          _padScrollState(notification);
           return true;
         } else if (notification is StartChangeSplitControllerPageNotification) {
-          print("keep scrolling");
-          // GlobalContext.data.load(notification.direction);
-          var from = GlobalContext.fromDateWindow;
-          var to = GlobalContext.toDateWindow;
-          // setState(() {
-          print("Scroll direction ${notification.direction}");
-          if (notification.direction == ScrollDirection.forward) {
-            var next = DataUtils.getNextPage(from, to);
-            GlobalContext.fromDateWindow = next["from"]!;
-            GlobalContext.toDateWindow = next["to"]!;
-            print(
-                "page number increased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
-          } else if (notification.direction == ScrollDirection.reverse) {
-            var prev = DataUtils.getPreviousPage(from, to);
-            GlobalContext.fromDateWindow = prev["from"]!;
-            GlobalContext.toDateWindow = prev["to"]!;
-            print(
-                "page number decreased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
-          }
-          _splitController.changePage(
-              notification.direction,
-              () => GlobalContext.data.loadFT(
-                  GlobalSettings.pageViewScrollWaitTimeMS,
-                  ScrollDirection.idle,
-                  GlobalContext.fromDateWindow,
-                  GlobalContext.toDateWindow,
-                  () => setState(() {
-                        print("finally idlying loading $_direction");
-                      })));
-          SplitContainer.setComponentState(CrossSplitComponent.tr, () {});
-          // }
-          // );
+          _buttonScrollState(notification);
           return true;
-        }
-
-        // ?.then(
-        //   (value) {
-        //     print("move to next required page");
-        //     var from = GlobalContext.fromDateWindow;
-        //     var to = GlobalContext.toDateWindow;
-        //     if (notification.direction == ScrollDirection.forward) {
-        //       var next = DataUtils.getNextPage(from, to);
-        //       GlobalContext.fromDateWindow = next["from"]!;
-        //       GlobalContext.toDateWindow = next["to"]!;
-        //     } else if (notification.direction == ScrollDirection.reverse) {
-        //       var prev = DataUtils.getPreviousPage(from, to);
-        //       GlobalContext.fromDateWindow = prev["from"]!;
-        //       GlobalContext.toDateWindow = prev["to"]!;
-        //     }
-        //     setState(() {
-        //       GlobalContext.data.load(ScrollDirection.idle);
-        //     });
-        //   },
-        // );
-
-        // if (notification.backwards) {
-        //   var prev = DataUtils.getPreviousPage(from, to);
-        //   _splitController.previousPage();
-        //   _setPageBackwardsState(from, to);
-        // } else {
-        //
-        //   _splitController.nextPage();
-        //   _setPageForwardState(from, to);
-        // }
-        else if (notification is ScheduleMarkedNotification) {
+        } else if (notification is ScheduleMarkedNotification) {
           setState(
             () {},
           );
+          return true;
         } else if (notification is ScrollAndFocusNotification) {
           _joinedScroller.animateBothTo(
               notification.offset,
@@ -321,13 +279,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       GlobalSettings.animationFocusScrollTimeTableMS));
           notification.doAfter();
         }
-        // else if (notification is UserScrollNotification) {
-        //   if (notification.direction == ScrollDirection.forward) {
-        //     return true;
-        //   } else if (notification.direction == ScrollDirection.reverse) {
-        //     return true;
-        //   }
-        // }
 
         return false;
       },
@@ -351,7 +302,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                       child: Row(children: [
-                    SizedBox(width: GlobalStyle.clockBarWidth),
+                    SizedBox(
+                        width: GlobalStyle.clockBarWidth +
+                            GlobalStyle.clockBarToTabViewSpacer),
                     Column(
                       children: [
                         Align(
@@ -360,7 +313,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             margin: EdgeInsets.only(
                                 right: constraints.maxWidth -
                                     GlobalStyle.clockBarWidth -
-                                    3 * GlobalStyle.appBarTabBarTabWidth),
+                                    3 * GlobalStyle.appBarTabBarTabWidth -
+                                    GlobalStyle.clockBarToTabViewSpacer),
                             height: GlobalStyle.appBarHeight,
                             child: TabBar(
                               padding: EdgeInsets.zero,
@@ -395,7 +349,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             alignment: Alignment.topLeft,
                             child: SizedBox(
                               width: constraints.maxWidth -
-                                  GlobalStyle.clockBarWidth,
+                                  GlobalStyle.clockBarWidth -
+                                  GlobalStyle.clockBarToTabViewSpacer,
                               child: TabBarView(
                                   controller: _controller,
                                   children: [
@@ -419,10 +374,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     child: Column(
                       children: [
                         SizedBox(
-                            width: GlobalStyle.clockBarWidth - 1,
+                            width: GlobalStyle.clockBarWidth -
+                                2 * GlobalStyle.clockBarPadding,
                             height: GlobalStyle.appBarHeight,
                             child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(
+                                  GlobalStyle.clockBarPadding),
                               child: SvgPicture.asset(
                                 "lib/img/title_clock.svg",
                                 alignment: Alignment.centerLeft,
@@ -430,7 +387,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             )),
                         Expanded(
                             child: WatchManager(GlobalStyle.clockBarWidth -
-                                GlobalStyle.appBarSeparatorWidth -
                                 2 * GlobalStyle.clockBarPadding)),
                       ],
                     ),

@@ -107,16 +107,13 @@ class TimeTableBox extends StatefulWidget {
 
   TimeTableBox(this._x, this._y, this._width, this._height, this._subjectId,
       this._date, this._state);
-  //  {
-  // print(
-  //     "Create TimeTableBox $_x $_y ${_state.hashCode} ${_state.toString()}");
-  // }
 
   @override
   State<TimeTableBox> createState() => _TimeTableBox();
 }
 
-class _TimeTableBox extends State<TimeTableBox> {
+class _TimeTableBox extends State<TimeTableBox>
+    with AutomaticKeepAliveClientMixin {
   // late String _planed;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _controller = TextEditingController();
@@ -296,8 +293,6 @@ class _TimeTableBox extends State<TimeTableBox> {
       double ratio = constraints.maxWidth / constraints.maxHeight;
       if (ratio < 0.359) return SizedBox();
 
-      var focusNode = FocusNode();
-
       _controller.text = subject != null ? subject.planed.toString() : "";
       _controller.selection = TextSelection(
           baseOffset: 0, extentOffset: _controller.value.text.length);
@@ -305,9 +300,9 @@ class _TimeTableBox extends State<TimeTableBox> {
       var textField = TextFormField(
           controller: _controller,
           enabled: false,
-          onTapOutside: (event) {
-            _esc();
-          },
+          // onTapOutside: (event) {
+          //   _esc();
+          // },
           validator: (value) {
             if (value != null && value.compareTo("") == 0) return null;
             var val = double.tryParse(value!);
@@ -327,6 +322,8 @@ class _TimeTableBox extends State<TimeTableBox> {
         }
         return KeyEventResult.handled;
       });
+
+      keyboardFocus.requestFocus();
 
       return Container(
           height: constraints.maxHeight,
@@ -538,25 +535,20 @@ class _TimeTableBox extends State<TimeTableBox> {
   }
 
   @override
+  bool get wantKeepAlive => false;
+
+  @override
   void initState() {
     super.initState();
-    // print("Init cell ${widget._x} ${widget._y} ${widget._date}");
-
-    // make sure the cell has an entry
-    // print("Build cell ${widget._x} ${widget._y} ${hashCode.toRadixString(16)}");
-    widget._state.setState[widget._x][widget._y] = (TimeTableCellState state) {
-      // print("Run setState of ${widget._x} ${widget._y} ${widget._date}");
-      setState(() {
-        widget._state.state[widget._x][widget._y] = state;
-      });
-    };
+    Debugger.timeTableBox(
+        "Init cell ${widget._x} ${widget._y} ${widget._date} ${hashCode.toRadixString(16)}");
   }
 
   @override
   void dispose() {
     super.dispose();
-    // print(
-    // "Dispose cell ${widget._x} ${widget._y} ${hashCode.toRadixString(16)}");
+    Debugger.timeTableBox(
+        "Dispose cell ${widget._x} ${widget._y} ${hashCode.toRadixString(16)}");
     // widget._state.setState[widget._x][widget._y] = (TimeTableCellState state) {
     //   print(
     //       "tried to update disposed widget ${widget._x} ${widget._y} $hashCode");
@@ -565,7 +557,19 @@ class _TimeTableBox extends State<TimeTableBox> {
 
   @override
   Widget build(BuildContext context) {
-    // print("Build cell ${widget._x} ${widget._y} ${widget._date}");
+    super.build(context);
+
+    Debugger.timeTableBox(
+        "Build cell ${widget._x} ${widget._y} ${widget._date}");
+
+    widget._state.setState[widget._x][widget._y] = (TimeTableCellState state) {
+      Debugger.timeTableBox(
+          "Run setState of ${widget._x} ${widget._y} ${widget._date}");
+      setState(() {
+        widget._state.state[widget._x][widget._y] = state;
+      });
+    };
+
     var subject = _getSubject();
     bool fill =
         subject != null && (subject.planed != 0 || subject.recorded != 0);

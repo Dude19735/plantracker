@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
+import 'dart:math';
 
 enum SplitDirection { vertical, horizontal }
 
@@ -16,6 +17,8 @@ enum CrossSplitComponent {
   hSeparator
 }
 
+enum CrossSplitField { hAll, vTop, vBottom }
+
 typedef TSetComponentState
     = Map<CrossSplitComponent, void Function(void Function()?)?>;
 
@@ -23,9 +26,10 @@ class SyncNotification extends Notification {}
 
 class PanNotification extends SyncNotification {
   final SplitDirection direction;
-  final DragUpdateDetails details;
+  final double dx;
+  final double dy;
   final BoxConstraints constraints;
-  PanNotification(this.direction, this.details, this.constraints);
+  PanNotification(this.direction, this.dx, this.dy, this.constraints);
 }
 
 class StartNotification extends SyncNotification {
@@ -74,9 +78,10 @@ class CrossSplit extends StatefulWidget {
   final Widget Function(SplitMetrics metrics)? topRight;
   final Widget Function(SplitMetrics metrics)? bottomRight;
 
-  static const String hAll = "hAll";
-  static const String vTop = "vTop";
-  static const String vBottom = "vBottom";
+  final double minTopLeft;
+  final double minTopRight;
+  final double minBottomLeft;
+  final double minBottomRight;
 
   CrossSplit(
       {this.horizontalInitRatio = GlobalStyle.splitterHInitRatio,
@@ -86,7 +91,11 @@ class CrossSplit extends StatefulWidget {
       this.topLeft,
       this.topRight,
       this.bottomLeft,
-      this.bottomRight});
+      this.bottomRight,
+      this.minTopLeft = 0,
+      this.minTopRight = 0,
+      this.minBottomLeft = 0,
+      this.minBottomRight = 0});
 
   @override
   State<CrossSplit> createState() => _CrossSplit();
@@ -100,8 +109,10 @@ class _CrossSplit extends State<CrossSplit> {
   bool _tabbedCenter = false;
 
   void _vSync(PanNotification notification) {
-    ratio.vRatio += notification.details.delta.dx /
-        (notification.constraints.maxWidth - ratio.vGrabSize);
+    double dx = notification.dx;
+    double mw = notification.constraints.maxWidth;
+
+    ratio.vRatio += dx / (mw - ratio.vGrabSize);
     if (ratio.vRatio < 0) {
       ratio.vRatio = 0.0;
     } else if (ratio.vRatio > 1.0) {
@@ -110,8 +121,10 @@ class _CrossSplit extends State<CrossSplit> {
   }
 
   void _hSync(PanNotification notification) {
-    ratio.hRatio += notification.details.delta.dy /
-        (notification.constraints.maxHeight - ratio.hGrabSize);
+    double dy = notification.dy;
+    double mh = notification.constraints.maxHeight;
+
+    ratio.hRatio += dy / (mh - ratio.hGrabSize);
     if (ratio.hRatio < 0) {
       ratio.hRatio = 0.0;
     } else if (ratio.hRatio > 1.0) {
@@ -157,7 +170,7 @@ class _CrossSplit extends State<CrossSplit> {
       child: Column(
         children: [
           Split(
-            CrossSplit.hAll,
+            CrossSplitField.hAll,
             ratio, //hRatio,
             SplitDirection.horizontal,
             color: GlobalStyle.splitterHGrabberColor(context),
@@ -166,7 +179,7 @@ class _CrossSplit extends State<CrossSplit> {
                 CrossSplitComponent.top,
                 (SplitMetrics metrics) => Row(children: [
                       Split(
-                        CrossSplit.vTop,
+                        CrossSplitField.vTop,
                         ratio, //vRatio,
                         SplitDirection.vertical,
                         color: GlobalStyle.splitterVGrabberColor(context),
@@ -174,23 +187,31 @@ class _CrossSplit extends State<CrossSplit> {
                             metrics, CrossSplitComponent.tl, widget.topLeft),
                         bottomOrRight: (SplitMetrics metrics) => SplitContainer(
                             metrics, CrossSplitComponent.tr, widget.topRight),
+                        minTopOrLeft: widget.minTopLeft,
+                        minBottomOrRight: widget.minTopRight,
                       )
                     ])),
             bottomOrRight: (SplitMetrics metrics) => SplitContainer(
                 metrics,
                 CrossSplitComponent.bottom,
                 (SplitMetrics metrics) => Row(children: [
-                      Split(CrossSplit.vBottom, ratio,
-                          /*vRatio,*/ SplitDirection.vertical,
-                          color: GlobalStyle.splitterVGrabberColor(context),
-                          topOrLeft: (SplitMetrics metrics) => SplitContainer(
-                              metrics,
-                              CrossSplitComponent.bl,
-                              widget.bottomLeft),
-                          bottomOrRight: (SplitMetrics metrics) =>
-                              SplitContainer(metrics, CrossSplitComponent.br,
-                                  widget.bottomRight))
+                      Split(
+                        CrossSplitField.vBottom,
+                        ratio,
+                        /*vRatio,*/ SplitDirection.vertical,
+                        color: GlobalStyle.splitterVGrabberColor(context),
+                        topOrLeft: (SplitMetrics metrics) => SplitContainer(
+                            metrics, CrossSplitComponent.bl, widget.bottomLeft),
+                        bottomOrRight: (SplitMetrics metrics) => SplitContainer(
+                            metrics,
+                            CrossSplitComponent.br,
+                            widget.bottomRight),
+                        minTopOrLeft: widget.minBottomLeft,
+                        minBottomOrRight: widget.minBottomRight,
+                      )
                     ])),
+            minTopOrLeft: GlobalStyle.scheduleDateBarHeight,
+            minBottomOrRight: 10,
           ),
         ],
       ),
@@ -258,15 +279,22 @@ class _SplitContainer extends State<SplitContainer> {
 
 class Split extends StatefulWidget {
   final SplitDirection _direction;
-  final String _name;
+  final CrossSplitField _name;
   final Color color;
   late final Ratio _ratio;
 
   late final Widget Function(SplitMetrics metrics)? topOrLeft;
   late final Widget Function(SplitMetrics metrics)? bottomOrRight;
 
+  final double minTopOrLeft;
+  final double minBottomOrRight;
+
   Split(this._name, this._ratio, this._direction,
-      {this.color = Colors.transparent, this.topOrLeft, this.bottomOrRight});
+      {this.color = Colors.transparent,
+      this.topOrLeft,
+      this.bottomOrRight,
+      this.minTopOrLeft = 0,
+      this.minBottomOrRight = 0});
 
   @override
   State<Split> createState() => _Split();
@@ -276,14 +304,13 @@ class _Split extends State<Split> {
   DragCursor _cursor = DragCursor(SystemMouseCursors.allScroll);
   bool _center = false;
   CrossSplitComponent _crossSplitComponent = CrossSplitComponent.none;
+  late SplitMetrics _metrics;
 
   Map getSizes(BoxConstraints constraints) {
-    double ratio = widget._name.startsWith("v")
-        ? widget._ratio.vRatio
-        : widget._ratio.hRatio;
-    double grabSize = widget._name.startsWith("v")
-        ? widget._ratio.vGrabSize
-        : widget._ratio.hGrabSize;
+    bool isV = (widget._name == CrossSplitField.vBottom ||
+        widget._name == CrossSplitField.vTop);
+    double ratio = isV ? widget._ratio.vRatio : widget._ratio.hRatio;
+    double grabSize = isV ? widget._ratio.vGrabSize : widget._ratio.hGrabSize;
     return {
       "sb1_w": widget._direction == SplitDirection.vertical
           ? (constraints.maxWidth - grabSize) * ratio
@@ -300,19 +327,47 @@ class _Split extends State<Split> {
     };
   }
 
-  @override
-  Widget build(BuildContext context) {
-    _crossSplitComponent = widget._direction == SplitDirection.horizontal
+  CrossSplitComponent _getCrossSplitComponent() {
+    return widget._direction == SplitDirection.horizontal
         ? CrossSplitComponent.hSeparator
-        : (widget._name.compareTo(CrossSplit.vTop) == 0
+        : (widget._name == CrossSplitField.vTop
             ? CrossSplitComponent.vSeparatorTop
             : CrossSplitComponent.vSeparatorBottom);
+  }
+
+  double _getDelta(double s1, double s2, double oldDelta) {
+    double delta = 0;
+    double ndx1 =
+        s1 > widget.minTopOrLeft ? s1 + oldDelta - widget.minTopOrLeft : 0;
+    double ndx2 = s2 > widget.minBottomOrRight
+        ? s2 - oldDelta - widget.minBottomOrRight
+        : 0;
+
+    if (oldDelta < 0 && ndx1 == 0 || oldDelta > 0 && ndx2 == 0) {
+      delta = 0;
+    } else {
+      if (oldDelta < 0 && ndx1 < 0) {
+        delta = oldDelta - ndx1;
+      } else if (oldDelta > 0 && ndx2 < 0) {
+        delta = oldDelta + ndx2;
+      } else {
+        delta = oldDelta;
+      }
+    }
+
+    return delta;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
+        _crossSplitComponent = _getCrossSplitComponent();
+
         var sizes = getSizes(constraints);
 
-        var metrics = SplitMetrics(
+        _metrics = SplitMetrics(
           tlWidth: sizes["sb1_w"] ?? 0,
           tlHeight: sizes["sb1_h"] ?? 0,
           brWidth: sizes["sb2_w"] ?? 0,
@@ -332,7 +387,7 @@ class _Split extends State<Split> {
                 child: ClipRect(
                     child: widget.topOrLeft == null
                         ? null
-                        : widget.topOrLeft!(metrics)),
+                        : widget.topOrLeft!(_metrics)),
               ),
               SplitContainer(
                   SplitMetrics(),
@@ -363,8 +418,19 @@ class _Split extends State<Split> {
                                             GlobalStyle.summaryCardMargin,
                                       )),
                             onPanUpdate: (DragUpdateDetails details) {
+                              var sizes = getSizes(constraints);
+                              double dx = sizes["sb1_w"] != null
+                                  ? _getDelta(sizes["sb1_w"], sizes["sb2_w"],
+                                      details.delta.dx)
+                                  : details.delta.dx;
+
+                              double dy = sizes["sb1_h"] != null
+                                  ? _getDelta(sizes["sb1_h"], sizes["sb2_h"],
+                                      details.delta.dy)
+                                  : details.delta.dy;
+
                               PanNotification(
-                                      widget._direction, details, constraints)
+                                      widget._direction, dx, dy, constraints)
                                   .dispatch(context);
                             },
                             onTapDown: (TapDownDetails details) {
@@ -413,7 +479,7 @@ class _Split extends State<Split> {
                   child: ClipRect(
                       child: widget.bottomOrRight == null
                           ? null
-                          : widget.bottomOrRight!(metrics)))
+                          : widget.bottomOrRight!(_metrics)))
             ],
           ),
         );

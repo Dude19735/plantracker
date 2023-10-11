@@ -12,7 +12,10 @@ class TimeTable extends StatefulWidget {
   final JoinedScroller _joinedScroller;
   final SplitMetrics _metrics;
 
-  TimeTable(this._metrics, this._joinedScroller, this._splitController);
+  TimeTable(this._metrics, this._joinedScroller, this._splitController) {
+    Debugger.timeTable(
+        ">>>>>>>>>>>>>>>>>>> Create time table widget <<<<<<<<<<<<<<<<<<<<");
+  }
 
   @override
   State<TimeTable> createState() => _TimeTable();
@@ -90,13 +93,12 @@ class _TimeTable extends State<TimeTable> {
   @override
   void initState() {
     super.initState();
+    Debugger.timeTable(" #####>> init time table");
   }
 
   @override
   Widget build(BuildContext context) {
     Widget table(int pageOffset) {
-      print(
-          " ========> rebuild time table $pageOffset  from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
       return NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollNotification) {
@@ -111,6 +113,9 @@ class _TimeTable extends State<TimeTable> {
         },
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
+            Debugger.timeTable(
+                " ========> rebuild time table $pageOffset  from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
+
             int sRow = GlobalContext.data.summaryData.data.length;
             int sCol = DataUtils.getWindowSize(
                 GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
@@ -150,8 +155,15 @@ class _TimeTable extends State<TimeTable> {
     return Padding(
       padding:
           const EdgeInsets.only(right: GlobalStyle.splitterVGrabberSize / 2),
-      child: widget._splitController
-          .widget(context, table, SplitControllerLocation.bottom),
+      child: Row(
+        children: [
+          SizedBox(width: GlobalStyle.scheduleTimeBarWidth),
+          Expanded(
+            child: widget._splitController
+                .widget(context, table, SplitControllerLocation.bottom),
+          ),
+        ],
+      ),
     );
   }
 }

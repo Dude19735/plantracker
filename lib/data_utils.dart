@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/rendering.dart';
 
+enum DateStyle { full, noYear, newLine }
+
 class DataUtils {
   static double getWorkRatio(double recorded, double planed) {
     double workRatio = 0;
@@ -43,9 +45,21 @@ class DataUtils {
     return DateTime(cur.year, cur.month, cur.day);
   }
 
-  static String dateTime2Str(DateTime day) {
+  static String dateTime2Str(DateTime day, {DateStyle style = DateStyle.full}) {
     // TODO: do some locale stuff here
-    return "${day.day.toString().padLeft(2, '0')}.${day.month.toString().padLeft(2, '0')}.${day.year.toString().padLeft(4, '0')}";
+
+    String res;
+    if (style == DateStyle.full) {
+      res =
+          "${day.day.toString().padLeft(2, '0')}.${day.month.toString().padLeft(2, '0')}.${day.year.toString().padLeft(4, '0')}";
+    } else if (style == DateStyle.noYear) {
+      res =
+          "${day.day.toString().padLeft(2, '0')}.${day.month.toString().padLeft(2, '0')}";
+    } else {
+      res =
+          "${day.day.toString().padLeft(2, '0')}\n${day.month.toString().padLeft(2, '0')}";
+    }
+    return res;
   }
 
   static int page2DayOffset(int pageOffset, DateTime from, DateTime to) {
