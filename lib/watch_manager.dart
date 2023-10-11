@@ -52,6 +52,18 @@ class _WatchManager extends State<WatchManager>
     _watchTimeout();
   }
 
+  Widget _getSeparator(double width) {
+    return Container(
+      color: Colors.transparent,
+      width: width,
+      height: GlobalStyle.clockBarVerticalSpacerHeight,
+      child: RotatedBox(
+        quarterTurns: 1,
+        child: VerticalDivider(thickness: 1, width: GlobalStyle.clockBarWidth),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     controller.dispose();
@@ -87,8 +99,10 @@ class _WatchManager extends State<WatchManager>
                 height: 30.0,
                 margin: EdgeInsets.all(0.0),
                 padding: EdgeInsets.all(0.0),
-                color: Colors.transparent),
-            Container(height: GlobalStyle.clockBarSpacingDistance),
+                color: Colors.transparent,
+                shadow: false,
+                border: true),
+            _getSeparator(bWidth),
             GlobalStyle.createShadowContainer(
                 context,
                 CustomPaint(
@@ -98,28 +112,36 @@ class _WatchManager extends State<WatchManager>
                 padding: EdgeInsets.all(0.0),
                 borderRadius: bWidth / 2,
                 width: bWidth,
-                height: bWidth),
-            Container(height: GlobalStyle.clockBarSpacingDistance),
+                height: bWidth,
+                shadow: false,
+                border: false),
+            _getSeparator(bWidth),
             GlobalStyle.createShadowContainer(context, SubjectDropdown(),
                 margin: EdgeInsets.all(0.0),
                 padding: EdgeInsets.all(0.0),
                 borderRadius: GlobalStyle.clockBarBoxRadius,
                 width: bWidth,
-                height: bWidth / 3),
-            Container(height: GlobalStyle.clockBarSpacingDistance),
+                height: bWidth / 3,
+                shadow: false,
+                border: false),
+            _getSeparator(bWidth),
             GlobalStyle.createShadowContainer(context, WorkStopButton(),
                 margin: EdgeInsets.all(0.0),
                 padding: EdgeInsets.all(0.0),
                 borderRadius: GlobalStyle.clockBarBoxRadius,
                 width: bWidth,
-                height: bWidth),
-            Container(height: GlobalStyle.clockBarSpacingDistance),
+                height: bWidth,
+                shadow: false,
+                border: false),
+            _getSeparator(bWidth),
             GlobalStyle.createShadowContainer(context, WorkButton(),
                 margin: EdgeInsets.all(0.0),
                 padding: EdgeInsets.all(0.0),
                 borderRadius: GlobalStyle.clockBarBoxRadius,
                 width: bWidth,
-                height: bWidth * 1.5),
+                height: bWidth * 1.5,
+                shadow: false,
+                border: false),
           ],
         ),
       ),

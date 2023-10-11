@@ -5,8 +5,6 @@ import 'dart:collection';
 
 enum SplitControllerLocation { top, bottom }
 
-const bool printSplitController = true;
-
 class ChangePageNotification extends Notification {}
 
 class StartChangeSplitControllerPageNotification
@@ -57,40 +55,23 @@ class SplitController {
     if (direction == ScrollDirection.forward) {
       // the _currentPage must be changed before the split_controller rebuild
       _currentPage++;
-      // _queued.add(_currentPage);
       _topPageController.nextPage(
           duration: Duration(milliseconds: animationMs), curve: curve);
       _bottomPageController
           .nextPage(duration: Duration(milliseconds: animationMs), curve: curve)
           .then((value) {
-        // Future<void>.delayed(Duration(milliseconds: 2000)).then((value) {
-        //   print("${_currentPage == _queued.first} ${_queued.length}");
-        //   if (_currentPage == _queued.removeFirst()) {
-        //     if (printSplitController) {
-        //       print(
-        //           "finally load data ${GlobalContext.fromDateWindow.day} ${GlobalContext.toDateWindow.day}");
-        //     }
         doAfter();
-        //   }
-        // });
       });
     } else if (direction == ScrollDirection.reverse) {
       // the _currentPage must be changed before the split_controller rebuild
       _currentPage--;
-      // _queued.add(_currentPage);
       _topPageController.previousPage(
           duration: Duration(milliseconds: animationMs), curve: curve);
       _bottomPageController
           .previousPage(
               duration: Duration(milliseconds: animationMs), curve: curve)
           .then((value) {
-        // if (_currentPage == _queued.removeFirst()) {
-        //   if (printSplitController) {
-        //     print(
-        //         "finally load data ${GlobalContext.fromDateWindow.day} ${GlobalContext.toDateWindow.day}");
-        //   }
         doAfter();
-        // }
       });
     }
   }
@@ -122,7 +103,8 @@ class SplitController {
         physics: PVScrollPhysics(),
         onPageChanged: (page) {
           if (page != _currentPage) {
-            print("page changed in builder $_currentPage => $page");
+            Debugger.splitController(
+                "page changed in builder $_currentPage => $page");
             // bool backwards = page < _currentPage;
             _currentPage = page;
             // PageScrolledNotification(page, backwards).dispatch(context);
@@ -133,7 +115,7 @@ class SplitController {
             : _bottomPageController,
         pageSnapping: true,
         itemBuilder: (context, index) {
-          print(
+          Debugger.splitController(
               " =====> Generating page with index $index and current page number $_currentPage");
           return Center(
             child: childBuilder(index - _currentPage),

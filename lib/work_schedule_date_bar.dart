@@ -9,8 +9,6 @@ class WorkScheduleDateBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        " ========> rebuild date bar $_pageOffset  from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Container(
@@ -42,23 +40,25 @@ class _GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    double lead = GlobalStyle.scheduleTimeBarWidth;
+    double width = size.width;
+
     int ccsbx = DataUtils.getWindowSize(
         GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     double boxWidth =
-        (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
+        (width - lead - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
             ccsbx;
     GlobalContext.scheduleWindowCell =
         Rect.fromLTWH(0, 0, boxWidth, GlobalStyle.scheduleCellHeightPx);
 
-    canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.width, size.height), backgroundPainter);
+    canvas.drawRect(Rect.fromLTWH(0, 0, width, size.height), backgroundPainter);
 
-    double xOffset = boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2;
+    double xOffset = lead + boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2;
 
     gridPainter.color = GlobalStyle.scheduleGridColorBox(_context);
     gridPainter.strokeWidth = 1;
-    double end = size.width - boxWidth / 2;
+    double end = width - boxWidth / 2;
     double delta = boxWidth + GlobalStyle.scheduleGridStrokeWidth;
     while (xOffset < end) {
       canvas.drawLine(
@@ -68,12 +68,10 @@ class _GridPainter extends CustomPainter {
 
     gridPainter.strokeWidth = 2;
     gridPainter.color = GlobalStyle.scheduleGridColorFullHour(_context);
-    canvas.drawLine(Offset(0, gridPainter.strokeWidth / 2),
-        Offset(size.width, gridPainter.strokeWidth / 2), gridPainter);
-    canvas.drawLine(
-        Offset(0, size.height - gridPainter.strokeWidth / 2),
-        Offset(size.width, size.height - gridPainter.strokeWidth / 2),
-        gridPainter);
+    canvas.drawLine(Offset(lead, gridPainter.strokeWidth / 2),
+        Offset(width, gridPainter.strokeWidth / 2), gridPainter);
+    canvas.drawLine(Offset(lead, size.height - gridPainter.strokeWidth / 2),
+        Offset(width, size.height - gridPainter.strokeWidth / 2), gridPainter);
 
     // =========================================================================
 
@@ -91,8 +89,8 @@ class _GridPainter extends CustomPainter {
     );
 
     const double yCenter = GlobalStyle.scheduleDateBarHeight / 2;
-    xOffset = (boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2) / 2;
-    end = size.width - boxWidth / 4;
+    xOffset = lead + (boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2) / 2;
+    end = width - boxWidth / 4;
     while (xOffset < end) {
       DateTime day = DataUtils.addDays(GlobalContext.fromDateWindow, dayOffset);
       textPainter.text = TextSpan(
@@ -105,7 +103,7 @@ class _GridPainter extends CustomPainter {
         maxWidth: boxWidth,
       );
       final offset = Offset(
-          xOffset - textPainter.width / 2, yCenter - textPainter.height / 2);
+          xOffset - textPainter.width / 2, yCenter - textPainter.height / 1.75);
       textPainter.paint(canvas, offset);
 
       xOffset += delta;

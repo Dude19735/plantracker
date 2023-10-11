@@ -75,6 +75,7 @@ class GlobalStyle {
   static const double scheduleDateBarHeight = 63;
   static const double scheduleGridStrokeWidth = 1.0;
   static const double scheduleCellHeightPx = 30;
+  static const double scheduleTimeBarWidth = 50;
 
   static Color scheduleGridColorBox(BuildContext context) => Colors.black12;
   static Color scheduleGridColorFullHour(BuildContext context) =>
@@ -141,9 +142,9 @@ class GlobalStyle {
   // summary and time table card settings
   // ===========================================================================
   // distance between edge of individual container and surroundings
-  static const double summaryCardMargin = 6.0; //5.0;
+  static const double summaryCardMargin = 3.0; //5.0;
   // distance between edge of individual container and card contents
-  static const double summaryCardPadding = 5.0; //5.0;
+  static const double summaryCardPadding = 2.0; //5.0;
   static const double summaryCardBorderRadius = 5.0;
   static const double summaryEntryBarHeight = 20;
 
@@ -163,11 +164,12 @@ class GlobalStyle {
   // ===========================================================================
   // clock bar settings
   // ===========================================================================
-  static const double clockBarSpacingDistance = 8.0;
-  static const double clockBarPadding = 15;
+  static const double clockBarVerticalSpacerHeight = 24.0;
+  static const double clockBarPadding = 16;
   static const double clockBarWidth = 120;
   static const double clockBarBoxRadius = 5.0;
-  static const double subj$ectSelectorHeight = 45;
+  static const double clockBarSubjectSelectorHeight = 45;
+  static const double clockBarToTabViewSpacer = 16;
 
   // Datepicker box
   static const double dateTimeButtonRadius = 5.0;
@@ -241,6 +243,16 @@ class GlobalStyle {
     // print("$numLines, ${numLines * textPainter.height}: $text, $maxWidth");
     return numLines * textPainter.height;
   }
+
+  static int getTextLines(String text, TextStyle style, double maxWidth) {
+    // var style = GlobalStyle.summaryTextStyle;
+    final span = TextSpan(text: text, style: style);
+    final tp = TextPainter(text: span, textDirection: TextDirection.ltr);
+    tp.layout(maxWidth: maxWidth);
+    final numLines = tp.computeLineMetrics().length;
+
+    return numLines;
+  }
 }
 
 class Helpers {
@@ -269,5 +281,72 @@ class Helpers {
         return alert;
       },
     );
+  }
+}
+
+class Debugger {
+  static const bool _dataDebug = false;
+  static const bool _mainDebug = false;
+  static const bool _timeTableDebug = false;
+  static const bool _timeTableBoxDebug = false;
+  static const bool _workScheduleDebug = false;
+  static const bool _workScheduleInnerViewDebug = false;
+  static const bool _workScheduleDateBarDebug = false;
+  static const bool _splitControllerDebug = false;
+
+  static void data(String msg) {
+    if (_dataDebug) {
+      print("DataDebug");
+      print(msg);
+    }
+  }
+
+  static void main(String msg) {
+    if (_mainDebug) {
+      print("MainDebug");
+      print(msg);
+    }
+  }
+
+  static void timeTable(String msg) {
+    if (_timeTableDebug) {
+      print("TimeTableDebug");
+      print(msg);
+    }
+  }
+
+  static void timeTableBox(String msg) {
+    if (_timeTableBoxDebug) {
+      print("TimeTableBoxDebug");
+      print(msg);
+    }
+  }
+
+  static void workSchedule(String msg) {
+    if (_workScheduleDebug) {
+      print("WorkScheduleDebug");
+      print(msg);
+    }
+  }
+
+  static void workScheduleInnerView(String msg) {
+    if (_workScheduleInnerViewDebug) {
+      print("WorkScheduleInnerViewDebug");
+      print(msg);
+    }
+  }
+
+  static void workScheduleDateBar(String msg) {
+    if (_workScheduleDateBarDebug) {
+      print("WorkScheduleDateBarDebug");
+      print(msg);
+    }
+  }
+
+  static void splitController(String msg) {
+    if (_splitControllerDebug) {
+      print("SplitControllerDebug");
+      print(msg);
+    }
   }
 }

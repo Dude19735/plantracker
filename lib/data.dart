@@ -12,8 +12,6 @@ class DataChangedNotification extends Notification {}
 
 class DataChangedNotificationSubjectData extends DataChangedNotification {}
 
-const bool dataDebug = true;
-
 class SubjectData {
   final int subjectId;
   String subjectAcronym;
@@ -238,12 +236,6 @@ class GlobalData {
     }
   }
 
-  // void summary() {
-  //   int fromDate = DataUtils.dateTime2Int(GlobalContext.fromDateWindow);
-  //   int toDate = DataUtils.dateTime2Int(GlobalContext.toDateWindow);
-  //   summaryFT(fromDate, toDate);
-  // }
-
   void summaryFT(DateTime from, DateTime to) {
     int fromDate = DataUtils.dateTime2Int(from);
     int toDate = DataUtils.dateTime2Int(to);
@@ -310,11 +302,11 @@ class GlobalData {
   void _delayedLoad(
       int val, DateTime from, DateTime to, ScrollDirection direction) {
     var adj = DataUtils.getAdjacentTimePeriods(from, to, direction);
-    if (dataDebug) print("Delayed load $val from $from to $to with $direction");
+    Debugger.data("Delayed load $val from $from to $to with $direction");
     var newFrom = adj["prev_from"];
     if (newFrom.compareTo(_fromDate) < 0) {
       // add new data on this side
-      if (dataDebug) print("prev load $newFrom to $_fromDate");
+      Debugger.data("prev load $newFrom to $_fromDate");
       _load(newFrom, DataUtils.subtractDays(_fromDate, 1));
       _fromDate = newFrom;
     } else if (newFrom.compareTo(_fromDate) > 0) {
@@ -325,7 +317,7 @@ class GlobalData {
         for (DateTime d = _fromDate;
             d.compareTo(newFrom) < 0;
             d = DataUtils.addDays(d, 1)) {
-          if (dataDebug) print("prev remove $d");
+          Debugger.data("prev remove $d");
           _remove(d);
         }
         _fromDate = newFrom;
@@ -341,48 +333,40 @@ class GlobalData {
         for (DateTime d = DataUtils.addDays(newTo, 1);
             d.compareTo(_toDate) <= 0;
             d = DataUtils.addDays(d, 1)) {
-          if (dataDebug) print("next remove $d");
+          Debugger.data("next remove $d");
           _remove(d);
         }
         _toDate = newTo;
       }
     } else if (newTo.compareTo(_toDate) > 0) {
       // add new data on this side
-      if (dataDebug) print("next load $_toDate to $newTo");
+      Debugger.data("next load $_toDate to $newTo");
       _load(DataUtils.addDays(_toDate, 1), newTo);
       _toDate = newTo;
     }
 
     summaryFT(from, to);
     _subjects(_fromDate, _toDate);
-    if (dataDebug) print("###################################################");
-    if (dataDebug) print("fromDate: $_fromDate, toDate: $_toDate");
-    if (dataDebug) print("###################################################");
+    Debugger.data("""###################################################
+      fromDate: $_fromDate, toDate: $_toDate
+      ###################################################""");
   }
-
-  // void load(int waitMS, ScrollDirection direction) {
-  //   var from = GlobalContext.fromDateWindow;
-  //   var to = GlobalContext.toDateWindow;
-  //   loadFT(waitMS, direction, from, to);
-  // }
 
   void loadFT(int waitMS, ScrollDirection direction, DateTime from, DateTime to,
       void Function() doAfter) {
     _val = _token(from, to);
     _queue.add(MapEntry(_val, _GlobalDataItem(doAfter, from, to, direction)));
-    print("--------> add to queue $_val $from $to");
+    Debugger.data("--------> add to queue $_val $from $to");
 
     Future<void>.delayed(Duration(milliseconds: waitMS)).then((value) {
-      if (dataDebug) print(_queue.toString());
+      Debugger.data(_queue.toString());
       var x = _queue.removeLast();
       if (_val == x.key) {
-        if (dataDebug) {
-          print("Load data $_val after $waitMS MS ${x.value.direction}");
-        }
+        Debugger.data("Load data $_val after $waitMS MS ${x.value.direction}");
         _delayedLoad(_val, x.value.from, x.value.to, x.value.direction);
         x.value.doAfter();
       } else {
-        if (dataDebug) print("skip loading");
+        Debugger.data("skip loading");
       }
     });
   }

@@ -19,28 +19,35 @@ class _WorkButton extends State<WorkButton> {
         child: Column(
           children: [
             Expanded(
-                child: RotatedBox(
-                    quarterTurns: 1,
-                    child: WorkToggler(
-                      onHitL: () {
-                        print("L");
-                      },
-                      onHitR: () {
-                        print("R");
-                      },
-                      icon: [
-                        Icons.keyboard_double_arrow_right_outlined,
-                        Icons.keyboard_double_arrow_left_outlined
-                      ],
-                      minSliderRatio: 0.5,
-                      restingColorL: GlobalStyle.markerRed(context),
-                      restingColorR: GlobalStyle.markerBlue(context),
-                    ))),
+                child: GlobalStyle.createShadowContainer(
+                    context,
+                    RotatedBox(
+                        quarterTurns: 1,
+                        child: WorkToggler(
+                          onHitL: () {
+                            print("L");
+                          },
+                          onHitR: () {
+                            print("R");
+                          },
+                          icon: [
+                            Icons.keyboard_double_arrow_right_outlined,
+                            Icons.keyboard_double_arrow_left_outlined
+                          ],
+                          minSliderRatio: 0.5,
+                          restingColorL: GlobalStyle.markerRed(context),
+                          restingColorR: GlobalStyle.markerBlue(context),
+                        )),
+                    margin: EdgeInsets.all(0.0),
+                    padding: EdgeInsets.all(0.0),
+                    borderRadius: GlobalStyle.clockBarBoxRadius,
+                    shadow: false,
+                    border: true)),
           ],
         ),
       ),
       Expanded(
-        flex: 3,
+        flex: 2,
         child: Column(
           children: [
             Expanded(
