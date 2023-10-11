@@ -19,6 +19,7 @@ import 'package:scheduler/watch_manager.dart';
 import 'package:scheduler/work_schedule.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/joined_scroller.dart';
+import 'package:scheduler/data_utils.dart';
 
 Future<void> main() async {
   const String title = "Just something...";
@@ -100,6 +101,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late final TabController _controller;
   late final SplitController _splitController;
   final JoinedScroller _joinedScroller = JoinedScroller();
+  ScrollDirection _direction = ScrollDirection.idle;
+  double _pixels = -1;
 
   @override
   void initState() {
@@ -114,8 +117,73 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
      */
     if (notification is DataChangedNotificationTimeTableData) {
       SplitContainer.setComponentState(CrossSplitComponent.bl, () {
-        GlobalContext.data.summary();
+        GlobalContext.data.summaryFT(
+            GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
       });
+    }
+  }
+
+  void _scrollState(Notification notification) {
+    var from = GlobalContext.fromDateWindow;
+    var to = GlobalContext.toDateWindow;
+    if (notification is UserScrollNotification) {
+      if (_direction == ScrollDirection.idle &&
+          notification.direction == ScrollDirection.forward) {
+        _direction = notification.direction;
+        _pixels = notification.metrics.pixels;
+        // print("left");
+        GlobalContext.data.loadFT(GlobalSettings.pageViewScrollWaitTimeMS,
+            _direction, from, to, () {});
+      } else if (_direction == ScrollDirection.idle &&
+          notification.direction == ScrollDirection.reverse) {
+        _direction = notification.direction;
+        _pixels = notification.metrics.pixels;
+        // print("right");
+        GlobalContext.data.loadFT(GlobalSettings.pageViewScrollWaitTimeMS,
+            _direction, from, to, () {});
+      } else if (notification.direction == ScrollDirection.idle) {
+        print("Back to idle...");
+        DateTime from = GlobalContext.fromDateWindow;
+        DateTime to = GlobalContext.toDateWindow;
+        _direction = notification.direction;
+        if (_pixels < notification.metrics.pixels) {
+          var next = DataUtils.getNextPage(from, to);
+          GlobalContext.fromDateWindow = next["from"]!;
+          GlobalContext.toDateWindow = next["to"]!;
+          print(
+              "page number increased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
+        } else if (_pixels > notification.metrics.pixels) {
+          var prev = DataUtils.getPreviousPage(from, to);
+          GlobalContext.fromDateWindow = prev["from"]!;
+          GlobalContext.toDateWindow = prev["to"]!;
+          print(
+              "page number decreased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
+        }
+        _pixels = -1;
+        GlobalContext.data.loadFT(0, _direction, GlobalContext.fromDateWindow,
+            GlobalContext.toDateWindow, () {
+          setState(() {
+            print("final idle load $_direction");
+          });
+        });
+      }
+    }
+    if (notification is ScrollUpdateNotification) {
+      if (_direction == ScrollDirection.forward) {
+        if (_pixels < notification.metrics.pixels) {
+          // print("left to right");
+          _direction = ScrollDirection.reverse;
+          GlobalContext.data.loadFT(GlobalSettings.pageViewScrollWaitTimeMS,
+              _direction, from, to, () {});
+        }
+      } else if (_direction == ScrollDirection.reverse) {
+        if (_pixels > notification.metrics.pixels) {
+          // print("right to left");
+          _direction = ScrollDirection.forward;
+          GlobalContext.data.loadFT(GlobalSettings.pageViewScrollWaitTimeMS,
+              _direction, from, to, () {});
+        }
+      }
     }
   }
 
@@ -137,57 +205,110 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     var split = NotificationListener(
       onNotification: (notification) {
         if (notification is DateChangedNotification) {
-          setState(() {
-            GlobalContext.fromDateWindow = notification.from;
-            GlobalContext.toDateWindow = notification.to;
-            GlobalContext.data.load();
-          });
+          GlobalContext.fromDateWindow = notification.from;
+          GlobalContext.toDateWindow = notification.to;
+          GlobalContext.data.loadFT(
+              0,
+              ScrollDirection.idle,
+              GlobalContext.fromDateWindow,
+              GlobalContext.toDateWindow,
+              () => () => setState(() {}));
           return true;
         } else if (notification is DataChangedNotification) {
           _dealWithDataChangedNotification(notification);
-        } else if (notification is VerticalSplitMoved) {
-          // if (notification.name == CrossSplit.vBottom) {
-          //   GlobalContext.data.setSummaryTextHeight(
-          //       GlobalStyle.summaryTextStyle, notification.leftWidth);
-          // }
-        } else if (notification is PageScrolledNotification) {
-          /**
-           * In here: change the from-to dates
-           */
-
-          // setState(() {
-          // DateTime from = GlobalContext.fromDateWindow;
-          // DateTime to = GlobalContext.toDateWindow;
-          // print("Page changed $from $to");
-          // if (notification.backwards) {
-          //   var prev = DataUtils.getPreviousPage(from, to);
-          //   GlobalContext.fromDateWindow = prev["from"]!;
-          //   GlobalContext.toDateWindow = prev["to"]!;
-          // } else {
-          //   var next = DataUtils.getNextPage(from, to);
-          //   GlobalContext.fromDateWindow = next["from"]!;
-          //   GlobalContext.toDateWindow = next["to"]!;
-          // }
-          // GlobalContext.data.load();
-          // });
+        }
+        // else if (notification is PageScrolledNotification) {
+        //   /**
+        //    * In here: change the from-to dates
+        //    */
+        //   _pixels = -1;
+        //   _direction = ScrollDirection.idle;
+        //   setState(() {
+        //     DateTime from = GlobalContext.fromDateWindow;
+        //     DateTime to = GlobalContext.toDateWindow;
+        //     print("Page changed $from $to");
+        //     if (notification.backwards) {
+        //       var prev = DataUtils.getPreviousPage(from, to);
+        //       GlobalContext.fromDateWindow = prev["from"]!;
+        //       GlobalContext.toDateWindow = prev["to"]!;
+        //     } else {
+        //       var next = DataUtils.getNextPage(from, to);
+        //       GlobalContext.fromDateWindow = next["from"]!;
+        //       GlobalContext.toDateWindow = next["to"]!;
+        //     }
+        //     // GlobalContext.data.load();
+        //   });
+        //   return true;
+        // }
+        else if (notification is ScrollNotification) {
+          _scrollState(notification);
           return true;
-        } else if (notification is UserScrollNotification) {
+        } else if (notification is StartChangeSplitControllerPageNotification) {
+          print("keep scrolling");
+          // GlobalContext.data.load(notification.direction);
+          var from = GlobalContext.fromDateWindow;
+          var to = GlobalContext.toDateWindow;
+          // setState(() {
+          print("Scroll direction ${notification.direction}");
           if (notification.direction == ScrollDirection.forward) {
-            /**
-             * load data with forward outlook
-             */
+            var next = DataUtils.getNextPage(from, to);
+            GlobalContext.fromDateWindow = next["from"]!;
+            GlobalContext.toDateWindow = next["to"]!;
+            print(
+                "page number increased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
           } else if (notification.direction == ScrollDirection.reverse) {
-            /**
-             * load data with reverse outlook
-             */
+            var prev = DataUtils.getPreviousPage(from, to);
+            GlobalContext.fromDateWindow = prev["from"]!;
+            GlobalContext.toDateWindow = prev["to"]!;
+            print(
+                "page number decreased ${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
           }
-        } else if (notification is ChangePageNotification) {
-          if (notification.backwards) {
-            _splitController.previousPage();
-          } else {
-            _splitController.nextPage();
-          }
-        } else if (notification is ScheduleMarkedNotification) {
+          _splitController.changePage(
+              notification.direction,
+              () => GlobalContext.data.loadFT(
+                  GlobalSettings.pageViewScrollWaitTimeMS,
+                  ScrollDirection.idle,
+                  GlobalContext.fromDateWindow,
+                  GlobalContext.toDateWindow,
+                  () => setState(() {
+                        print("finally idlying loading $_direction");
+                      })));
+          SplitContainer.setComponentState(CrossSplitComponent.tr, () {});
+          // }
+          // );
+          return true;
+        }
+
+        // ?.then(
+        //   (value) {
+        //     print("move to next required page");
+        //     var from = GlobalContext.fromDateWindow;
+        //     var to = GlobalContext.toDateWindow;
+        //     if (notification.direction == ScrollDirection.forward) {
+        //       var next = DataUtils.getNextPage(from, to);
+        //       GlobalContext.fromDateWindow = next["from"]!;
+        //       GlobalContext.toDateWindow = next["to"]!;
+        //     } else if (notification.direction == ScrollDirection.reverse) {
+        //       var prev = DataUtils.getPreviousPage(from, to);
+        //       GlobalContext.fromDateWindow = prev["from"]!;
+        //       GlobalContext.toDateWindow = prev["to"]!;
+        //     }
+        //     setState(() {
+        //       GlobalContext.data.load(ScrollDirection.idle);
+        //     });
+        //   },
+        // );
+
+        // if (notification.backwards) {
+        //   var prev = DataUtils.getPreviousPage(from, to);
+        //   _splitController.previousPage();
+        //   _setPageBackwardsState(from, to);
+        // } else {
+        //
+        //   _splitController.nextPage();
+        //   _setPageForwardState(from, to);
+        // }
+        else if (notification is ScheduleMarkedNotification) {
           setState(
             () {},
           );

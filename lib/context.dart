@@ -32,6 +32,8 @@ class GlobalSettings {
   static final DateTime earliestDate = DateTime(2022);
   static final DateTime latestDate = DateTime(2100);
 
+  static const int pageViewScrollWaitTimeMS = 500;
+
   static const Map<String, Locale> locals = {
     "en-GB": Locale('en', 'GB'),
     "de-CH": Locale('de', 'CH'),

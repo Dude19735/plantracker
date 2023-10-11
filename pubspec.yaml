@@ -45,6 +45,7 @@ dependencies:
   loading_animation_widget: ^1.2.0+4
   sqflite: ^2.3.0
   sqflite_common_ffi: ^2.3.0+2
+  collection: ^1.17.2
 
 dev_dependencies:
   flutter_test:

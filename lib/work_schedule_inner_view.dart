@@ -153,6 +153,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
 
   @override
   Widget build(BuildContext context) {
+    print(
+        " ========> rebuild work schedule inner view ${widget._pageDaysOffset} from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
     double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -225,6 +227,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
               if (notification is ScrollNotification) {
                 GlobalContext.scheduleWindowScrollOffset =
                     notification.metrics.pixels;
+                return true; // cut event propagation
               }
               return false;
             },

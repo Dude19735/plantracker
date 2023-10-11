@@ -9,6 +9,8 @@ class WorkScheduleDateBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(
+        " ========> rebuild date bar $_pageOffset  from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Container(

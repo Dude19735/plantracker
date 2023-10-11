@@ -5,10 +5,14 @@ import 'package:scheduler/data_gen.dart';
 import 'package:scheduler/data_columns.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:collection/collection.dart';
+import 'dart:collection';
+import 'package:flutter/rendering.dart';
 
 class DataChangedNotification extends Notification {}
 
 class DataChangedNotificationSubjectData extends DataChangedNotification {}
+
+const bool dataDebug = true;
 
 class SubjectData {
   final int subjectId;
@@ -184,12 +188,23 @@ class Data<D> {
   }
 }
 
+class _GlobalDataItem {
+  final void Function() doAfter;
+  final DateTime from;
+  final DateTime to;
+  final ScrollDirection direction;
+  _GlobalDataItem(this.doAfter, this.from, this.to, this.direction);
+}
+
 class GlobalData {
   Map<int, double> minSubjectTextHeight = {};
   late Data<TSummaryData> summaryData;
   late Data<TTimeTableData> timeTableData;
   late Data<TSchedulePlanData> schedulePlanData;
   late Data<TSubjectData> subjectData;
+  Queue<MapEntry<int, _GlobalDataItem>> _queue = Queue();
+  int _val = 0;
+  DateTime _initTime = DateTime.now().toUtc();
 
   late DateTime _fromDate;
   late DateTime _toDate;
@@ -204,14 +219,14 @@ class GlobalData {
     var to = GlobalContext.toDateWindow;
     _load(from, to);
 
-    var adj = DataUtils.getAdjacentTimePeriods(from, to);
+    var adj = DataUtils.getAdjacentTimePeriods(from, to, ScrollDirection.idle);
     _load(adj["prev_from"], adj["prev_to"]);
     _load(adj["next_from"], adj["next_to"]);
 
     _fromDate = adj["prev_from"];
     _toDate = adj["next_to"];
 
-    summary();
+    summaryFT(from, to);
     _subjects(_fromDate, _toDate);
   }
 
@@ -223,10 +238,15 @@ class GlobalData {
     }
   }
 
-  void summary() {
-    int fromDate = DataUtils.dateTime2Int(GlobalContext.fromDateWindow);
-    int toDate = DataUtils.dateTime2Int(GlobalContext.toDateWindow);
+  // void summary() {
+  //   int fromDate = DataUtils.dateTime2Int(GlobalContext.fromDateWindow);
+  //   int toDate = DataUtils.dateTime2Int(GlobalContext.toDateWindow);
+  //   summaryFT(fromDate, toDate);
+  // }
 
+  void summaryFT(DateTime from, DateTime to) {
+    int fromDate = DataUtils.dateTime2Int(from);
+    int toDate = DataUtils.dateTime2Int(to);
     summaryData.data.clear();
     for (var subjectId in timeTableData.data.keys) {
       double planed = 0;
@@ -287,41 +307,90 @@ class GlobalData {
     schedulePlanData.data.remove(DataUtils.dateTime2Int(day));
   }
 
-  void load() {
-    var from = GlobalContext.fromDateWindow;
-    var to = GlobalContext.toDateWindow;
-    var adj = DataUtils.getAdjacentTimePeriods(from, to);
-
+  void _delayedLoad(
+      int val, DateTime from, DateTime to, ScrollDirection direction) {
+    var adj = DataUtils.getAdjacentTimePeriods(from, to, direction);
+    if (dataDebug) print("Delayed load $val from $from to $to with $direction");
     var newFrom = adj["prev_from"];
     if (newFrom.compareTo(_fromDate) < 0) {
       // add new data on this side
+      if (dataDebug) print("prev load $newFrom to $_fromDate");
       _load(newFrom, DataUtils.subtractDays(_fromDate, 1));
+      _fromDate = newFrom;
     } else if (newFrom.compareTo(_fromDate) > 0) {
       // remove unused data on this side
-      for (DateTime d = _fromDate;
-          d.compareTo(newFrom) < 0;
-          d = DataUtils.addDays(d, 1)) {
-        _remove(d);
+      // if we get to an idle state
+      // avoid rapid database calls on wobbeling
+      if (direction == ScrollDirection.idle) {
+        for (DateTime d = _fromDate;
+            d.compareTo(newFrom) < 0;
+            d = DataUtils.addDays(d, 1)) {
+          if (dataDebug) print("prev remove $d");
+          _remove(d);
+        }
+        _fromDate = newFrom;
       }
     }
 
     var newTo = adj["next_to"];
     if (newTo.compareTo(_toDate) < 0) {
-      // remove unused data on this side
-      for (DateTime d = DataUtils.addDays(newTo, 1);
-          d.compareTo(_toDate) <= 0;
-          d = DataUtils.addDays(d, 1)) {
-        _remove(d);
+      if (direction == ScrollDirection.idle) {
+        // remove unused data on this side
+        // if we get to an idle state
+        // avoid rapid database calls on wobbeling
+        for (DateTime d = DataUtils.addDays(newTo, 1);
+            d.compareTo(_toDate) <= 0;
+            d = DataUtils.addDays(d, 1)) {
+          if (dataDebug) print("next remove $d");
+          _remove(d);
+        }
+        _toDate = newTo;
       }
     } else if (newTo.compareTo(_toDate) > 0) {
       // add new data on this side
+      if (dataDebug) print("next load $_toDate to $newTo");
       _load(DataUtils.addDays(_toDate, 1), newTo);
+      _toDate = newTo;
     }
 
-    _fromDate = newFrom;
-    _toDate = newTo;
-
-    summary();
+    summaryFT(from, to);
     _subjects(_fromDate, _toDate);
+    if (dataDebug) print("###################################################");
+    if (dataDebug) print("fromDate: $_fromDate, toDate: $_toDate");
+    if (dataDebug) print("###################################################");
+  }
+
+  // void load(int waitMS, ScrollDirection direction) {
+  //   var from = GlobalContext.fromDateWindow;
+  //   var to = GlobalContext.toDateWindow;
+  //   loadFT(waitMS, direction, from, to);
+  // }
+
+  void loadFT(int waitMS, ScrollDirection direction, DateTime from, DateTime to,
+      void Function() doAfter) {
+    _val = _token(from, to);
+    _queue.add(MapEntry(_val, _GlobalDataItem(doAfter, from, to, direction)));
+    print("--------> add to queue $_val $from $to");
+
+    Future<void>.delayed(Duration(milliseconds: waitMS)).then((value) {
+      if (dataDebug) print(_queue.toString());
+      var x = _queue.removeLast();
+      if (_val == x.key) {
+        if (dataDebug) {
+          print("Load data $_val after $waitMS MS ${x.value.direction}");
+        }
+        _delayedLoad(_val, x.value.from, x.value.to, x.value.direction);
+        x.value.doAfter();
+      } else {
+        if (dataDebug) print("skip loading");
+      }
+    });
+  }
+
+  int _token(DateTime from, DateTime to) {
+    return Object.hash(
+        DateTime.now().toUtc().difference(_initTime).inMicroseconds,
+        DataUtils.dateTime2Int(from),
+        DataUtils.dateTime2Int(to));
   }
 }
