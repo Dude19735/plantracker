@@ -231,7 +231,7 @@ class GlobalData {
   void setSummaryTextHeight(TextStyle style, double summaryWidth) {
     for (var item in GlobalContext.data.summaryData.data) {
       double height =
-          GlobalStyle.getTextHeight(item.subject, style, summaryWidth);
+          DataUtils.getTextHeight(item.subject, style, summaryWidth);
       GlobalContext.data.minSubjectTextHeight[item.subjectId] = height;
     }
   }

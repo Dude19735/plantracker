@@ -73,7 +73,7 @@ class _TimeTable extends State<TimeTable> {
       int pageOffset) {
     int subjectId = data[subjectIndex].subjectId;
 
-    double height = GlobalStyle.getTextHeight(
+    double height = DataUtils.getTextHeight(
         data[subjectIndex].subject,
         DefaultTextStyle.of(context).style,
         widget._metrics.tlWidth - GlobalStyle.timeTableSummaryPM());
