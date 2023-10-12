@@ -2,7 +2,9 @@ import 'dart:ui';
 import 'package:flutter/rendering.dart';
 import 'package:scheduler/split.dart';
 
-enum DateStyle { full, noYear, noYearReducedFontSize, newLine }
+enum DateStyle { full, noYear, newLine, weekly, weekly2, monthly }
+
+enum WeekStyle { full, newLine, partial }
 
 class DataUtils {
   static double getWorkRatio(double recorded, double planed) {
@@ -55,7 +57,21 @@ class DataUtils {
       lines = DataUtils.getTextLines("  99.99  ", textStyle, width);
       if (lines > 1) {
         res = DateStyle.newLine;
+        lines = DataUtils.getTextLines("  99  ", textStyle, width);
+        if (lines > 1) {
+          res = DateStyle.weekly;
+        }
       }
+    }
+    return res;
+  }
+
+  static WeekStyle getWeekStyle(double width, TextStyle textStyle) {
+    var lines = DataUtils.getTextHeight(
+        "  99.99.9999 - 99.99.9999  ", textStyle, width);
+    WeekStyle res = WeekStyle.full;
+    if (lines > 1) {
+      res = WeekStyle.newLine;
     }
     return res;
   }
@@ -88,8 +104,33 @@ class DataUtils {
     return numLines;
   }
 
+  static String week2Str(DateTime fromDay, DateTime toDay,
+      {WeekStyle style = WeekStyle.full}) {
+    // TODO: do some locale stuff here
+    String res;
+    String df = fromDay.day.toString().padLeft(2, "0");
+    String mf = fromDay.month.toString().padLeft(2, "0");
+    String yf = fromDay.year.toString().padLeft(4, "0");
+    String dt = toDay.day.toString().padLeft(2, "0");
+    String mt = toDay.month.toString().padLeft(2, "0");
+    String yt = toDay.year.toString().padLeft(4, "0");
+
+    if (style == WeekStyle.full) {
+      res = "$df.$mf.$yf - $dt.$mt.$yt";
+    } else if (style == WeekStyle.partial) {
+      res = "- $dt.$mt.\n$yt";
+    } else {
+      res = "$df.$mf.$yf -\n$dt.$mt.$yt";
+    }
+
+    return res;
+  }
+
   static String dateTime2Str(DateTime day, {DateStyle style = DateStyle.full}) {
     // TODO: do some locale stuff here
+    assert(style == DateStyle.full ||
+        style == DateStyle.noYear ||
+        style == DateStyle.newLine);
 
     String res;
     if (style == DateStyle.full) {
