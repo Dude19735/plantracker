@@ -1,7 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/rendering.dart';
+import 'package:scheduler/split.dart';
 
-enum DateStyle { full, noYear, newLine }
+enum DateStyle { full, noYear, noYearReducedFontSize, newLine }
 
 class DataUtils {
   static double getWorkRatio(double recorded, double planed) {
@@ -43,6 +44,48 @@ class DataUtils {
   static DateTime now() {
     DateTime cur = DateTime.now();
     return DateTime(cur.year, cur.month, cur.day);
+  }
+
+  static DateStyle getDateStyle(double width, TextStyle textStyle) {
+    DateStyle res = DateStyle.full;
+
+    int lines = DataUtils.getTextLines("  99.99.9999  ", textStyle, width);
+    if (lines > 1) {
+      res = DateStyle.noYear;
+      lines = DataUtils.getTextLines("  99.99  ", textStyle, width);
+      if (lines > 1) {
+        res = DateStyle.newLine;
+      }
+    }
+    return res;
+  }
+
+  static double getTextHeight(String text, TextStyle style, double maxWidth) {
+    // var style = GlobalStyle.summaryTextStyle;
+    final span = TextSpan(text: text, style: style);
+    final tp = TextPainter(text: span, textDirection: TextDirection.ltr);
+    tp.layout(maxWidth: maxWidth);
+    final numLines = tp.computeLineMetrics().length;
+
+    final TextPainter textPainter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: TextDirection.ltr,
+        textScaleFactor: 1.0 // MediaQuery.of(context).textScaleFactor,
+        )
+      ..layout();
+
+    // print("$numLines, ${numLines * textPainter.height}: $text, $maxWidth");
+    return numLines * textPainter.height;
+  }
+
+  static int getTextLines(String text, TextStyle style, double maxWidth) {
+    // var style = GlobalStyle.summaryTextStyle;
+    final span = TextSpan(text: text, style: style);
+    final tp = TextPainter(text: span, textDirection: TextDirection.ltr);
+    tp.layout(maxWidth: maxWidth);
+    final numLines = tp.computeLineMetrics().length;
+
+    return numLines;
   }
 
   static String dateTime2Str(DateTime day, {DateStyle style = DateStyle.full}) {

@@ -88,13 +88,22 @@ class _GridPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     );
 
+    var dateStyle = DataUtils.getDateStyle(boxWidth, textStyle);
+    if (dateStyle != DateStyle.full) {
+      textStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 14,
+      );
+      dateStyle = DataUtils.getDateStyle(boxWidth, textStyle);
+    }
+
     const double yCenter = GlobalStyle.scheduleDateBarHeight / 2;
     xOffset = lead + (boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2) / 2;
     end = width - boxWidth / 4;
     while (xOffset < end) {
       DateTime day = DataUtils.addDays(GlobalContext.fromDateWindow, dayOffset);
       textPainter.text = TextSpan(
-        text: DataUtils.dateTime2Str(day),
+        text: DataUtils.dateTime2Str(day, style: dateStyle),
         style: textStyle,
       );
 

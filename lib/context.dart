@@ -225,34 +225,6 @@ class GlobalStyle {
     int res = date.year * 10000 + date.month * 100 + date.day;
     return res;
   }
-
-  static double getTextHeight(String text, TextStyle style, double maxWidth) {
-    // var style = GlobalStyle.summaryTextStyle;
-    final span = TextSpan(text: text, style: style);
-    final tp = TextPainter(text: span, textDirection: TextDirection.ltr);
-    tp.layout(maxWidth: maxWidth);
-    final numLines = tp.computeLineMetrics().length;
-
-    final TextPainter textPainter = TextPainter(
-        text: TextSpan(text: text, style: style),
-        textDirection: TextDirection.ltr,
-        textScaleFactor: 1.0 // MediaQuery.of(context).textScaleFactor,
-        )
-      ..layout();
-
-    // print("$numLines, ${numLines * textPainter.height}: $text, $maxWidth");
-    return numLines * textPainter.height;
-  }
-
-  static int getTextLines(String text, TextStyle style, double maxWidth) {
-    // var style = GlobalStyle.summaryTextStyle;
-    final span = TextSpan(text: text, style: style);
-    final tp = TextPainter(text: span, textDirection: TextDirection.ltr);
-    tp.layout(maxWidth: maxWidth);
-    final numLines = tp.computeLineMetrics().length;
-
-    return numLines;
-  }
 }
 
 class Helpers {
