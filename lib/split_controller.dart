@@ -116,7 +116,7 @@ class SplitController {
         pageSnapping: true,
         itemBuilder: (context, index) {
           Debugger.splitController(
-              " =====> Generating page with index $index and current page number $_currentPage");
+              " =====> Generating page with index $index and current page number $_currentPage and offset ${index - _currentPage}");
           return Center(
             child: childBuilder(index - _currentPage),
           );

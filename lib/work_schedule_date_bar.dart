@@ -47,6 +47,7 @@ class _GridPainter extends CustomPainter {
       double boxWidth,
       TextStyle textStyle,
       DateStyle dateStyle) {
+    print("${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
     double xOffset = lead + boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2;
 
     gridPainter.color = GlobalStyle.scheduleGridColorBox(_context);
@@ -81,6 +82,7 @@ class _GridPainter extends CustomPainter {
     xOffset = lead + (boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2) / 2;
     while (xOffset < end) {
       DateTime day = DataUtils.addDays(GlobalContext.fromDateWindow, dayOffset);
+      // print("${GlobalContext.fromDateWindow} $day $dayOffset $_pageOffset");
       textPainter.text = TextSpan(
         text: DataUtils.dateTime2Str(day, style: dateStyle),
         style: textStyle,
@@ -99,6 +101,17 @@ class _GridPainter extends CustomPainter {
     }
   }
 
+  int _d(dateStyle) {
+    switch (dateStyle) {
+      case DateStyle.weekly:
+        return 7;
+      case DateStyle.weekly2:
+        return 14;
+      default:
+        return 1;
+    }
+  }
+
   void paintWeekly(
       Canvas canvas,
       double lead,
@@ -107,13 +120,15 @@ class _GridPainter extends CustomPainter {
       double boxWidth,
       TextStyle textStyle,
       DateStyle dateStyle) {
-    double xOffset =
-        lead + 7 * boxWidth + 6.5 * GlobalStyle.scheduleGridStrokeWidth;
+    int wDelta = _d(dateStyle);
+    double xOffset = lead +
+        wDelta * boxWidth +
+        (wDelta - 0.5) * GlobalStyle.scheduleGridStrokeWidth;
 
     gridPainter.color = GlobalStyle.scheduleGridColorBox(_context);
     gridPainter.strokeWidth = 1;
     double end = canvasWidth - GlobalStyle.scheduleGridStrokeWidth;
-    double delta = 7 * (boxWidth + GlobalStyle.scheduleGridStrokeWidth);
+    double delta = wDelta * (boxWidth + GlobalStyle.scheduleGridStrokeWidth);
     while (xOffset < end) {
       canvas.drawLine(
           Offset(xOffset, 0), Offset(xOffset, canvasHeight), gridPainter);
@@ -145,7 +160,7 @@ class _GridPainter extends CustomPainter {
     while (xOffset < end) {
       DateTime fromDay =
           DataUtils.addDays(GlobalContext.fromDateWindow, dayOffset);
-      int dOffset = min(dayOffset + 7, maxDay);
+      int dOffset = min(dayOffset + wDelta, maxDay);
       int deltaDay = dOffset - dayOffset;
       DateTime toDay =
           DataUtils.addDays(GlobalContext.fromDateWindow, dOffset - 1);
@@ -155,7 +170,7 @@ class _GridPainter extends CustomPainter {
 
       textPainter.text = TextSpan(
         text: DataUtils.week2Str(fromDay, toDay,
-            style: deltaDay == 7 ? weekStyle : WeekStyle.partial),
+            style: deltaDay == wDelta ? weekStyle : WeekStyle.partial),
         style: textStyle,
       );
 
@@ -163,19 +178,21 @@ class _GridPainter extends CustomPainter {
         minWidth: 0,
         maxWidth: deltaDay * boxWidth,
       );
-      if (deltaDay == 7) {
+      if (deltaDay == wDelta) {
         final offset = Offset(xOffset - textPainter.width / 2,
             yCenter - textPainter.height / 1.75);
         textPainter.paint(canvas, offset);
       } else if (deltaDay >= 4) {
         final offset = Offset(
-            xOffset - (7 - deltaDay) * boxWidth / 2 - textPainter.width / 2,
+            xOffset -
+                (wDelta - deltaDay) * boxWidth / 2 -
+                textPainter.width / 2,
             yCenter - textPainter.height / 1.75);
         textPainter.paint(canvas, offset);
       }
 
       xOffset += delta;
-      dayOffset += 7;
+      dayOffset += wDelta;
     }
   }
 
@@ -209,7 +226,8 @@ class _GridPainter extends CustomPainter {
 
     // =========================================================================
 
-    if (dateStyle != DateStyle.weekly) {
+    if (ccsbx > 8 * 7) dateStyle = DateStyle.weekly2;
+    if (dateStyle != DateStyle.weekly && dateStyle != DateStyle.weekly2) {
       paintDaily(
           canvas, lead, width, size.height, boxWidth, textStyle, dateStyle);
     } else {

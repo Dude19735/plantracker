@@ -20,12 +20,12 @@ class WorkSchedule extends StatelessWidget {
 
   WorkSchedule(this._metrics, this._splitController);
 
+  Widget innerViewBuilder(int dayOffset) {
+    return WorkScheduleInnerView(dayOffset);
+  }
+
   @override
   Widget build(BuildContext context) {
-    Widget innerViewBuilder(int dayOffset) {
-      return WorkScheduleInnerView(dayOffset);
-    }
-
     Debugger.workSchedule(" ========> rebuild work schedule");
     var view = Column(
       children: [
