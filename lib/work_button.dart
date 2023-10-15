@@ -41,6 +41,8 @@ class _WorkButton extends State<WorkButton> {
                     margin: EdgeInsets.all(0.0),
                     padding: EdgeInsets.all(0.0),
                     borderRadius: GlobalStyle.clockBarBoxRadius,
+                    borderColor:
+                        GlobalStyle.clockBarTogglerButtonOutline(context),
                     shadow: false,
                     border: true)),
           ],

@@ -394,6 +394,7 @@ class _TimeTableBox extends State<TimeTableBox>
         margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
         shadow: false,
         border: true,
+        borderColor: GlobalStyle.timeTableSelectedCellBorderColor(context),
         color: GlobalStyle.timeTableCellShadeColorEmpty(
             context, widget._state.state[widget._x][widget._y]));
   }
@@ -499,6 +500,7 @@ class _TimeTableBox extends State<TimeTableBox>
             margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
             shadow: false,
             border: true,
+            borderColor: GlobalStyle.timeTableFullCellBorderColor(context),
             color: GlobalStyle.timeTableCellShadeColorFull(context, subject)));
   }
 
@@ -510,6 +512,7 @@ class _TimeTableBox extends State<TimeTableBox>
             margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
             shadow: false,
             border: true,
+            borderColor: GlobalStyle.timeTableEmptyCellBorderColor(context),
             color: GlobalStyle.timeTableCellShadeColorEmpty(
                 context, widget._state.state[widget._x][widget._y])));
   }

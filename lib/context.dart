@@ -105,6 +105,18 @@ class GlobalStyle {
     return Color.lerp(Colors.brown, Colors.yellowAccent, ratio)!;
   }
 
+  static Color timeTableFullCellBorderColor(BuildContext context) {
+    return Colors.black45;
+  }
+
+  static Color timeTableSelectedCellBorderColor(BuildContext context) {
+    return Colors.black45;
+  }
+
+  static Color timeTableEmptyCellBorderColor(BuildContext context) {
+    return Colors.black12;
+  }
+
   static Color timeTableActiveCellBackground(BuildContext context) =>
       Colors.white;
 
@@ -171,6 +183,8 @@ class GlobalStyle {
   static const double clockBarSubjectSelectorHeight = 45;
   static const double clockBarToTabViewSpacer = 16;
 
+  static Color clockBarTogglerButtonOutline(context) => Colors.black;
+
   // Datepicker box
   static const double dateTimeButtonRadius = 5.0;
 
@@ -181,6 +195,7 @@ class GlobalStyle {
       width,
       height,
       color = Colors.transparent,
+      borderColor = Colors.transparent,
       shadowColor,
       bool shadow = true,
       bool border = false}) {
@@ -191,7 +206,7 @@ class GlobalStyle {
       decoration: BoxDecoration(
         color: color,
         border: border
-            ? Border.all(color: GlobalStyle.scheduleGridColorBox(context))
+            ? Border.all(color: borderColor)
             : Border(
                 left: BorderSide.none,
                 right: BorderSide.none,
