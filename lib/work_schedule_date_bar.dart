@@ -47,7 +47,6 @@ class _GridPainter extends CustomPainter {
       double boxWidth,
       TextStyle textStyle,
       DateStyle dateStyle) {
-    print("${GlobalContext.fromDateWindow} ${GlobalContext.toDateWindow}");
     double xOffset = lead + boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2;
 
     gridPainter.color = GlobalStyle.scheduleGridColorBox(_context);

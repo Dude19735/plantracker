@@ -41,7 +41,7 @@ class GlobalSettings {
   };
 
   // initial pages
-  static const int splitControllerInitPage = 2 << 20;
+  static const int splitControllerInitPage = 2 << 31;
 
   // schedule widget configs
   static const int scheduleHourOffset = 5; // start at 5am

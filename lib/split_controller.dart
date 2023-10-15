@@ -102,14 +102,11 @@ class SplitController {
         clipBehavior: Clip.none,
         physics: PVScrollPhysics(),
         onPageChanged: (page) {
-          print("$location $_currentPage $page");
           if (page != _currentPage) {
             Debugger.splitController(
-                "page changed in builder $_currentPage => $page");
+                "   page changed in builder $_currentPage => $page");
 
-            // bool backwards = page < _currentPage;
             _currentPage = page;
-            // PageScrolledNotification(page, backwards).dispatch(context);
           }
         },
         controller: location == SplitControllerLocation.top
@@ -117,9 +114,8 @@ class SplitController {
             : _bottomPageController,
         pageSnapping: true,
         itemBuilder: (context, index) {
-          print("itembuilder $location $_currentPage $index");
           Debugger.splitController(
-              " =====> Generating page with index $index and current page number $_currentPage and offset ${index - _currentPage}");
+              "      =====> Generating page with index $index and current page number $_currentPage and offset ${index - _currentPage}");
           return Center(
             child: childBuilder(index - _currentPage),
           );

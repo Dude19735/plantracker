@@ -48,7 +48,8 @@ class _TimeTable extends State<TimeTable> {
 
   Widget _getRow(int x, BuildContext context, BoxConstraints constraints,
       int numCells, double height, int subjectId, int pageOffset) {
-    double cellWidth = (constraints.maxWidth) / numCells;
+    double cellWidth =
+        (constraints.maxWidth - GlobalStyle.scheduleTimeBarWidth) / numCells;
     var subject = GlobalContext.data.timeTableData.data[subjectId];
     int dayOffset = DataUtils.page2DayOffset(
         pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
@@ -136,15 +137,22 @@ class _TimeTable extends State<TimeTable> {
               minChildSize: 0.999999,
               builder:
                   (BuildContext context, ScrollController scrollController) {
-                return ListView(
-                    clipBehavior: Clip.none,
-                    padding: EdgeInsets.zero,
-                    controller: cPair.value,
-                    children: [
-                      for (int i = 0; i < data.length; i++)
-                        _rowBuilder(
-                            data, i, context, constraints, numCells, pageOffset)
-                    ]);
+                return Row(
+                  children: [
+                    SizedBox(width: GlobalStyle.scheduleTimeBarWidth),
+                    Expanded(
+                      child: ListView(
+                          clipBehavior: Clip.none,
+                          padding: EdgeInsets.zero,
+                          controller: cPair.value,
+                          children: [
+                            for (int i = 0; i < data.length; i++)
+                              _rowBuilder(data, i, context, constraints,
+                                  numCells, pageOffset)
+                          ]),
+                    ),
+                  ],
+                );
               },
             );
           },
@@ -155,15 +163,8 @@ class _TimeTable extends State<TimeTable> {
     return Padding(
       padding:
           const EdgeInsets.only(right: GlobalStyle.splitterVGrabberSize / 2),
-      child: Row(
-        children: [
-          SizedBox(width: GlobalStyle.scheduleTimeBarWidth),
-          Expanded(
-            child: widget._splitController
-                .widget(context, table, SplitControllerLocation.bottom),
-          ),
-        ],
-      ),
+      child: widget._splitController
+          .widget(context, table, SplitControllerLocation.bottom),
     );
   }
 }
