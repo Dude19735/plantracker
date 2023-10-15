@@ -100,6 +100,7 @@ class _WatchManager extends State<WatchManager>
                 margin: EdgeInsets.all(0.0),
                 padding: EdgeInsets.all(0.0),
                 color: Colors.transparent,
+                borderColor: GlobalStyle.clockBarTogglerButtonOutline(context),
                 shadow: false,
                 border: true),
             _getSeparator(bWidth),

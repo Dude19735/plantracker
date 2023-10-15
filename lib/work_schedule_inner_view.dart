@@ -57,8 +57,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
   }
 
   double _roundToVFrame(double xval) {
-    double xpos = (xval - _sideFrame) -
-        (xval - _sideFrame) %
+    double xpos = (xval - _sideFrame - GlobalStyle.scheduleTimeBarWidth) -
+        (xval - _sideFrame - GlobalStyle.scheduleTimeBarWidth) %
             (GlobalContext.scheduleWindowCell.width +
                 GlobalStyle.scheduleGridStrokeWidth);
 
