@@ -3,6 +3,7 @@ import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/work_schedule_date_bar.dart';
 import 'package:scheduler/work_schedule_time_bar.dart';
+import 'package:scheduler/work_schedule_entry.dart';
 
 class WorkScheduleInnerView extends StatefulWidget {
   final int _pageDaysOffset;
@@ -24,6 +25,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
   bool _animBackwards = false;
   late ScrollController _scrollController;
   bool _verticalDragging = false;
+  List<Widget> _entries = [];
 
   _WorkScheduleInnerView();
 
@@ -112,6 +114,54 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     _animBackwards = false;
   }
 
+  Map<String, double> _getSelectedTime() {
+    double x = GlobalContext.scheduleWindowSelectionBox!.left;
+    double y = GlobalContext.scheduleWindowSelectionBox!.top;
+    double width = GlobalContext.scheduleWindowSelectionBox!.width;
+    double height = GlobalContext.scheduleWindowSelectionBox!.height;
+
+    double secondsFrom = y /
+        (GlobalStyle.scheduleCellHeightPx +
+            GlobalStyle.scheduleGridStrokeWidth) *
+        GlobalSettings.scheduleBoxRangeS;
+
+    double secondsTo = secondsFrom +
+        (height + GlobalStyle.scheduleGridStrokeWidth) /
+            (GlobalStyle.scheduleCellHeightPx +
+                GlobalStyle.scheduleGridStrokeWidth) *
+            GlobalSettings.scheduleBoxRangeS;
+
+    int window = DataUtils.getWindowSize(
+        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+    print("$x ${x / window} $window");
+
+    return {
+      "x": x + GlobalStyle.summaryCardMargin,
+      "y": y + GlobalStyle.summaryCardMargin,
+      "width": width,
+      "height": height,
+      "secondsFrom": secondsFrom,
+      "secondsTo": secondsTo
+    };
+  }
+
+  Map<String, double> _getXYCoordsFromTime(
+      double fromSeconds, double toSeconds, int date) {
+    return {};
+  }
+
+  Widget? _getEntry() {
+    if (GlobalContext.scheduleWindowSelectionBox == null) return null;
+    if (GlobalContext.scheduleWindowSelectionBox!.height < 0) return null;
+
+    var t = _getSelectedTime();
+    print(t);
+    print(t["secondsFrom"]! / 60);
+    return Transform(
+        transform: Matrix4.translationValues(t["x"]!, t["y"]!, 0),
+        child: WorkScheduleEntry(t["width"]!, t["height"]!));
+  }
+
   bool _resetConditions(double dy) {
     bool reset = dy < 0 &&
         (GlobalContext.scheduleWindowSelectionBox == null ||
@@ -183,6 +233,18 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
             initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
             keepScrollOffset: true);
 
+        var innerView = Stack(children: [
+          Container(
+            margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
+            width: constraints.maxWidth -
+                GlobalStyle.scheduleTimeBarWidth -
+                2 * GlobalStyle.summaryCardMargin,
+            height: GlobalContext.scheduleWindowInlineRect.height,
+            child: CustomPaint(painter: _GridPainter(context)),
+          ),
+          for (var w in _entries) w
+        ]);
+
         var view = GestureDetector(
             onVerticalDragUpdate: (details) {
               double localDy = details.localPosition.dy;
@@ -210,6 +272,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
             onVerticalDragEnd: (details) {
               setState(() {
                 _verticalDragging = false;
+                var entry = _getEntry();
+                if (entry != null) _entries.add(entry);
                 _reset();
               });
             },
@@ -234,15 +298,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
                     return Row(
                       children: [
                         WorkScheduleTimeBar(),
-                        Container(
-                            margin:
-                                EdgeInsets.all(GlobalStyle.summaryCardMargin),
-                            width: constraints.maxWidth -
-                                GlobalStyle.scheduleTimeBarWidth -
-                                2 * GlobalStyle.summaryCardMargin,
-                            height:
-                                GlobalContext.scheduleWindowInlineRect.height,
-                            child: CustomPaint(painter: _GridPainter(context))),
+                        innerView,
                       ],
                     );
                   },
