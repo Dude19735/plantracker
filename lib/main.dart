@@ -55,37 +55,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => GlobalState(),
-      child: MaterialApp(
-        title: 'Namer App',
-        localizationsDelegates: [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: [
-          Locale('en', 'GB'),
-          Locale('de', 'CH'),
-          Locale('fr', 'CH'),
-        ],
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.purple, brightness: Brightness.light),
-        ),
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.purple, brightness: Brightness.dark),
-        ),
-        themeMode: ThemeMode.system,
-        home: (Platform.isLinux
-            ? ClipRRect(
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12)),
-                child: MyHomePage())
-            : MyHomePage()),
-      ),
+      child: MyHomePage(),
     );
   }
 }
@@ -103,6 +73,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   final JoinedScroller _joinedScroller = JoinedScroller();
   ScrollDirection _direction = ScrollDirection.idle;
   double _pixels = -1;
+  late bool _darkTheme;
+
+  _MyHomePageState() {
+    _darkTheme = false;
+  }
 
   @override
   void initState() {
@@ -285,7 +260,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       child: _crossSplit,
     );
 
-    return Scaffold(
+    var scaffold = Scaffold(
       // As per https://github.com/foamify/rounded_corner_example
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
@@ -375,15 +350,31 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       children: [
                         SizedBox(
                             width: GlobalStyle.clockBarWidth -
-                                2 * GlobalStyle.clockBarPadding,
+                                GlobalStyle.clockBarPadding / 2,
                             height: GlobalStyle.appBarHeight,
-                            child: Padding(
-                              padding: const EdgeInsets.all(
-                                  GlobalStyle.clockBarPadding),
-                              child: SvgPicture.asset(
-                                "lib/img/title_clock.svg",
-                                alignment: Alignment.centerLeft,
-                              ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.sunny,
+                                  color: Colors.yellow,
+                                ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.only(top: 4, bottom: 4),
+                                  child: Switch(
+                                    value: _darkTheme,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _darkTheme = !_darkTheme;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.nightlight,
+                                  color: Colors.blue,
+                                ),
+                              ],
                             )),
                         Expanded(
                             child: WatchManager(GlobalStyle.clockBarWidth -
@@ -414,6 +405,37 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           );
         },
       ),
+    );
+
+    return MaterialApp(
+      title: 'Namer App',
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('en', 'GB'),
+        Locale('de', 'CH'),
+        Locale('fr', 'CH'),
+      ],
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.purple, brightness: Brightness.light),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.purple, brightness: Brightness.dark),
+      ),
+      themeMode: _darkTheme ? ThemeMode.dark : ThemeMode.light,
+      home: (Platform.isLinux
+          ? ClipRRect(
+              borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+              child: scaffold)
+          : scaffold),
     );
   }
 }
