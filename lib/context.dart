@@ -8,7 +8,8 @@ import 'package:scheduler/time_table_box.dart';
 class GlobalContext {
   static String currentLocale = 'en-GB';
 
-  static DateTime fromDateWindow = DataUtils.getLastMonday(DataUtils.now());
+  static DateTime fromDateWindow =
+      DataUtils.getLastMonday(DataUtils.now().toUtc());
   static DateTime toDateWindow =
       DataUtils.addDays(fromDateWindow, GlobalSettings.initDateWindowSize - 1);
 
@@ -272,7 +273,7 @@ class Helpers {
 }
 
 class Debugger {
-  static const bool _dataDebug = false;
+  static const bool _dataDebug = true;
   static const bool _mainDebug = false;
   static const bool _timeTableDebug = false;
   static const bool _timeTableBoxDebug = false;

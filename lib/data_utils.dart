@@ -156,7 +156,11 @@ class DataUtils {
 
   static DateTime addDays(DateTime from, int days) {
     var diff = from.timeZoneOffset.inHours;
-    return from.toUtc().add(Duration(days: days)).add(Duration(hours: diff));
+    return from
+        .toUtc()
+        .add(Duration(days: days))
+        .add(Duration(hours: diff))
+        .toLocal();
   }
 
   static DateTime subtractDays(DateTime from, int days) {
@@ -164,7 +168,12 @@ class DataUtils {
     return from
         .toUtc()
         .subtract(Duration(days: days))
-        .add(Duration(hours: diff));
+        .add(Duration(hours: diff))
+        .toLocal();
+  }
+
+  static int dateDifferenceInDays(DateTime date1, DateTime date2) {
+    return date1.toUtc().difference(date2.toUtc()).inDays;
   }
 
   static Map<String, DateTime> getNextPage(DateTime from, DateTime to) {
@@ -201,7 +210,7 @@ class DataUtils {
   }
 
   static DateTime getLastMonday(DateTime date) {
-    return DataUtils.subtractDays(date, date.weekday - 1);
+    return DataUtils.subtractDays(date, date.weekday);
   }
 
   static DateTime getNextSunday(DateTime date) {
