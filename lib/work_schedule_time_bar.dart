@@ -76,7 +76,7 @@ class _GridPainter extends CustomPainter {
     double end = GlobalContext.scheduleWindowInlineRect.height;
     double yOffset = 0;
 
-    int t = 0;
+    int t = GlobalSettings.scheduleHourOffset;
     while (yOffset < end) {
       textPainter.text = TextSpan(
         text: t.toString().padLeft(2, "0"),
@@ -92,6 +92,7 @@ class _GridPainter extends CustomPainter {
 
       yOffset += cellHeight;
       t++;
+      t %= 24;
     }
   }
 

@@ -167,6 +167,7 @@ class Data<D> {
       List<SchedulePlanData> d =
           json.map((item) => SchedulePlanData(item)).toList();
       data = groupBy(d, (SchedulePlanData elem) => elem.date) as D;
+      // data = json.map((item) => SchedulePlanData(item)).toList() as D;
     } else if (D == TSubjectData) {
       List<SubjectData> temp = json.map((item) => SubjectData(item)).toList();
       var temp2 = groupBy(temp, (SubjectData elem) => elem.subjectId);

@@ -31,6 +31,16 @@ class DataValues {
     "6_Su"
   ];
 
+  static const List<String> subjectAcronym = [
+    "0_Mo_a",
+    "1_Tu_a",
+    "2_We_a",
+    "3_Th_a",
+    "4_Fr_a",
+    "5_Sa_a",
+    "6_Su_a"
+  ];
+
   static const double _maxPlanedTime = 5.0;
   static const List<double> planedTime = [
     _maxPlanedTime,

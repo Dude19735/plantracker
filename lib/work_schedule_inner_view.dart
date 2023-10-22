@@ -13,6 +13,23 @@ class WorkScheduleInnerView extends StatefulWidget {
   State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();
 }
 
+class _SelectedBox {
+  final double x;
+  final double y;
+  final double width;
+  final double height;
+  final double secondsFrom;
+  final double secondsTo;
+  final int date;
+  _SelectedBox(this.x, this.y, this.width, this.height, this.secondsFrom,
+      this.secondsTo, this.date);
+
+  @override
+  String toString() {
+    return "\nx: $x\ny: $y\nwidth: $width\nheight: $height\nsecondsFrom: $secondsFrom\nsecondsTo: $secondsTo\ndate: $date\n";
+  }
+}
+
 class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     with SingleTickerProviderStateMixin {
   final double _topFrame = 0;
@@ -25,7 +42,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
   bool _animBackwards = false;
   late ScrollController _scrollController;
   bool _verticalDragging = false;
-  List<Widget> _entries = [];
+  WorkScheduleEntry? _currentEntry;
 
   _WorkScheduleInnerView();
 
@@ -114,7 +131,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     _animBackwards = false;
   }
 
-  Map<String, double> _getSelectedTime() {
+  _SelectedBox _getSelectedTime() {
     double x = GlobalContext.scheduleWindowSelectionBox!.left;
     double y = GlobalContext.scheduleWindowSelectionBox!.top;
     double width = GlobalContext.scheduleWindowSelectionBox!.width;
@@ -125,41 +142,80 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
             GlobalStyle.scheduleGridStrokeWidth) *
         GlobalSettings.scheduleBoxRangeS;
 
+    double ch =
+        GlobalStyle.scheduleCellHeightPx + GlobalStyle.scheduleGridStrokeWidth;
+    double rHeight =
+        ch * (height / ch).ceil() - GlobalStyle.scheduleGridStrokeWidth;
+
     double secondsTo = secondsFrom +
-        (height + GlobalStyle.scheduleGridStrokeWidth) /
+        (rHeight + GlobalStyle.scheduleGridStrokeWidth) /
             (GlobalStyle.scheduleCellHeightPx +
                 GlobalStyle.scheduleGridStrokeWidth) *
             GlobalSettings.scheduleBoxRangeS;
 
-    int window = DataUtils.getWindowSize(
-        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
-    print("$x ${x / window} $window");
+    int yearOffset =
+        (x / (width + GlobalStyle.scheduleGridStrokeWidth)).round();
+    DateTime year = DataUtils.addDays(GlobalContext.fromDateWindow, yearOffset);
 
-    return {
-      "x": x + GlobalStyle.summaryCardMargin,
-      "y": y + GlobalStyle.summaryCardMargin,
-      "width": width,
-      "height": height,
-      "secondsFrom": secondsFrom,
-      "secondsTo": secondsTo
-    };
+    return _SelectedBox(
+        x + GlobalStyle.summaryCardMargin,
+        y + GlobalStyle.summaryCardMargin,
+        width,
+        rHeight,
+        secondsFrom,
+        secondsTo,
+        DataUtils.dateTime2Int(year));
   }
 
-  Map<String, double> _getXYCoordsFromTime(
-      double fromSeconds, double toSeconds, int date) {
-    return {};
+  List<WorkScheduleEntry> _getEntries(BoxConstraints constraints) {
+    var from = GlobalContext.fromDateWindow;
+    var to = GlobalContext.toDateWindow;
+
+    double sm = GlobalStyle.summaryCardMargin;
+    int ws = DataUtils.getWindowSize(from, to);
+    double width =
+        (constraints.maxWidth - GlobalStyle.scheduleTimeBarWidth - 2 * sm) / ws;
+
+    List<WorkScheduleEntry> res = [];
+    for (var d = from; d.compareTo(to) <= 0; d = DataUtils.addDays(d, 1)) {
+      int key = DataUtils.dateTime2Int(d);
+      var week = GlobalContext.data.schedulePlanData.data[key];
+
+      if (week != null) {
+        for (var e in week) {
+          double y = e.fromTime *
+                  (GlobalStyle.scheduleCellHeightPx +
+                      GlobalStyle.scheduleGridStrokeWidth) /
+                  GlobalSettings.scheduleBoxRangeS +
+              sm;
+
+          double height = (e.toTime - e.fromTime) *
+                  (GlobalStyle.scheduleCellHeightPx +
+                      GlobalStyle.scheduleGridStrokeWidth) /
+                  GlobalSettings.scheduleBoxRangeS -
+              GlobalStyle.scheduleGridStrokeWidth;
+
+          var date = DataUtils.int2DateTime(e.date);
+          int dayOffset = DataUtils.dateDifferenceInDays(from, date).abs();
+          double x = dayOffset * width + sm;
+          res.add(WorkScheduleEntry(x, y, width, height, e));
+          print(
+              "$dayOffset $x $y $width $height ${e.subjectId} ${e.date} $date");
+        }
+      }
+    }
+
+    return res;
   }
 
-  Widget? _getEntry() {
+  WorkScheduleEntry? _getEntry() {
     if (GlobalContext.scheduleWindowSelectionBox == null) return null;
     if (GlobalContext.scheduleWindowSelectionBox!.height < 0) return null;
 
     var t = _getSelectedTime();
-    print(t);
-    print(t["secondsFrom"]! / 60);
-    return Transform(
-        transform: Matrix4.translationValues(t["x"]!, t["y"]!, 0),
-        child: WorkScheduleEntry(t["width"]!, t["height"]!));
+    print(t.toString());
+    // print(t["secondsFrom"]! / 60);
+    return WorkScheduleEntry(t.x, t.y, t.width, t.height, null);
   }
 
   bool _resetConditions(double dy) {
@@ -242,7 +298,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
             height: GlobalContext.scheduleWindowInlineRect.height,
             child: CustomPaint(painter: _GridPainter(context)),
           ),
-          for (var w in _entries) w
+          if (_currentEntry != null) _currentEntry!,
+          for (var e in _getEntries(constraints)) e
         ]);
 
         var view = GestureDetector(
@@ -272,8 +329,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
             onVerticalDragEnd: (details) {
               setState(() {
                 _verticalDragging = false;
-                var entry = _getEntry();
-                if (entry != null) _entries.add(entry);
+                _currentEntry = _getEntry();
+                // if (entry != null) _entries.add(entry);
                 _reset();
               });
             },
