@@ -6,6 +6,7 @@ import 'package:scheduler/split.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/time_table_box.dart';
 import 'package:scheduler/joined_scroller.dart';
+import 'package:scheduler/date.dart';
 
 class TimeTable extends StatefulWidget {
   final SplitController _splitController;
@@ -28,8 +29,8 @@ class _TimeTable extends State<TimeTable> {
   late TimeTableCellStateEncapsulation _edit;
 
   int _getColDate(int dayOffset) {
-    return DataUtils.dateTime2Int(
-        DataUtils.addDays(GlobalContext.fromDateWindow, dayOffset));
+    return 
+        GlobalContext.fromDateWindow.addDays(dayOffset).toInt();
   }
 
   Widget _getRowBox(
@@ -118,12 +119,10 @@ class _TimeTable extends State<TimeTable> {
                 " ========> rebuild time table $pageOffset  from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
 
             int sRow = GlobalContext.data.summaryData.data.length;
-            int sCol = DataUtils.getWindowSize(
-                GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+            int sCol = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
             _edit = TimeTableCellStateEncapsulation(sRow, sCol);
 
-            int numCells = DataUtils.getWindowSize(
-                GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+            int numCells = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
 
             var data = GlobalContext.data.summaryData.data;
 

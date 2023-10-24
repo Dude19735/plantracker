@@ -20,6 +20,7 @@ import 'package:scheduler/work_schedule.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/joined_scroller.dart';
 import 'package:scheduler/data_utils.dart';
+import 'package:scheduler/date.dart';
 
 Future<void> main() async {
   const String title = "Just something...";
@@ -121,8 +122,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       } else if (notification.direction == ScrollDirection.idle) {
         Debugger.main("Back to idle...");
 
-        DateTime from = GlobalContext.fromDateWindow;
-        DateTime to = GlobalContext.toDateWindow;
+        Date from = GlobalContext.fromDateWindow;
+        Date to = GlobalContext.toDateWindow;
         _direction = notification.direction;
 
         if (_pixels < notification.metrics.pixels) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
+import 'package:scheduler/date.dart';
 import 'dart:math';
 
 class WorkScheduleDateBar extends StatelessWidget {
@@ -80,10 +81,10 @@ class _GridPainter extends CustomPainter {
     end = canvasWidth - boxWidth / 4;
     xOffset = lead + (boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2) / 2;
     while (xOffset < end) {
-      DateTime day = DataUtils.addDays(GlobalContext.fromDateWindow, dayOffset);
+      Date day = GlobalContext.fromDateWindow.addDays(dayOffset);
       // print("${GlobalContext.fromDateWindow} $day $dayOffset $_pageOffset");
       textPainter.text = TextSpan(
-        text: DataUtils.dateTime2Str(day, style: dateStyle),
+        text: Date.Date2Str(day, style: dateStyle),
         style: textStyle,
       );
 
@@ -154,21 +155,18 @@ class _GridPainter extends CustomPainter {
     const double yCenter = GlobalStyle.scheduleDateBarHeight / 2;
     xOffset = lead;
     xOffset += delta / 2;
-    int maxDay = DataUtils.getWindowSize(
-        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+    int maxDay = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
     while (xOffset < end) {
-      DateTime fromDay =
-          DataUtils.addDays(GlobalContext.fromDateWindow, dayOffset);
+      Date fromDay = GlobalContext.fromDateWindow.addDays(dayOffset);
       int dOffset = min(dayOffset + wDelta, maxDay);
       int deltaDay = dOffset - dayOffset;
-      DateTime toDay =
-          DataUtils.addDays(GlobalContext.fromDateWindow, dOffset - 1);
+      Date toDay = GlobalContext.fromDateWindow.addDays(dOffset - 1);
 
       WeekStyle weekStyle =
-          DataUtils.getWeekStyle(deltaDay * boxWidth, textStyle);
+          Date.getWeekStyle(deltaDay * boxWidth, textStyle);
 
       textPainter.text = TextSpan(
-        text: DataUtils.week2Str(fromDay, toDay,
+        text: Date.week2Str(fromDay, toDay,
             style: deltaDay == wDelta ? weekStyle : WeekStyle.partial),
         style: textStyle,
       );
@@ -204,19 +202,18 @@ class _GridPainter extends CustomPainter {
 
     double lead = GlobalStyle.scheduleTimeBarWidth;
     double width = size.width;
-    int ccsbx = DataUtils.getWindowSize(
-        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+    int ccsbx = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
     double boxWidth =
         (width - lead - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
             ccsbx;
 
-    var dateStyle = DataUtils.getDateStyle(boxWidth, textStyle);
+    var dateStyle = Date.getDateStyle(boxWidth, textStyle);
     if (dateStyle != DateStyle.full) {
       textStyle = TextStyle(
         color: Colors.black,
         fontSize: 14,
       );
-      dateStyle = DataUtils.getDateStyle(boxWidth, textStyle);
+      dateStyle = Date.getDateStyle(boxWidth, textStyle);
     }
 
     canvas.drawRect(Rect.fromLTWH(0, 0, width, size.height), backgroundPainter);
