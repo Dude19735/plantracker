@@ -5,10 +5,11 @@ import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split.dart';
 import 'package:scheduler/work_schedule_inner_view.dart';
 import 'package:scheduler/split_controller.dart';
+import 'package:scheduler/date.dart';
 
 class DateChangedNotification extends Notification {
-  final DateTime from;
-  final DateTime to;
+  final Date from;
+  final Date to;
   DateChangedNotification(this.from, this.to);
 }
 
@@ -49,8 +50,7 @@ class WorkSchedule extends StatelessWidget {
               IconButton(
                   onPressed: () {
                     DateChangedNotification(
-                            DataUtils.subtractDays(
-                                GlobalContext.fromDateWindow, 1),
+                            GlobalContext.fromDateWindow.subtractDays(1),
                             GlobalContext.toDateWindow)
                         .dispatch(context);
                   },
@@ -58,22 +58,22 @@ class WorkSchedule extends StatelessWidget {
               SizedBox(
                 width: 150,
                 child: ElevatedButton.icon(
-                    label: Text(DataUtils.getFormatedDateTime(
-                        GlobalContext.fromDateWindow)),
+                    label: Text(
+                        GlobalContext.fromDateWindow.toFormatedString()),
                     style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
                           context: context,
-                          initialDate: GlobalContext.fromDateWindow,
+                          initialDate: GlobalContext.fromDateWindow.toDateTime(),
                           firstDate: GlobalSettings.earliestDate,
-                          lastDate: GlobalContext.toDateWindow,
+                          lastDate: GlobalContext.toDateWindow.toDateTime(),
                           locale: GlobalSettings
                               .locals[GlobalContext.currentLocale]);
 
                       res.then((value) {
                         if (value != null) {
                           DateChangedNotification(
-                                  value, GlobalContext.toDateWindow)
+                                  Date.fromDateTime(value), GlobalContext.toDateWindow)
                               .dispatch(context);
                         }
                       });
@@ -86,8 +86,7 @@ class WorkSchedule extends StatelessWidget {
                             .compareTo(GlobalContext.toDateWindow) <
                         0) {
                       DateChangedNotification(
-                              DataUtils.addDays(
-                                  GlobalContext.fromDateWindow, 1),
+                              GlobalContext.fromDateWindow.addDays(1),
                               GlobalContext.toDateWindow)
                           .dispatch(context);
                     }
@@ -106,16 +105,16 @@ class WorkSchedule extends StatelessWidget {
                   Future<DateTimeRange?> res = showDateRangePicker(
                       context: context,
                       initialDateRange: DateTimeRange(
-                          start: GlobalContext.fromDateWindow,
-                          end: GlobalContext.toDateWindow),
-                      firstDate: GlobalContext.fromDateWindow,
+                          start: GlobalContext.fromDateWindow.toDateTime(),
+                          end: GlobalContext.toDateWindow.toDateTime()),
+                      firstDate: GlobalContext.fromDateWindow.toDateTime(),
                       lastDate: GlobalSettings.latestDate,
                       locale:
                           GlobalSettings.locals[GlobalContext.currentLocale]);
 
                   res.then((value) {
                     if (value != null) {
-                      DateChangedNotification(value.start, value.end)
+                      DateChangedNotification(Date.fromDateTime(value.start), Date.fromDateTime(value.end))
                           .dispatch(context);
                     }
                   });
@@ -131,8 +130,7 @@ class WorkSchedule extends StatelessWidget {
                       DateChangedNotification(
                               GlobalContext.fromDateWindow,
                               GlobalContext.toDateWindow =
-                                  DataUtils.subtractDays(
-                                      GlobalContext.toDateWindow, 1))
+                                  GlobalContext.toDateWindow.subtractDays(1))
                           .dispatch(context);
                     }
                   },
@@ -147,14 +145,13 @@ class WorkSchedule extends StatelessWidget {
               SizedBox(
                 width: 150,
                 child: ElevatedButton.icon(
-                    label: Text(DataUtils.getFormatedDateTime(
-                        GlobalContext.toDateWindow)),
+                    label: Text(GlobalContext.toDateWindow.toFormatedString()),
                     style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
                           context: context,
-                          initialDate: GlobalContext.toDateWindow,
-                          firstDate: GlobalContext.fromDateWindow,
+                          initialDate: GlobalContext.toDateWindow.toDateTime(),
+                          firstDate: GlobalContext.fromDateWindow.toDateTime(),
                           lastDate: GlobalSettings.latestDate,
                           locale: GlobalSettings
                               .locals[GlobalContext.currentLocale]);
@@ -162,7 +159,7 @@ class WorkSchedule extends StatelessWidget {
                       res.then((value) {
                         if (value != null) {
                           DateChangedNotification(
-                                  GlobalContext.fromDateWindow, value)
+                                  GlobalContext.fromDateWindow, Date.fromDateTime(value))
                               .dispatch(context);
                         }
                       });
@@ -173,8 +170,7 @@ class WorkSchedule extends StatelessWidget {
                   onPressed: () {
                     DateChangedNotification(
                             GlobalContext.fromDateWindow,
-                            GlobalContext.toDateWindow = DataUtils.addDays(
-                                GlobalContext.toDateWindow, 1))
+                            GlobalContext.toDateWindow = GlobalContext.toDateWindow.addDays(1))
                         .dispatch(context);
                   },
                   icon: Icon(Icons.add)),

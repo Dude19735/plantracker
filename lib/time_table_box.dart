@@ -7,6 +7,7 @@ import 'package:scheduler/data_columns.dart';
 import 'dart:math';
 
 import 'package:scheduler/data_utils.dart';
+import 'package:scheduler/date.dart';
 
 class ScrollAndFocusNotification extends Notification {
   final void Function() doAfter;
@@ -402,7 +403,7 @@ class _TimeTableBox extends State<TimeTableBox>
   Widget _getFullContainer(BuildContext context, TimeTableData subject) {
     var outerBox = LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-      var date = DataUtils.int2DateTime(subject.date);
+      var date = Date.fromInt(subject.date);
       Widget box;
       double aspect = constraints.maxWidth / constraints.maxHeight;
       if (aspect >= 1.0) {

@@ -7,6 +7,7 @@ import 'package:scheduler/data_utils.dart';
 import 'package:collection/collection.dart';
 import 'dart:collection';
 import 'package:flutter/rendering.dart';
+import 'package:scheduler/date.dart';
 
 class DataChangedNotification extends Notification {}
 
@@ -189,8 +190,8 @@ class Data<D> {
 
 class _GlobalDataItem {
   final void Function() doAfter;
-  final DateTime from;
-  final DateTime to;
+  final Date from;
+  final Date to;
   final ScrollDirection direction;
   _GlobalDataItem(this.doAfter, this.from, this.to, this.direction);
 }
@@ -203,10 +204,10 @@ class GlobalData {
   late Data<TSubjectData> subjectData;
   Queue<MapEntry<int, _GlobalDataItem>> _queue = Queue();
   int _val = 0;
-  DateTime _initTime = DateTime.now().toUtc();
+  Date _initTime = Date.today();
 
-  late DateTime _fromDate;
-  late DateTime _toDate;
+  late Date _fromDate;
+  late Date _toDate;
 
   GlobalData() {
     timeTableData = Data();
@@ -237,9 +238,9 @@ class GlobalData {
     }
   }
 
-  void summaryFT(DateTime from, DateTime to) {
-    int fromDate = DataUtils.dateTime2Int(from);
-    int toDate = DataUtils.dateTime2Int(to);
+  void summaryFT(Date from, Date to) {
+    int fromDate = from.toInt();
+    int toDate = to.toInt();
     summaryData.data.clear();
     for (var subjectId in timeTableData.data.keys) {
       double planed = 0;
@@ -273,12 +274,12 @@ class GlobalData {
     }
   }
 
-  void _subjects(DateTime fromDate, DateTime toDate) {
+  void _subjects(Date fromDate, Date toDate) {
     subjectData = Data<TSubjectData>.fromJsonStr(
         DataGen.testDataSubjects(fromDate, toDate));
   }
 
-  void _load(DateTime fromDate, DateTime toDate) {
+  void _load(Date fromDate, Date toDate) {
     var ttimeTableData = Data<TTimeTableData>.fromJsonStr(
         DataGen.testDataTimeTableView(fromDate, toDate));
 
@@ -295,29 +296,29 @@ class GlobalData {
     schedulePlanData.data.addAll(tschedulePlanData.data);
   }
 
-  void _remove(DateTime day) {
-    timeTableData.data.remove(DataUtils.dateTime2Int(day));
-    schedulePlanData.data.remove(DataUtils.dateTime2Int(day));
+  void _remove(Date day) {
+    timeTableData.data.remove(day.toInt());
+    schedulePlanData.data.remove(day.toInt());
   }
 
   void _delayedLoad(
-      int val, DateTime from, DateTime to, ScrollDirection direction) {
+      int val, Date from, Date to, ScrollDirection direction) {
     var adj = DataUtils.getAdjacentTimePeriods(from, to, direction);
     Debugger.data("Delayed load $val from $from to $to with $direction");
     var newFrom = adj["prev_from"];
     if (newFrom.compareTo(_fromDate) < 0) {
       // add new data on this side
       Debugger.data("prev load $newFrom to $_fromDate");
-      _load(newFrom, DataUtils.subtractDays(_fromDate, 1));
+      _load(newFrom, _fromDate.subtractDays(1));
       _fromDate = newFrom;
     } else if (newFrom.compareTo(_fromDate) > 0) {
       // remove unused data on this side
       // if we get to an idle state
       // avoid rapid database calls on wobbeling
       if (direction == ScrollDirection.idle) {
-        for (DateTime d = _fromDate;
+        for (Date d = _fromDate;
             d.compareTo(newFrom) < 0;
-            d = DataUtils.addDays(d, 1)) {
+            d = d.addDays(1)) {
           Debugger.data("prev remove $d");
           _remove(d);
         }
@@ -331,9 +332,9 @@ class GlobalData {
         // remove unused data on this side
         // if we get to an idle state
         // avoid rapid database calls on wobbeling
-        for (DateTime d = DataUtils.addDays(newTo, 1);
+        for (Date d = newTo.addDays(1);
             d.compareTo(_toDate) <= 0;
-            d = DataUtils.addDays(d, 1)) {
+            d = d.addDays(1)) {
           Debugger.data("next remove $d");
           _remove(d);
         }
@@ -342,7 +343,7 @@ class GlobalData {
     } else if (newTo.compareTo(_toDate) > 0) {
       // add new data on this side
       Debugger.data("next load $_toDate to $newTo");
-      _load(DataUtils.addDays(_toDate, 1), newTo);
+      _load(_toDate.addDays(1), newTo);
       _toDate = newTo;
     }
 
@@ -353,7 +354,7 @@ class GlobalData {
       ###################################################""");
   }
 
-  void loadFT(int waitMS, ScrollDirection direction, DateTime from, DateTime to,
+  void loadFT(int waitMS, ScrollDirection direction, Date from, Date to,
       void Function() doAfter) {
     _val = _token(from, to);
     _queue.add(MapEntry(_val, _GlobalDataItem(doAfter, from, to, direction)));
@@ -372,10 +373,10 @@ class GlobalData {
     });
   }
 
-  int _token(DateTime from, DateTime to) {
+  int _token(Date from, Date to) {
     return Object.hash(
-        DateTime.now().toUtc().difference(_initTime).inMicroseconds,
-        DataUtils.dateTime2Int(from),
-        DataUtils.dateTime2Int(to));
+        DateTime.now().toUtc().difference(DateTime(_initTime.year(), _initTime.month(), _initTime.day())).inMicroseconds,
+        from.toInt(),
+        to.toInt());
   }
 }

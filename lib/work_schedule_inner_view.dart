@@ -4,6 +4,7 @@ import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/work_schedule_date_bar.dart';
 import 'package:scheduler/work_schedule_time_bar.dart';
 import 'package:scheduler/work_schedule_entry.dart';
+import 'package:scheduler/date.dart';
 
 class WorkScheduleInnerView extends StatefulWidget {
   final int _pageDaysOffset;
@@ -155,7 +156,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
 
     int yearOffset =
         (x / (width + GlobalStyle.scheduleGridStrokeWidth)).round();
-    DateTime year = DataUtils.addDays(GlobalContext.fromDateWindow, yearOffset);
+    Date year = GlobalContext.fromDateWindow.addDays(yearOffset);
 
     return _SelectedBox(
         x + GlobalStyle.summaryCardMargin,
@@ -164,7 +165,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
         rHeight,
         secondsFrom,
         secondsTo,
-        DataUtils.dateTime2Int(year));
+        year.toInt());
   }
 
   List<WorkScheduleEntry> _getEntries(BoxConstraints constraints) {
@@ -172,13 +173,13 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     var to = GlobalContext.toDateWindow;
 
     double sm = GlobalStyle.summaryCardMargin;
-    int ws = DataUtils.getWindowSize(from, to);
+    int ws = from.absWindowSizeWith(to);
     double width =
         (constraints.maxWidth - GlobalStyle.scheduleTimeBarWidth - 2 * sm) / ws;
 
     List<WorkScheduleEntry> res = [];
-    for (var d = from; d.compareTo(to) <= 0; d = DataUtils.addDays(d, 1)) {
-      int key = DataUtils.dateTime2Int(d);
+    for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
+      int key = d.toInt();
       var week = GlobalContext.data.schedulePlanData.data[key];
 
       if (week != null) {
@@ -195,8 +196,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
                   GlobalSettings.scheduleBoxRangeS -
               GlobalStyle.scheduleGridStrokeWidth;
 
-          var date = DataUtils.int2DateTime(e.date);
-          int dayOffset = DataUtils.dateDifferenceInDays(from, date).abs();
+          var date = Date.fromInt(e.date);
+          int dayOffset = from.absDiff(date);
           double x = dayOffset * width + sm;
           res.add(WorkScheduleEntry(x, y, width, height, e));
           print(
@@ -400,8 +401,7 @@ class _GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    int ccsbx = DataUtils.getWindowSize(
-        GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+    int ccsbx = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
 
     double boxWidth =
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /

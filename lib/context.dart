@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/data_utils.dart';
+import 'package:scheduler/date.dart';
 import 'dart:ui';
 
 import 'package:scheduler/time_table_box.dart';
@@ -8,10 +9,8 @@ import 'package:scheduler/time_table_box.dart';
 class GlobalContext {
   static String currentLocale = 'en-GB';
 
-  static DateTime fromDateWindow =
-      DataUtils.getLastMonday(DataUtils.now().toUtc());
-  static DateTime toDateWindow =
-      DataUtils.addDays(fromDateWindow, GlobalSettings.initDateWindowSize - 1);
+  static Date fromDateWindow = Date.lastMonday();
+  static Date toDateWindow = fromDateWindow.addDays(GlobalSettings.initDateWindowSize - 1);
 
   static bool showSubjectsInSummary = true;
   static GlobalData data = GlobalData();
@@ -187,7 +186,7 @@ class GlobalStyle {
   static Color clockBarTogglerButtonOutline(context) => Colors.black;
 
   // Datepicker box
-  static const double dateTimeButtonRadius = 5.0;
+  static const double DateButtonRadius = 5.0;
 
   static Widget createShadowContainer(BuildContext context, Widget? child,
       {margin = const EdgeInsets.all(0.0),
@@ -237,10 +236,10 @@ class GlobalStyle {
     );
   }
 
-  static int dateToInt(DateTime date) {
-    int res = date.year * 10000 + date.month * 100 + date.day;
-    return res;
-  }
+  // static int dateToInt(Date date) {
+  //   int res = date.year * 10000 + date.month * 100 + date.day;
+  //   return res;
+  // }
 }
 
 class Helpers {
