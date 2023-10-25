@@ -272,7 +272,7 @@ class Helpers {
 }
 
 class Debugger {
-  static const bool _dataDebug = true;
+  static const bool _dataDebug = false;
   static const bool _mainDebug = false;
   static const bool _timeTableDebug = false;
   static const bool _timeTableBoxDebug = false;

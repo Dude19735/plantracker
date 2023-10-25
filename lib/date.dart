@@ -108,16 +108,6 @@ class Date {
     selfSubtractDays(now.weekday-1);
   }
 
-  // Date.nextSunday() {
-  //   DateTime now = DateTime.now();
-  //   _year = now.year;
-  //   _month = now.month;
-  //   _day = now.day;
-  //   selfAddDays(7 - now.weekday % 7);
-  //   print("next sunday");
-  //   print(toFormatedString());
-  // }
-
   Date.fromInt(int date){
     _year = date ~/ 10000;
     _month = (date - _year * 10000) ~/ 100;

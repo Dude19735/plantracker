@@ -1,3 +1,5 @@
 {
-    "cmake.sourceDirectory": "/home/lol/Documents/repos/plantracker/linux"
+    "cmake.sourceDirectory": "/home/lol/Documents/repos/plantracker/linux",
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+    "editor.formatOnSave": true
 }

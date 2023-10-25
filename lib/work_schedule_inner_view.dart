@@ -5,6 +5,7 @@ import 'package:scheduler/work_schedule_date_bar.dart';
 import 'package:scheduler/work_schedule_time_bar.dart';
 import 'package:scheduler/work_schedule_entry.dart';
 import 'package:scheduler/date.dart';
+import 'package:scheduler/work_schedule_selection_overlay.dart';
 
 class WorkScheduleInnerView extends StatefulWidget {
   final int _pageDaysOffset;
@@ -76,97 +77,97 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
       });
   }
 
-  double _roundToVFrame(double xval) {
-    double xpos = (xval - _sideFrame - GlobalStyle.scheduleTimeBarWidth) -
-        (xval - _sideFrame - GlobalStyle.scheduleTimeBarWidth) %
-            (GlobalContext.scheduleWindowCell.width +
-                GlobalStyle.scheduleGridStrokeWidth);
+  // double _roundToVFrame(double xval) {
+  //   double xpos = (xval - _sideFrame - GlobalStyle.scheduleTimeBarWidth) -
+  //       (xval - _sideFrame - GlobalStyle.scheduleTimeBarWidth) %
+  //           (GlobalContext.scheduleWindowCell.width +
+  //               GlobalStyle.scheduleGridStrokeWidth);
 
-    return xpos;
-  }
+  //   return xpos;
+  // }
 
-  double _roundToHFrame(double yval) {
-    double yvalOffset = yval - _topFrame - GlobalStyle.scheduleDateBarHeight;
-    double ypos = yvalOffset -
-        yvalOffset %
-            (GlobalStyle.scheduleCellHeightPx +
-                GlobalStyle.scheduleGridStrokeWidth);
+  // double _roundToHFrame(double yval) {
+  //   double yvalOffset = yval - _topFrame - GlobalStyle.scheduleDateBarHeight;
+  //   double ypos = yvalOffset -
+  //       yvalOffset %
+  //           (GlobalStyle.scheduleCellHeightPx +
+  //               GlobalStyle.scheduleGridStrokeWidth);
 
-    return ypos;
-  }
+  //   return ypos;
+  // }
 
-  bool _clampConditions(double xMousePos, double yMousePos) {
-    return !GlobalContext.scheduleWindowInlineRect
-        .contains(Offset(xMousePos, yMousePos));
-  }
+  // bool _clampConditions(double xMousePos, double yMousePos) {
+  //   return !GlobalContext.scheduleWindowInlineRect
+  //       .contains(Offset(xMousePos, yMousePos));
+  // }
 
-  void _autoScroll(double dy) {
-    if (!_verticalDragging) return;
+  // void _autoScroll(double dy) {
+  //   if (!_verticalDragging) return;
 
-    double height = GlobalContext.scheduleWindowOutlineRect.height;
-    if (dy > height + GlobalSettings.scheduleWindowAutoScrollOffset) {
-      _scrollController.jumpTo(_scrollController.offset + 5);
+  //   double height = GlobalContext.scheduleWindowOutlineRect.height;
+  //   if (dy > height + GlobalSettings.scheduleWindowAutoScrollOffset) {
+  //     _scrollController.jumpTo(_scrollController.offset + 5);
 
-      // this is more of an emergency solution than something usefull!
-      // if (!_scrollController.position.atEdge) {
-      //   Future<void>.delayed(Duration(milliseconds: 100))
-      //       .then((value) => _autoScroll(dy + 5));
-      // }
-    } else if (dy < GlobalSettings.scheduleWindowAutoScrollOffset) {
-      _scrollController.jumpTo(_scrollController.offset - 5);
-    }
-  }
+  //     // this is more of an emergency solution than something usefull!
+  //     // if (!_scrollController.position.atEdge) {
+  //     //   Future<void>.delayed(Duration(milliseconds: 100))
+  //     //       .then((value) => _autoScroll(dy + 5));
+  //     // }
+  //   } else if (dy < GlobalSettings.scheduleWindowAutoScrollOffset) {
+  //     _scrollController.jumpTo(_scrollController.offset - 5);
+  //   }
+  // }
 
-  bool _resetSelection(double dy) {
-    if (_resetConditions(dy)) {
-      return true;
-    }
-    return false;
-  }
+  // bool _resetSelection(double dy) {
+  //   if (_resetConditions(dy)) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
-  void _reset() {
-    _controller.reset();
-    GlobalContext.scheduleWindowSelectionBox = null;
-    _curYPos = -1;
-    _curXPos = -1;
-    _animBackwards = false;
-  }
+  // void _reset() {
+  //   _controller.reset();
+  //   GlobalContext.scheduleWindowSelectionBox = null;
+  //   _curYPos = -1;
+  //   _curXPos = -1;
+  //   _animBackwards = false;
+  // }
 
-  _SelectedBox _getSelectedTime() {
-    double x = GlobalContext.scheduleWindowSelectionBox!.left;
-    double y = GlobalContext.scheduleWindowSelectionBox!.top;
-    double width = GlobalContext.scheduleWindowSelectionBox!.width;
-    double height = GlobalContext.scheduleWindowSelectionBox!.height;
+  // _SelectedBox _getSelectedTime() {
+  //   double x = GlobalContext.scheduleWindowSelectionBox!.left;
+  //   double y = GlobalContext.scheduleWindowSelectionBox!.top;
+  //   double width = GlobalContext.scheduleWindowSelectionBox!.width;
+  //   double height = GlobalContext.scheduleWindowSelectionBox!.height;
 
-    double secondsFrom = y /
-        (GlobalStyle.scheduleCellHeightPx +
-            GlobalStyle.scheduleGridStrokeWidth) *
-        GlobalSettings.scheduleBoxRangeS;
+  //   double secondsFrom = y /
+  //       (GlobalStyle.scheduleCellHeightPx +
+  //           GlobalStyle.scheduleGridStrokeWidth) *
+  //       GlobalSettings.scheduleBoxRangeS;
 
-    double ch =
-        GlobalStyle.scheduleCellHeightPx + GlobalStyle.scheduleGridStrokeWidth;
-    double rHeight =
-        ch * (height / ch).ceil() - GlobalStyle.scheduleGridStrokeWidth;
+  //   double ch =
+  //       GlobalStyle.scheduleCellHeightPx + GlobalStyle.scheduleGridStrokeWidth;
+  //   double rHeight =
+  //       ch * (height / ch).ceil() - GlobalStyle.scheduleGridStrokeWidth;
 
-    double secondsTo = secondsFrom +
-        (rHeight + GlobalStyle.scheduleGridStrokeWidth) /
-            (GlobalStyle.scheduleCellHeightPx +
-                GlobalStyle.scheduleGridStrokeWidth) *
-            GlobalSettings.scheduleBoxRangeS;
+  //   double secondsTo = secondsFrom +
+  //       (rHeight + GlobalStyle.scheduleGridStrokeWidth) /
+  //           (GlobalStyle.scheduleCellHeightPx +
+  //               GlobalStyle.scheduleGridStrokeWidth) *
+  //           GlobalSettings.scheduleBoxRangeS;
 
-    int yearOffset =
-        (x / (width + GlobalStyle.scheduleGridStrokeWidth)).round();
-    Date year = GlobalContext.fromDateWindow.addDays(yearOffset);
+  //   int yearOffset =
+  //       (x / (width + GlobalStyle.scheduleGridStrokeWidth)).round();
+  //   Date year = GlobalContext.fromDateWindow.addDays(yearOffset);
 
-    return _SelectedBox(
-        x + GlobalStyle.summaryCardMargin,
-        y + GlobalStyle.summaryCardMargin,
-        width,
-        rHeight,
-        secondsFrom,
-        secondsTo,
-        year.toInt());
-  }
+  //   return _SelectedBox(
+  //       x + GlobalStyle.summaryCardMargin,
+  //       y + GlobalStyle.summaryCardMargin,
+  //       width,
+  //       rHeight,
+  //       secondsFrom,
+  //       secondsTo,
+  //       year.toInt());
+  // }
 
   List<WorkScheduleEntry> _getEntries(BoxConstraints constraints) {
     var from = GlobalContext.fromDateWindow;
@@ -200,8 +201,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
           int dayOffset = from.absDiff(date);
           double x = dayOffset * width + sm;
           res.add(WorkScheduleEntry(x, y, width, height, e));
-          print(
-              "$dayOffset $x $y $width $height ${e.subjectId} ${e.date} $date");
+          // print("$dayOffset $x $y $width $height ${e.subjectId} ${e.date} $date");
         }
       }
     }
@@ -209,63 +209,63 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     return res;
   }
 
-  WorkScheduleEntry? _getEntry() {
+  WorkScheduleEntry? _getEntry(SelectionNotification notification) {
     if (GlobalContext.scheduleWindowSelectionBox == null) return null;
     if (GlobalContext.scheduleWindowSelectionBox!.height < 0) return null;
 
-    var t = _getSelectedTime();
-    print(t.toString());
+    var t = notification;
+    // print(t.toString());
     // print(t["secondsFrom"]! / 60);
     return WorkScheduleEntry(t.x, t.y, t.width, t.height, null);
   }
 
-  bool _resetConditions(double dy) {
-    bool reset = dy < 0 &&
-        (GlobalContext.scheduleWindowSelectionBox == null ||
-            GlobalContext.scheduleWindowSelectionBox!.height <
-                GlobalStyle.scheduleCellHeightPx);
+  // bool _resetConditions(double dy) {
+  //   bool reset = dy < 0 &&
+  //       (GlobalContext.scheduleWindowSelectionBox == null ||
+  //           GlobalContext.scheduleWindowSelectionBox!.height <
+  //               GlobalStyle.scheduleCellHeightPx);
 
-    return reset;
-  }
+  //   return reset;
+  // }
 
-  void _initSelection(double xpos, double ypos) {
-    if (_curYPos != ypos) {
-      _curYPos = ypos;
-      _curXPos = xpos; //xMousePos;
-      GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
-          _curXPos,
-          ypos,
-          GlobalContext.scheduleWindowCell.width,
-          GlobalStyle.scheduleCellHeightPx);
+  // void _initSelection(double xpos, double ypos) {
+  //   if (_curYPos != ypos) {
+  //     _curYPos = ypos;
+  //     _curXPos = xpos; //xMousePos;
+  //     GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
+  //         _curXPos,
+  //         ypos,
+  //         GlobalContext.scheduleWindowCell.width,
+  //         GlobalStyle.scheduleCellHeightPx);
 
-      _animBackwards = false;
-      // _controller.reset();
-      // _controller.forward();
-    }
-  }
+  //     _animBackwards = false;
+  //     // _controller.reset();
+  //     // _controller.forward();
+  //   }
+  // }
 
-  void _continueSelection(double xpos, double ypos, double dy) {
-    if (_curYPos != ypos) {
-      _curYPos = ypos;
-      _curXPos = xpos; //xMousePos;
-      GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
-          _curXPos,
-          GlobalContext.scheduleWindowSelectionBox!.top,
-          GlobalContext.scheduleWindowCell.width,
-          _curYPos +
-              GlobalStyle.scheduleCellHeightPx -
-              GlobalContext.scheduleWindowSelectionBox!.top);
+  // void _continueSelection(double xpos, double ypos, double dy) {
+  //   if (_curYPos != ypos) {
+  //     _curYPos = ypos;
+  //     _curXPos = xpos; //xMousePos;
+  //     GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
+  //         _curXPos,
+  //         GlobalContext.scheduleWindowSelectionBox!.top,
+  //         GlobalContext.scheduleWindowCell.width,
+  //         _curYPos +
+  //             GlobalStyle.scheduleCellHeightPx -
+  //             GlobalContext.scheduleWindowSelectionBox!.top);
 
-      _animBackwards = dy < 0; // details.delta.dy < 0;
-      _controller.reset();
-      _animBackwards ? _controller.reverse(from: 1) : _controller.forward();
-    } else if (_curXPos != xpos) {
-      GlobalContext.scheduleWindowSelectionBox = GlobalContext
-          .scheduleWindowSelectionBox!
-          .translate(xpos - _curXPos, 0);
-      _curXPos = xpos;
-    }
-  }
+  //     _animBackwards = dy < 0; // details.delta.dy < 0;
+  //     _controller.reset();
+  //     _animBackwards ? _controller.reverse(from: 1) : _controller.forward();
+  //   } else if (_curXPos != xpos) {
+  //     GlobalContext.scheduleWindowSelectionBox = GlobalContext
+  //         .scheduleWindowSelectionBox!
+  //         .translate(xpos - _curXPos, 0);
+  //     _curXPos = xpos;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -303,67 +303,98 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
           for (var e in _getEntries(constraints)) e
         ]);
 
-        var view = GestureDetector(
-            onVerticalDragUpdate: (details) {
-              double localDy = details.localPosition.dy;
-              double localDx = details.localPosition.dx;
-              double ddy = details.delta.dy;
-              setState(() {
-                _verticalDragging = true;
-                _autoScroll(localDy);
+        // var view = GestureDetector(
+        //     onVerticalDragUpdate: (details) {
+        //       double localDy = details.localPosition.dy;
+        //       double localDx = details.localPosition.dx;
+        //       double ddy = details.delta.dy;
+        //       setState(() {
+        //         _verticalDragging = true;
+        //         _autoScroll(localDy);
 
-                if (_resetSelection(ddy)) return;
+        //         if (_resetSelection(ddy)) return;
 
-                double yMousePos = localDy + _scrollController.offset;
-                double xMousePos = _roundToVFrame(localDx);
+        //         double yMousePos = localDy + _scrollController.offset;
+        //         double xMousePos = _roundToVFrame(localDx);
 
-                if (_clampConditions(xMousePos, yMousePos)) return;
+        //         if (_clampConditions(xMousePos, yMousePos)) return;
 
-                double ypos = _roundToHFrame(yMousePos);
-                if (GlobalContext.scheduleWindowSelectionBox == null) {
-                  _initSelection(xMousePos, ypos);
-                } else {
-                  _continueSelection(xMousePos, ypos, ddy);
-                }
-              });
-            },
-            onVerticalDragEnd: (details) {
-              setState(() {
-                _verticalDragging = false;
-                _currentEntry = _getEntry();
-                // if (entry != null) _entries.add(entry);
-                _reset();
-              });
-            },
-            child: CustomScrollView(controller: _scrollController, slivers: [
-              SliverAppBar(
-                pinned: true,
-                elevation: 0,
-                backgroundColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                foregroundColor: Colors.transparent,
-                shadowColor: Colors.black,
-                // leadingWidth: GlobalStyle.scheduleTimeBarWidth +
-                //     GlobalStyle.summaryCardMargin,
-                // leading: Container(
-                //     height: GlobalStyle.scheduleDateBarHeight,
-                //     color: Colors.red),
-                flexibleSpace: WorkScheduleDateBar(widget._pageDaysOffset),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return Row(
-                      children: [
-                        WorkScheduleTimeBar(),
-                        innerView,
-                      ],
-                    );
-                  },
-                  childCount: 1,
-                ),
-              )
-            ]));
+        //         double ypos = _roundToHFrame(yMousePos);
+        //         if (GlobalContext.scheduleWindowSelectionBox == null) {
+        //           _initSelection(xMousePos, ypos);
+        //         } else {
+        //           _continueSelection(xMousePos, ypos, ddy);
+        //         }
+        //       });
+        //     },
+        //     onVerticalDragEnd: (details) {
+        //       setState(() {
+        //         _verticalDragging = false;
+        //         _currentEntry = _getEntry();
+        //         // if (entry != null) _entries.add(entry);
+        //         _reset();
+        //       });
+        //     },
+        //     child:
+        var view = CustomScrollView(controller: _scrollController, slivers: [
+          SliverAppBar(
+            pinned: true,
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            foregroundColor: Colors.transparent,
+            shadowColor: Colors.black,
+            // leadingWidth: GlobalStyle.scheduleTimeBarWidth +
+            //     GlobalStyle.summaryCardMargin,
+            // leading: Container(
+            //     height: GlobalStyle.scheduleDateBarHeight,
+            //     color: Colors.red),
+            flexibleSpace: WorkScheduleDateBar(widget._pageDaysOffset),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                return Row(
+                  children: [
+                    WorkScheduleTimeBar(),
+                    NotificationListener(
+                      onNotification: (notification) {
+                        if (notification is SelectionNotification) {
+                          print("selection notification");
+                          _currentEntry = _getEntry(notification);
+                          setState(() {
+                            _verticalDragging = false;
+                          });
+                          return true;
+                        }
+                        return false;
+                      },
+                      child: GestureDetector(
+                        onTapDown: (details) {
+                          setState(() {
+                            _verticalDragging = true;
+                          });
+                        },
+                        child: Stack(
+                          children: [
+                            innerView,
+                            if (_verticalDragging)
+                              Container(
+                                  margin: EdgeInsets.all(
+                                      GlobalStyle.summaryCardMargin),
+                                  child: WorkScheduleSelectionOverlay(
+                                      _scrollController))
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                );
+              },
+              childCount: 1,
+            ),
+          )
+        ]);
 
         return NotificationListener(
             onNotification: (notification) {
@@ -383,7 +414,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
 class _GridPainter extends CustomPainter {
   Paint backgroundPainter = Paint();
   Paint gridPainter = Paint();
-  Paint rectPainter = Paint();
+  // Paint rectPainter = Paint();
   BuildContext _context;
 
   _GridPainter(this._context) {
@@ -394,14 +425,15 @@ class _GridPainter extends CustomPainter {
     gridPainter.strokeWidth = GlobalStyle.scheduleGridStrokeWidth;
     gridPainter.strokeCap = StrokeCap.round;
 
-    rectPainter.style = PaintingStyle.fill;
-    rectPainter.strokeWidth = 1;
-    rectPainter.color = GlobalStyle.scheduleSelectionColor(_context);
+    // rectPainter.style = PaintingStyle.fill;
+    // rectPainter.strokeWidth = 1;
+    // rectPainter.color = GlobalStyle.scheduleSelectionColor(_context);
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    int ccsbx = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
+    int ccsbx = GlobalContext.fromDateWindow
+        .absWindowSizeWith(GlobalContext.toDateWindow);
 
     double boxWidth =
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
@@ -436,9 +468,9 @@ class _GridPainter extends CustomPainter {
           GlobalStyle.scheduleCellHeightPx;
     }
 
-    if (GlobalContext.scheduleWindowSelectionBox != null) {
-      canvas.drawRect(GlobalContext.scheduleWindowSelectionBox!, rectPainter);
-    }
+    // if (GlobalContext.scheduleWindowSelectionBox != null) {
+    //   canvas.drawRect(GlobalContext.scheduleWindowSelectionBox!, rectPainter);
+    // }
   }
 
   @override
