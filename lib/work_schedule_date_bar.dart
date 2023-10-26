@@ -32,7 +32,7 @@ class _GridPainter extends CustomPainter {
   final int _pageOffset;
 
   _GridPainter(this._context, this._pageOffset) {
-    backgroundPainter.color = Colors.white;
+    backgroundPainter.color = GlobalStyle.scheduleBackgroundColor(_context);
     backgroundPainter.style = PaintingStyle.fill;
 
     gridPainter.style = PaintingStyle.stroke;
@@ -155,15 +155,15 @@ class _GridPainter extends CustomPainter {
     const double yCenter = GlobalStyle.scheduleDateBarHeight / 2;
     xOffset = lead;
     xOffset += delta / 2;
-    int maxDay = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
+    int maxDay = GlobalContext.fromDateWindow
+        .absWindowSizeWith(GlobalContext.toDateWindow);
     while (xOffset < end) {
       Date fromDay = GlobalContext.fromDateWindow.addDays(dayOffset);
       int dOffset = min(dayOffset + wDelta, maxDay);
       int deltaDay = dOffset - dayOffset;
       Date toDay = GlobalContext.fromDateWindow.addDays(dOffset - 1);
 
-      WeekStyle weekStyle =
-          Date.getWeekStyle(deltaDay * boxWidth, textStyle);
+      WeekStyle weekStyle = Date.getWeekStyle(deltaDay * boxWidth, textStyle);
 
       textPainter.text = TextSpan(
         text: Date.week2Str(fromDay, toDay,
@@ -202,7 +202,8 @@ class _GridPainter extends CustomPainter {
 
     double lead = GlobalStyle.scheduleTimeBarWidth;
     double width = size.width;
-    int ccsbx = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
+    int ccsbx = GlobalContext.fromDateWindow
+        .absWindowSizeWith(GlobalContext.toDateWindow);
     double boxWidth =
         (width - lead - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
             ccsbx;
