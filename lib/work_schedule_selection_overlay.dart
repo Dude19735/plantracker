@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/date.dart';
+import 'package:flutter/gestures.dart';
 
 class SelectionNotification extends Notification {
   final double x;
@@ -16,7 +17,10 @@ class SelectionNotification extends Notification {
 
 class WorkScheduleSelectionOverlay extends StatefulWidget {
   final ScrollController _scrollController;
-  WorkScheduleSelectionOverlay(this._scrollController);
+  final double _startx;
+  final double _starty;
+  WorkScheduleSelectionOverlay(
+      this._scrollController, this._startx, this._starty);
 
   @override
   State<WorkScheduleSelectionOverlay> createState() =>
@@ -81,7 +85,14 @@ class _WorkScheduleSelectionOverlay extends State<WorkScheduleSelectionOverlay>
           if (_controller.status == AnimationStatus.completed) {}
         });
       });
+
+    double xpos = _roundToVFrame(widget._startx);
+    double ypos = _roundToHFrame(widget._starty);
+    _initSelection(xpos, ypos);
   }
+
+  // @override
+  // void addListener(VoidCallback listener) {}
 
   double _roundToVFrame(double xval) {
     double xpos = (xval - _sideFrame - GlobalStyle.scheduleTimeBarWidth) -
@@ -245,47 +256,106 @@ class _WorkScheduleSelectionOverlay extends State<WorkScheduleSelectionOverlay>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onVerticalDragUpdate: (details) {
-        double localDy = details.localPosition.dy;
-        double localDx = details.localPosition.dx;
-        double ddy = details.delta.dy;
-        setState(() {
-          _verticalDragging = true;
-          _autoScroll(localDy);
-
-          if (_resetSelection(ddy)) return;
-
-          double yMousePos = localDy; // + widget._scrollController.offset;
-          // print(yMousePos);
-          double xMousePos = _roundToVFrame(localDx);
-
-          if (_clampConditions(xMousePos, yMousePos)) return;
-
-          double ypos = _roundToHFrame(yMousePos);
-          if (GlobalContext.scheduleWindowSelectionBox == null) {
-            _initSelection(xMousePos, ypos);
-          } else {
-            _continueSelection(xMousePos, ypos, ddy);
-          }
-        });
+    return RawGestureDetector(
+      gestures: <Type, GestureRecognizerFactory>{
+        _CustomGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<_CustomGestureRecognizer>(
+                () => _CustomGestureRecognizer(),
+                (_CustomGestureRecognizer instance) {})
+        // VerticalDragGestureRecognizer:
+        //     GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
+        //         () => VerticalDragGestureRecognizer(),
+        //         (VerticalDragGestureRecognizer instance) {
+        //   instance.dragStartBehavior = DragStartBehavior.start;
+        //   instance
+        //     ..onUpdate = (details) {
+        //       print("update");
+        //     }
+        //     ..onEnd = (details) {
+        //       print("end");
+        //     };
+        // })
       },
-      onVerticalDragEnd: (details) {
-        setState(() {
-          _verticalDragging = false;
-          // emit notification here...
-          // _currentEntry = _getEntry();
-          // if (entry != null) _entries.add(entry);
-          _dispatchSelectedTime(context);
-          _reset();
-        });
-      },
+      // TapGestureRecognizer:
+      //     GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+      //   () => TapGestureRecognizer(),
+      //   (TapGestureRecognizer instance) {
+      //     instance
+      //       ..onTapDown = (TapDownDetails details) {
+      //         setState(() {
+      //           print("down");
+      //         });
+      //       }
+      //       ..onTapUp = (TapUpDetails details) {
+      //         setState(() {
+      //           print("up");
+      //         });
+      //       }
+      //       ..onTap = () {
+      //         setState(() {
+      //           print("tap");
+      //         });
+      //       }
+      //       ..onTapCancel = () {
+      //         setState(() {
+      //           print("cancel");
+      //         });
+      //       };
+      //   },
+      // ),
+      // },
       child: Container(
           color: Colors.red.withAlpha(127),
           width: GlobalContext.scheduleWindowInlineRect.width - 100,
           height: GlobalContext.scheduleWindowInlineRect.height,
           child: CustomPaint(painter: _SelectedBoxPainter(context))),
     );
+    // var lol = Navigator.of(context).addListener();
+    // return GestureDetector(
+    //   onVerticalDragDown: (details) {
+    //     print("vertical drag start");
+    //   },
+    //   onVerticalDragUpdate: (details) {
+    //     double localDy = details.localPosition.dy;
+    //     double localDx = details.localPosition.dx;
+    //     double ddy = details.delta.dy;
+    //     setState(() {
+    //       _verticalDragging = true;
+    //       _autoScroll(localDy);
+
+    //       if (_resetSelection(ddy)) return;
+
+    //       double yMousePos = localDy; // + widget._scrollController.offset;
+    //       // print(yMousePos);
+    //       double xMousePos = _roundToVFrame(localDx);
+
+    //       if (_clampConditions(xMousePos, yMousePos)) return;
+
+    //       double ypos = _roundToHFrame(yMousePos);
+    //       // if (GlobalContext.scheduleWindowSelectionBox == null) {
+    //       //   _initSelection(xMousePos, ypos);
+    //       // } else {
+    //       _continueSelection(xMousePos, ypos, ddy);
+    //       // }
+    //     });
+    //   },
+    //   onVerticalDragEnd: (details) {
+    //     setState(() {
+    //       _verticalDragging = false;
+    //       // emit notification here...
+    //       // _currentEntry = _getEntry();
+    //       // if (entry != null) _entries.add(entry);
+    //       _dispatchSelectedTime(context);
+    //       _reset();
+    //     });
+    //   },
+    //   child: Container(
+    //       color: Colors.red.withAlpha(127),
+    //       width: GlobalContext.scheduleWindowInlineRect.width - 100,
+    //       height: GlobalContext.scheduleWindowInlineRect.height,
+    //       child: CustomPaint(painter: _SelectedBoxPainter(context))),
+    // );
+
     // LayoutBuilder(
     //   builder: (BuildContext context, BoxConstraints constraints) {
     // get from outside => no need
@@ -406,6 +476,35 @@ class _WorkScheduleSelectionOverlay extends State<WorkScheduleSelectionOverlay>
   }
 }
 // }
+
+class _CustomGestureRecognizer extends VerticalDragGestureRecognizer {
+  // @override
+  // void acceptGesture(int pointer) {
+  //   print("accepted pointer");
+  // }
+
+  // @override
+  // String get debugDescription => throw UnimplementedError();
+
+  // @override
+  // void rejectGesture(int pointer) {
+  //   print("reject gesture");
+  // }
+
+  // @override
+  // void addAllowedPointer(PointerDownEvent event) {
+  //   print("add allowed pointer");
+  // }
+
+  // @override
+  // void addAllowedPointer(PointerDownEvent event) {
+  //   super.addAllowedPointer(event);
+  //   if (_state == _DragState.ready) {
+  //     _initialButtons = event.buttons;
+  //   }
+  //   _addPointer(event);
+  // }
+}
 
 class _SelectedBoxPainter extends CustomPainter {
   Paint rectPainter = Paint();

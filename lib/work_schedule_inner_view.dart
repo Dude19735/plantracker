@@ -354,6 +354,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
+                double xpos = 0;
+                double ypos = 0;
                 return Row(
                   children: [
                     WorkScheduleTimeBar(),
@@ -373,17 +375,19 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
                         onTapDown: (details) {
                           setState(() {
                             _verticalDragging = true;
+                            ypos = details.localPosition.dy;
+                            xpos = details.localPosition.dx;
                           });
                         },
                         child: Stack(
                           children: [
-                            innerView,
-                            if (_verticalDragging)
-                              Container(
-                                  margin: EdgeInsets.all(
-                                      GlobalStyle.summaryCardMargin),
-                                  child: WorkScheduleSelectionOverlay(
-                                      _scrollController))
+                            if (_verticalDragging) innerView,
+                            Container(
+                                margin: EdgeInsets.all(
+                                    GlobalStyle.summaryCardMargin),
+                                child: WorkScheduleSelectionOverlay(
+                                    _scrollController, xpos, ypos)),
+                            if (!_verticalDragging) innerView,
                           ],
                         ),
                       ),
