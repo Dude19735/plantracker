@@ -44,6 +44,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
   late ScrollController _scrollController;
   bool _verticalDragging = false;
   WorkScheduleEntry? _currentEntry;
+  List<WorkScheduleEntry> _entries = [];
 
   _WorkScheduleInnerView();
 
@@ -177,36 +178,37 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     double width =
         (constraints.maxWidth - GlobalStyle.scheduleTimeBarWidth - 2 * sm) / ws;
 
-    List<WorkScheduleEntry> res = [];
-    for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
-      int key = d.toInt();
-      var week = GlobalContext.data.schedulePlanData.data[key];
+    if (_entries.isEmpty) {
+      for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
+        int key = d.toInt();
+        var week = GlobalContext.data.schedulePlanData.data[key];
 
-      if (week != null) {
-        for (var e in week) {
-          double y = e.fromTime *
-                  (GlobalStyle.scheduleCellHeightPx +
-                      GlobalStyle.scheduleGridStrokeWidth) /
-                  GlobalSettings.scheduleBoxRangeS +
-              sm;
+        if (week != null) {
+          for (var e in week) {
+            double y = e.fromTime *
+                    (GlobalStyle.scheduleCellHeightPx +
+                        GlobalStyle.scheduleGridStrokeWidth) /
+                    GlobalSettings.scheduleBoxRangeS +
+                sm;
 
-          double height = (e.toTime - e.fromTime) *
-                  (GlobalStyle.scheduleCellHeightPx +
-                      GlobalStyle.scheduleGridStrokeWidth) /
-                  GlobalSettings.scheduleBoxRangeS -
-              GlobalStyle.scheduleGridStrokeWidth;
+            double height = (e.toTime - e.fromTime) *
+                    (GlobalStyle.scheduleCellHeightPx +
+                        GlobalStyle.scheduleGridStrokeWidth) /
+                    GlobalSettings.scheduleBoxRangeS -
+                GlobalStyle.scheduleGridStrokeWidth;
 
-          var date = Date.fromInt(e.date);
-          int dayOffset = from.absDiff(date);
-          double x = dayOffset * width + sm;
-          res.add(WorkScheduleEntry(x, y, width, height, e));
-          print(
-              "$dayOffset $x $y $width $height ${e.subjectId} ${e.date} $date");
+            var date = Date.fromInt(e.date);
+            int dayOffset = from.absDiff(date);
+            double x = dayOffset * width + sm;
+            _entries.add(WorkScheduleEntry(x, y, width, height, e));
+            // print(
+            //     "$dayOffset $x $y $width $height ${e.subjectId} ${e.date} $date");
+          }
         }
       }
     }
 
-    return res;
+    return _entries;
   }
 
   WorkScheduleEntry? _getEntry() {
@@ -214,7 +216,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
     if (GlobalContext.scheduleWindowSelectionBox!.height < 0) return null;
 
     var t = _getSelectedTime();
-    print(t.toString());
+    // print(t.toString());
     // print(t["secondsFrom"]! / 60);
     return WorkScheduleEntry(t.x, t.y, t.width, t.height, null);
   }
@@ -387,7 +389,7 @@ class _GridPainter extends CustomPainter {
   BuildContext _context;
 
   _GridPainter(this._context) {
-    backgroundPainter.color = Colors.white;
+    backgroundPainter.color = GlobalStyle.scheduleBackgroundColor(_context);
     backgroundPainter.style = PaintingStyle.fill;
 
     gridPainter.style = PaintingStyle.stroke;
@@ -401,7 +403,8 @@ class _GridPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    int ccsbx = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
+    int ccsbx = GlobalContext.fromDateWindow
+        .absWindowSizeWith(GlobalContext.toDateWindow);
 
     double boxWidth =
         (size.width - GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /

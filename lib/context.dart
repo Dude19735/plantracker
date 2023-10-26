@@ -10,7 +10,8 @@ class GlobalContext {
   static String currentLocale = 'en-GB';
 
   static Date fromDateWindow = Date.lastMonday();
-  static Date toDateWindow = fromDateWindow.addDays(GlobalSettings.initDateWindowSize - 1);
+  static Date toDateWindow =
+      fromDateWindow.addDays(GlobalSettings.initDateWindowSize - 1);
 
   static bool showSubjectsInSummary = true;
   static GlobalData data = GlobalData();
@@ -88,6 +89,7 @@ class GlobalStyle {
       Color.fromARGB(255, 48, 110, 176);
   static Color markerRed(BuildContext context) =>
       Color.fromARGB(255, 176, 48, 48);
+  static Color scheduleBackgroundColor(BuildContext context) => Colors.white;
 
   // ===========================================================================
   // Time table colors and paint settings
