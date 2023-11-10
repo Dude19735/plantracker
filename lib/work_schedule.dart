@@ -6,6 +6,7 @@ import 'package:scheduler/split.dart';
 import 'package:scheduler/work_schedule_inner_view.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/date.dart';
+import 'package:scheduler/work_schedule_entry.dart';
 
 class DateChangedNotification extends Notification {
   final Date from;
@@ -15,14 +16,72 @@ class DateChangedNotification extends Notification {
 
 class ScheduleMarkedNotification extends Notification {}
 
-class WorkSchedule extends StatelessWidget {
+class WorkSchedule extends StatefulWidget {
   final SplitController _splitController;
   final SplitMetrics _metrics;
 
   WorkSchedule(this._metrics, this._splitController);
 
+  @override
+  State<WorkSchedule> createState() => _WorkSchedule();
+}
+
+class _WorkSchedule extends State<WorkSchedule> {
+  List<WorkScheduleEntry> _entries = [];
+
+  _WorkSchedule();
+
+  List<WorkScheduleEntry> _getEntries(BoxConstraints constraints) {
+    var from = GlobalContext.fromDateWindow;
+    var to = GlobalContext.toDateWindow;
+
+    double sm = GlobalStyle.summaryCardMargin;
+    int ws = from.absWindowSizeWith(to);
+    double width =
+        (constraints.maxWidth - GlobalStyle.scheduleTimeBarWidth - 2 * sm) / ws;
+
+    if (_entries.isEmpty) {
+      for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
+        int key = d.toInt();
+        var week = GlobalContext.data.schedulePlanData.data[key];
+
+        if (week != null) {
+          for (var e in week) {
+            double y = e.fromTime *
+                    (GlobalStyle.scheduleCellHeightPx +
+                        GlobalStyle.scheduleGridStrokeWidth) /
+                    GlobalSettings.scheduleBoxRangeS +
+                sm;
+
+            double height = (e.toTime - e.fromTime) *
+                    (GlobalStyle.scheduleCellHeightPx +
+                        GlobalStyle.scheduleGridStrokeWidth) /
+                    GlobalSettings.scheduleBoxRangeS -
+                GlobalStyle.scheduleGridStrokeWidth;
+
+            var date = Date.fromInt(e.date);
+            int dayOffset = from.absDiff(date);
+            double x = dayOffset * width + sm;
+            _entries.add(WorkScheduleEntry(x, y, width, height, e));
+            // print(
+            //     "$dayOffset $x $y $width $height ${e.subjectId} ${e.date} $date");
+          }
+        }
+      }
+    }
+
+    return _entries;
+  }
+
   Widget innerViewBuilder(int dayOffset) {
-    return WorkScheduleInnerView(dayOffset);
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      _entries = _getEntries(constraints);
+      return Stack(children: [
+        WorkScheduleInnerView(dayOffset, constraints),
+        for (var e in _entries) e
+      ]);
+    });
   }
 
   @override
@@ -58,13 +117,14 @@ class WorkSchedule extends StatelessWidget {
               SizedBox(
                 width: 150,
                 child: ElevatedButton.icon(
-                    label: Text(
-                        GlobalContext.fromDateWindow.toFormatedString()),
+                    label:
+                        Text(GlobalContext.fromDateWindow.toFormatedString()),
                     style: ElevatedButton.styleFrom(elevation: 0),
                     onPressed: () {
                       Future<DateTime?> res = showDatePicker(
                           context: context,
-                          initialDate: GlobalContext.fromDateWindow.toDateTime(),
+                          initialDate:
+                              GlobalContext.fromDateWindow.toDateTime(),
                           firstDate: GlobalSettings.earliestDate,
                           lastDate: GlobalContext.toDateWindow.toDateTime(),
                           locale: GlobalSettings
@@ -72,8 +132,8 @@ class WorkSchedule extends StatelessWidget {
 
                       res.then((value) {
                         if (value != null) {
-                          DateChangedNotification(
-                                  Date.fromDateTime(value), GlobalContext.toDateWindow)
+                          DateChangedNotification(Date.fromDateTime(value),
+                                  GlobalContext.toDateWindow)
                               .dispatch(context);
                         }
                       });
@@ -114,7 +174,8 @@ class WorkSchedule extends StatelessWidget {
 
                   res.then((value) {
                     if (value != null) {
-                      DateChangedNotification(Date.fromDateTime(value.start), Date.fromDateTime(value.end))
+                      DateChangedNotification(Date.fromDateTime(value.start),
+                              Date.fromDateTime(value.end))
                           .dispatch(context);
                     }
                   });
@@ -158,8 +219,8 @@ class WorkSchedule extends StatelessWidget {
 
                       res.then((value) {
                         if (value != null) {
-                          DateChangedNotification(
-                                  GlobalContext.fromDateWindow, Date.fromDateTime(value))
+                          DateChangedNotification(GlobalContext.fromDateWindow,
+                                  Date.fromDateTime(value))
                               .dispatch(context);
                         }
                       });
@@ -170,7 +231,8 @@ class WorkSchedule extends StatelessWidget {
                   onPressed: () {
                     DateChangedNotification(
                             GlobalContext.fromDateWindow,
-                            GlobalContext.toDateWindow = GlobalContext.toDateWindow.addDays(1))
+                            GlobalContext.toDateWindow =
+                                GlobalContext.toDateWindow.addDays(1))
                         .dispatch(context);
                   },
                   icon: Icon(Icons.add)),
@@ -188,7 +250,7 @@ class WorkSchedule extends StatelessWidget {
           ),
         ),
         Expanded(
-            child: _splitController.widget(
+            child: widget._splitController.widget(
                 context, innerViewBuilder, SplitControllerLocation.top)),
       ],
     );

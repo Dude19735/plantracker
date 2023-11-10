@@ -8,7 +8,8 @@ import 'package:scheduler/date.dart';
 
 class WorkScheduleInnerView extends StatefulWidget {
   final int _pageDaysOffset;
-  WorkScheduleInnerView(this._pageDaysOffset);
+  final BoxConstraints _constraints;
+  WorkScheduleInnerView(this._pageDaysOffset, this._constraints);
 
   @override
   State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();
@@ -44,7 +45,6 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
   late ScrollController _scrollController;
   bool _verticalDragging = false;
   WorkScheduleEntry? _currentEntry;
-  List<WorkScheduleEntry> _entries = [];
 
   _WorkScheduleInnerView();
 
@@ -169,48 +169,6 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
         year.toInt());
   }
 
-  List<WorkScheduleEntry> _getEntries(BoxConstraints constraints) {
-    var from = GlobalContext.fromDateWindow;
-    var to = GlobalContext.toDateWindow;
-
-    double sm = GlobalStyle.summaryCardMargin;
-    int ws = from.absWindowSizeWith(to);
-    double width =
-        (constraints.maxWidth - GlobalStyle.scheduleTimeBarWidth - 2 * sm) / ws;
-
-    if (_entries.isEmpty) {
-      for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
-        int key = d.toInt();
-        var week = GlobalContext.data.schedulePlanData.data[key];
-
-        if (week != null) {
-          for (var e in week) {
-            double y = e.fromTime *
-                    (GlobalStyle.scheduleCellHeightPx +
-                        GlobalStyle.scheduleGridStrokeWidth) /
-                    GlobalSettings.scheduleBoxRangeS +
-                sm;
-
-            double height = (e.toTime - e.fromTime) *
-                    (GlobalStyle.scheduleCellHeightPx +
-                        GlobalStyle.scheduleGridStrokeWidth) /
-                    GlobalSettings.scheduleBoxRangeS -
-                GlobalStyle.scheduleGridStrokeWidth;
-
-            var date = Date.fromInt(e.date);
-            int dayOffset = from.absDiff(date);
-            double x = dayOffset * width + sm;
-            _entries.add(WorkScheduleEntry(x, y, width, height, e));
-            // print(
-            //     "$dayOffset $x $y $width $height ${e.subjectId} ${e.date} $date");
-          }
-        }
-      }
-    }
-
-    return _entries;
-  }
-
   WorkScheduleEntry? _getEntry() {
     if (GlobalContext.scheduleWindowSelectionBox == null) return null;
     if (GlobalContext.scheduleWindowSelectionBox!.height < 0) return null;
@@ -271,114 +229,115 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        Debugger.workScheduleInnerView(
-            " ========> rebuild work schedule inner view ${widget._pageDaysOffset} from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
-        double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
+    // return
+    // LayoutBuilder(
+    //   builder: (BuildContext context, BoxConstraints constraints) {
+    Debugger.workScheduleInnerView(
+        " ========> rebuild work schedule inner view ${widget._pageDaysOffset} from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
+    double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
 
-        GlobalContext.scheduleWindowOutlineRect =
-            Rect.fromLTRB(0, 0, constraints.maxWidth, constraints.maxHeight);
+    GlobalContext.scheduleWindowOutlineRect = Rect.fromLTRB(
+        0, 0, widget._constraints.maxWidth, widget._constraints.maxHeight);
 
-        GlobalContext.scheduleWindowInlineRect = Rect.fromLTWH(
-            0,
-            GlobalStyle.scheduleDateBarHeight,
-            constraints.maxWidth,
-            GlobalStyle.scheduleCellHeightPx * numBoxes +
-                //(numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth +
-                GlobalStyle.scheduleDateBarHeight);
+    GlobalContext.scheduleWindowInlineRect = Rect.fromLTWH(
+        0,
+        GlobalStyle.scheduleDateBarHeight,
+        widget._constraints.maxWidth,
+        GlobalStyle.scheduleCellHeightPx * numBoxes +
+            //(numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth +
+            GlobalStyle.scheduleDateBarHeight);
 
-        _scrollController = ScrollController(
-            initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
-            keepScrollOffset: true);
+    _scrollController = ScrollController(
+        initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
+        keepScrollOffset: true);
 
-        var innerView = Stack(children: [
-          Container(
-            margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
-            width: constraints.maxWidth -
-                GlobalStyle.scheduleTimeBarWidth -
-                2 * GlobalStyle.summaryCardMargin,
-            height: GlobalContext.scheduleWindowInlineRect.height,
-            child: CustomPaint(painter: _GridPainter(context)),
+    var innerView = Stack(children: [
+      Container(
+        margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
+        width: widget._constraints.maxWidth -
+            GlobalStyle.scheduleTimeBarWidth -
+            2 * GlobalStyle.summaryCardMargin,
+        height: GlobalContext.scheduleWindowInlineRect.height,
+        child: CustomPaint(painter: _GridPainter(context)),
+      ),
+      if (_currentEntry != null) _currentEntry!
+      // for (var e in _getEntries(constraints)) e
+    ]);
+
+    var view = GestureDetector(
+        onVerticalDragUpdate: (details) {
+          double localDy = details.localPosition.dy;
+          double localDx = details.localPosition.dx;
+          double ddy = details.delta.dy;
+          setState(() {
+            _verticalDragging = true;
+            _autoScroll(localDy);
+
+            if (_resetSelection(ddy)) return;
+
+            double yMousePos = localDy + _scrollController.offset;
+            double xMousePos = _roundToVFrame(localDx);
+
+            if (_clampConditions(xMousePos, yMousePos)) return;
+
+            double ypos = _roundToHFrame(yMousePos);
+            if (GlobalContext.scheduleWindowSelectionBox == null) {
+              _initSelection(xMousePos, ypos);
+            } else {
+              _continueSelection(xMousePos, ypos, ddy);
+            }
+          });
+        },
+        onVerticalDragEnd: (details) {
+          setState(() {
+            _verticalDragging = false;
+            _currentEntry = _getEntry();
+            // if (entry != null) _entries.add(entry);
+            _reset();
+          });
+        },
+        child: CustomScrollView(controller: _scrollController, slivers: [
+          SliverAppBar(
+            pinned: true,
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            foregroundColor: Colors.transparent,
+            shadowColor: Colors.black,
+            // leadingWidth: GlobalStyle.scheduleTimeBarWidth +
+            //     GlobalStyle.summaryCardMargin,
+            // leading: Container(
+            //     height: GlobalStyle.scheduleDateBarHeight,
+            //     color: Colors.red),
+            flexibleSpace: WorkScheduleDateBar(widget._pageDaysOffset),
           ),
-          if (_currentEntry != null) _currentEntry!,
-          for (var e in _getEntries(constraints)) e
-        ]);
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                return Row(
+                  children: [
+                    WorkScheduleTimeBar(),
+                    innerView,
+                  ],
+                );
+              },
+              childCount: 1,
+            ),
+          )
+        ]));
 
-        var view = GestureDetector(
-            onVerticalDragUpdate: (details) {
-              double localDy = details.localPosition.dy;
-              double localDx = details.localPosition.dx;
-              double ddy = details.delta.dy;
-              setState(() {
-                _verticalDragging = true;
-                _autoScroll(localDy);
-
-                if (_resetSelection(ddy)) return;
-
-                double yMousePos = localDy + _scrollController.offset;
-                double xMousePos = _roundToVFrame(localDx);
-
-                if (_clampConditions(xMousePos, yMousePos)) return;
-
-                double ypos = _roundToHFrame(yMousePos);
-                if (GlobalContext.scheduleWindowSelectionBox == null) {
-                  _initSelection(xMousePos, ypos);
-                } else {
-                  _continueSelection(xMousePos, ypos, ddy);
-                }
-              });
-            },
-            onVerticalDragEnd: (details) {
-              setState(() {
-                _verticalDragging = false;
-                _currentEntry = _getEntry();
-                // if (entry != null) _entries.add(entry);
-                _reset();
-              });
-            },
-            child: CustomScrollView(controller: _scrollController, slivers: [
-              SliverAppBar(
-                pinned: true,
-                elevation: 0,
-                backgroundColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                foregroundColor: Colors.transparent,
-                shadowColor: Colors.black,
-                // leadingWidth: GlobalStyle.scheduleTimeBarWidth +
-                //     GlobalStyle.summaryCardMargin,
-                // leading: Container(
-                //     height: GlobalStyle.scheduleDateBarHeight,
-                //     color: Colors.red),
-                flexibleSpace: WorkScheduleDateBar(widget._pageDaysOffset),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return Row(
-                      children: [
-                        WorkScheduleTimeBar(),
-                        innerView,
-                      ],
-                    );
-                  },
-                  childCount: 1,
-                ),
-              )
-            ]));
-
-        return NotificationListener(
-            onNotification: (notification) {
-              if (notification is ScrollNotification) {
-                GlobalContext.scheduleWindowScrollOffset =
-                    notification.metrics.pixels;
-                return true; // cut event propagation
-              }
-              return false;
-            },
-            child: view);
-      },
-    );
+    return NotificationListener(
+        onNotification: (notification) {
+          if (notification is ScrollNotification) {
+            GlobalContext.scheduleWindowScrollOffset =
+                notification.metrics.pixels;
+            return true; // cut event propagation
+          }
+          return false;
+        },
+        child: view);
+    //   },
+    // );
   }
 }
 
