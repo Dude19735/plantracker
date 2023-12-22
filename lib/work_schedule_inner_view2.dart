@@ -6,13 +6,104 @@ import 'package:scheduler/work_schedule_time_bar.dart';
 import 'package:scheduler/work_schedule_entry.dart';
 import 'package:scheduler/date.dart';
 
-class WorkScheduleInnerView2 extends StatefulWidget {
+class WorkScheduleInnerView extends StatefulWidget {
   final int _pageDaysOffset;
   final BoxConstraints _constraints;
-  WorkScheduleInnerView2(this._pageDaysOffset, this._constraints);
+  WorkScheduleInnerView(this._pageDaysOffset, this._constraints);
 
   @override
-  State<WorkScheduleInnerView2> createState() => _WorkScheduleInnerView2();
+  State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();
+}
+
+class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
+  late ScrollController _scrollController;
+  late List<Container> _container;
+  @override
+  Widget build(BuildContext context) {
+    _scrollController = ScrollController(
+        initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
+        keepScrollOffset: true);
+
+    int ccsbx = GlobalContext.fromDateWindow
+        .absWindowSizeWith(GlobalContext.toDateWindow);
+
+    double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
+
+    GlobalContext.scheduleWindowOutlineRect = Rect.fromLTRB(
+        0, 0, widget._constraints.maxWidth, widget._constraints.maxHeight);
+
+    GlobalContext.scheduleWindowInlineRect = Rect.fromLTWH(
+        0,
+        GlobalStyle.scheduleDateBarHeight,
+        widget._constraints.maxWidth,
+        GlobalStyle.scheduleCellHeightPx * numBoxes +
+            //(numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth +
+            GlobalStyle.scheduleDateBarHeight);
+
+    double boxWidth = (GlobalContext.scheduleWindowInlineRect.width -
+            GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
+        ccsbx;
+
+    _container = List<Container>.filled(
+        ccsbx,
+        Container(
+            margin: EdgeInsets.only(
+                left: GlobalStyle.summaryCardMargin,
+                right: GlobalStyle.summaryCardMargin),
+            width: boxWidth,
+            height: 100,
+            color: Colors.yellow));
+
+    return CustomScrollView(controller: _scrollController, slivers: [
+      SliverAppBar(
+        pinned: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: Colors.transparent,
+        shadowColor: Colors.black,
+        // leadingWidth: GlobalStyle.scheduleTimeBarWidth +
+        //     GlobalStyle.summaryCardMargin,
+        // leading: Container(
+        //     height: GlobalStyle.scheduleDateBarHeight,
+        //     color: Colors.red),
+        flexibleSpace: WorkScheduleDateBar(widget._pageDaysOffset),
+      ),
+      SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (BuildContext context, int index) {
+            return Row(
+              children: [
+                WorkScheduleTimeBar(),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(
+                        left: GlobalStyle.summaryCardMargin,
+                        right: GlobalStyle.summaryCardMargin),
+                    color: Colors.blue,
+                    width: GlobalContext.scheduleWindowInlineRect.width,
+                    height: GlobalContext.scheduleWindowInlineRect.height,
+                    child: Row(
+                      // crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (int i = 0; i < ccsbx; i++)
+                          Expanded(
+                            child: Column(
+                                // crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: _container),
+                          )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+          childCount: 1,
+        ),
+      )
+    ]);
+  }
 }
 
 class _SelectedBox {
