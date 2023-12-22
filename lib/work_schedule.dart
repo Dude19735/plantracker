@@ -27,51 +27,7 @@ class WorkSchedule extends StatefulWidget {
 }
 
 class _WorkSchedule extends State<WorkSchedule> {
-  List<WorkScheduleEntry> _entries = [];
-
   _WorkSchedule();
-
-  List<WorkScheduleEntry> _getEntries(BoxConstraints constraints) {
-    var from = GlobalContext.fromDateWindow;
-    var to = GlobalContext.toDateWindow;
-
-    double sm = GlobalStyle.summaryCardMargin;
-    int ws = from.absWindowSizeWith(to);
-    double width =
-        (constraints.maxWidth - GlobalStyle.scheduleTimeBarWidth - 2 * sm) / ws;
-
-    if (_entries.isEmpty) {
-      for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
-        int key = d.toInt();
-        var week = GlobalContext.data.schedulePlanData.data[key];
-
-        if (week != null) {
-          for (var e in week) {
-            double y = e.fromTime *
-                    (GlobalStyle.scheduleCellHeightPx +
-                        GlobalStyle.scheduleGridStrokeWidth) /
-                    GlobalSettings.scheduleBoxRangeS +
-                sm;
-
-            double height = (e.toTime - e.fromTime) *
-                    (GlobalStyle.scheduleCellHeightPx +
-                        GlobalStyle.scheduleGridStrokeWidth) /
-                    GlobalSettings.scheduleBoxRangeS -
-                GlobalStyle.scheduleGridStrokeWidth;
-
-            var date = Date.fromInt(e.date);
-            int dayOffset = from.absDiff(date);
-            double x = dayOffset * width + sm;
-            _entries.add(WorkScheduleEntry(x, y, width, height, e));
-            // print(
-            //     "$dayOffset $x $y $width $height ${e.subjectId} ${e.date} $date");
-          }
-        }
-      }
-    }
-
-    return _entries;
-  }
 
   Widget innerViewBuilder(int dayOffset) {
     return LayoutBuilder(

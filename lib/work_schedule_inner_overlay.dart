@@ -177,7 +177,7 @@ class _WorkScheduleInnerOverlay extends State<WorkScheduleInnerOverlay>
     var t = _getSelectedTime();
     // print(t.toString());
     // print(t["secondsFrom"]! / 60);
-    return WorkScheduleEntry(t.x, t.y, t.width, t.height, null);
+    return WorkScheduleEntry(t.y, t.width, t.height, null);
   }
 
   bool _resetConditions(double dy) {
