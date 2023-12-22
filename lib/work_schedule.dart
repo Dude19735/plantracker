@@ -3,7 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split.dart';
-import 'package:scheduler/work_schedule_inner_view.dart';
+import 'package:scheduler/work_schedule_inner_view2.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/date.dart';
 import 'package:scheduler/work_schedule_entry.dart';
@@ -76,10 +76,10 @@ class _WorkSchedule extends State<WorkSchedule> {
   Widget innerViewBuilder(int dayOffset) {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-      _entries = _getEntries(constraints);
+      // _entries = _getEntries(constraints);
       return Stack(children: [
-        WorkScheduleInnerView(dayOffset, constraints),
-        for (var e in _entries) e
+        WorkScheduleInnerView2(dayOffset, constraints)
+        // for (var e in _entries) e
       ]);
     });
   }
