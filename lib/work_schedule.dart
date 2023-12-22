@@ -78,7 +78,7 @@ class _WorkSchedule extends State<WorkSchedule> {
         builder: (BuildContext context, BoxConstraints constraints) {
       // _entries = _getEntries(constraints);
       return Stack(children: [
-        WorkScheduleInnerView2(dayOffset, constraints)
+        WorkScheduleInnerView(dayOffset, constraints)
         // for (var e in _entries) e
       ]);
     });
