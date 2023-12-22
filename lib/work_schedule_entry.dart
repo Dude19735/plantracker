@@ -15,6 +15,7 @@ class WorkScheduleEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("rebuild");
     Widget? child;
     if (_planData != null) {
       child = Text(_planData!.subject.toString());

@@ -416,9 +416,7 @@ class _TimeTableBox extends State<TimeTableBox>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (aspect >= 2.0)
-                          Text(
-                              "${date.day.toString().padLeft(2, "0")}.${date.month.toString().padLeft(2, "0")}.${date.year.toString().padLeft(4, "0")}"),
+                        if (aspect >= 2.0) Text(date.toFormatedString()),
                         if (aspect >= 2.0) Spacer(),
                         Text(subject.recorded.toString(),
                             style: TextStyle(fontSize: 16)),

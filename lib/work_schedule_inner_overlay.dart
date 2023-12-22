@@ -6,13 +6,13 @@ import 'package:scheduler/work_schedule_time_bar.dart';
 import 'package:scheduler/work_schedule_entry.dart';
 import 'package:scheduler/date.dart';
 
-class WorkScheduleInnerView extends StatefulWidget {
+class WorkScheduleInnerOverlay extends StatefulWidget {
   final int _pageDaysOffset;
   final BoxConstraints _constraints;
-  WorkScheduleInnerView(this._pageDaysOffset, this._constraints);
+  WorkScheduleInnerOverlay(this._pageDaysOffset, this._constraints);
 
   @override
-  State<WorkScheduleInnerView> createState() => _WorkScheduleInnerView();
+  State<WorkScheduleInnerOverlay> createState() => _WorkScheduleInnerOverlay();
 }
 
 class _SelectedBox {
@@ -32,7 +32,7 @@ class _SelectedBox {
   }
 }
 
-class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
+class _WorkScheduleInnerOverlay extends State<WorkScheduleInnerOverlay>
     with SingleTickerProviderStateMixin {
   final double _topFrame = 0;
   final double _sideFrame = 0;
@@ -46,7 +46,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
   bool _verticalDragging = false;
   WorkScheduleEntry? _currentEntry;
 
-  _WorkScheduleInnerView();
+  _WorkScheduleInnerOverlay();
 
   @override
   void initState() {
@@ -101,6 +101,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView>
         .contains(Offset(xMousePos, yMousePos));
   }
 
+  // TODO: add this one into a mixin
   void _autoScroll(double dy) {
     if (!_verticalDragging) return;
 
