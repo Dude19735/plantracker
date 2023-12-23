@@ -21,7 +21,7 @@ class _GridPainter extends CustomPainter {
 
   _GridPainter(this._context) {
     backgroundPainter.color = GlobalStyle.scheduleBackgroundColor(_context);
-    ;
+
     backgroundPainter.style = PaintingStyle.fill;
 
     gridPainter.style = PaintingStyle.stroke;
