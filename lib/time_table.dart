@@ -28,10 +28,9 @@ class _TimeTable extends State<TimeTable> {
   final JoinedScrollerSide _otherSide = JoinedScrollerSide.left;
   late TimeTableCellStateEncapsulation _edit;
 
-  int _getColDate(int dayOffset) {
-    return 
-        GlobalContext.fromDateWindow.addDays(dayOffset).toInt();
-  }
+  // int _getColDate(int dayOffset) {
+  //   return GlobalContext.fromDateWindow.addDays(dayOffset).toInt();
+  // }
 
   Widget _getRowBox(
       int x,
@@ -41,26 +40,27 @@ class _TimeTable extends State<TimeTable> {
       BuildContext context,
       int subjectId,
       Map<int, TimeTableData>? subject,
-      int dayOffset) {
-    int date = _getColDate(dayOffset);
+      Date date) {
+    // int date = _getColDate(dayOffset);
+    int iDate = date.toInt();
 
-    return TimeTableBox(x, y, width, height, subjectId, date, _edit);
+    return TimeTableBox(x, y, width, height, subjectId, iDate, _edit);
   }
 
   Widget _getRow(int x, BuildContext context, BoxConstraints constraints,
-      int numCells, double height, int subjectId, int pageOffset) {
+      int numCells, double height, int subjectId, Date fromDate, Date toDate) {
     double cellWidth =
         (constraints.maxWidth - GlobalStyle.scheduleTimeBarWidth) / numCells;
     var subject = GlobalContext.data.timeTableData.data[subjectId];
-    int dayOffset = DataUtils.page2DayOffset(
-        pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+    // int dayOffset = DataUtils.page2DayOffset(
+    //     pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     return Stack(children: [
       Row(
         children: [
           for (int i = 0; i < numCells; i++)
             _getRowBox(x, i, cellWidth, height, context, subjectId, subject,
-                i + dayOffset)
+                fromDate.addDays(i))
         ],
       )
     ]);
@@ -72,7 +72,8 @@ class _TimeTable extends State<TimeTable> {
       BuildContext context,
       BoxConstraints constraints,
       int numCells,
-      int pageOffset) {
+      Date fromDate,
+      Date toDate) {
     int subjectId = data[subjectIndex].subjectId;
 
     double height = DataUtils.getTextHeight(
@@ -83,7 +84,7 @@ class _TimeTable extends State<TimeTable> {
     height += 2 * GlobalStyle.summaryEntryBarHeight;
     height += 2 * GlobalStyle.summaryCardPadding;
     return _getRow(subjectIndex, context, constraints, numCells, height,
-        subjectId, pageOffset);
+        subjectId, fromDate, toDate);
   }
 
   @override
@@ -101,6 +102,19 @@ class _TimeTable extends State<TimeTable> {
   @override
   Widget build(BuildContext context) {
     Widget table(int pageOffset) {
+      int dayOffset = pageOffset;
+      Date fromDate = GlobalContext.fromDateWindow;
+      Date toDate = GlobalContext.toDateWindow;
+      if (dayOffset < 0) {
+        var prev = DataUtils.getPreviousPage(fromDate, toDate);
+        fromDate = prev["from"]!;
+        toDate = prev["to"]!;
+      } else if (dayOffset > 0) {
+        var prev = DataUtils.getNextPage(fromDate, toDate);
+        fromDate = prev["from"]!;
+        toDate = prev["to"]!;
+      }
+
       return NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollNotification) {
@@ -116,13 +130,13 @@ class _TimeTable extends State<TimeTable> {
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
             Debugger.timeTable(
-                " ========> rebuild time table $pageOffset  from ${GlobalContext.fromDateWindow.day} to ${GlobalContext.toDateWindow.day}");
+                " ========> rebuild time table $pageOffset  from ${fromDate.day} to ${toDate.day}");
 
             int sRow = GlobalContext.data.summaryData.data.length;
-            int sCol = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
+            int sCol = fromDate.absWindowSizeWith(toDate);
             _edit = TimeTableCellStateEncapsulation(sRow, sCol);
 
-            int numCells = GlobalContext.fromDateWindow.absWindowSizeWith(GlobalContext.toDateWindow);
+            int numCells = fromDate.absWindowSizeWith(toDate);
 
             var data = GlobalContext.data.summaryData.data;
 
@@ -147,7 +161,7 @@ class _TimeTable extends State<TimeTable> {
                           children: [
                             for (int i = 0; i < data.length; i++)
                               _rowBuilder(data, i, context, constraints,
-                                  numCells, pageOffset)
+                                  numCells, fromDate, toDate)
                           ]),
                     ),
                   ],
