@@ -29,14 +29,25 @@ class WorkSchedule extends StatefulWidget {
 class _WorkSchedule extends State<WorkSchedule> {
   _WorkSchedule();
 
-  Widget innerViewBuilder(int dayOffset) {
+  Widget innerViewBuilder(int pageOffset) {
+    int dayOffset = pageOffset;
+    Date fromDate = GlobalContext.fromDateWindow;
+    Date toDate = GlobalContext.toDateWindow;
+    if (dayOffset < 0) {
+      var prev = DataUtils.getPreviousPage(fromDate, toDate);
+      fromDate = prev["from"]!;
+      toDate = prev["to"]!;
+    } else if (dayOffset > 0) {
+      var prev = DataUtils.getNextPage(fromDate, toDate);
+      fromDate = prev["from"]!;
+      toDate = prev["to"]!;
+    }
+
+    // print("dayOffset bbb: $dayOffset");
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       // _entries = _getEntries(constraints);
-      return Stack(children: [
-        WorkScheduleInnerView(dayOffset, constraints)
-        // for (var e in _entries) e
-      ]);
+      return WorkScheduleInnerView(fromDate, toDate, constraints);
     });
   }
 
