@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:scheduler/context.dart';
-import 'dart:collection';
 
 enum SplitControllerLocation { top, bottom }
 

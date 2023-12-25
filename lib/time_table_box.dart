@@ -6,7 +6,6 @@ import 'package:scheduler/data.dart';
 import 'package:scheduler/data_columns.dart';
 import 'dart:math';
 
-import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/date.dart';
 
 class ScrollAndFocusNotification extends Notification {
@@ -282,11 +281,11 @@ class _TimeTableBox extends State<TimeTableBox>
     return false;
   }
 
-  _unfocus(FocusNode node) {
-    if (node.hasFocus) {
-      node.unfocus();
-    }
-  }
+  // _unfocus(FocusNode node) {
+  //   if (node.hasFocus) {
+  //     node.unfocus();
+  //   }
+  // }
 
   Widget _getEditContainer(BuildContext context, TimeTableData? subject) {
     var child = LayoutBuilder(

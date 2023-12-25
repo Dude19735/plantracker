@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/data_columns.dart';
 import 'package:scheduler/date.dart';
@@ -24,9 +23,7 @@ class DataGen {
     // }
 
     String res = "[";
-    for (var d = fromDate;
-        d.compareTo(toDate) <= 0;
-        d = d.addDays(1)) {
+    for (var d = fromDate; d.compareTo(toDate) <= 0; d = d.addDays(1)) {
       int subjectId = d.weekday() - 1;
       res += """{
           "${ColumnName.subjectId}": $subjectId,
@@ -178,9 +175,7 @@ class DataGen {
     // int range = DataUtils.getWindowSize(fromDate, toDate);
 
     List<Map<String, dynamic>> entries = [];
-    for (var d = fromDate;
-        d.compareTo(toDate) <= 0;
-        d = d.addDays(1)) {
+    for (var d = fromDate; d.compareTo(toDate) <= 0; d = d.addDays(1)) {
       int subjectId = d.weekday() - 1;
       entries.add({
         ColumnName.subjectId: subjectId,

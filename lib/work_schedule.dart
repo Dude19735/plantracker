@@ -6,7 +6,6 @@ import 'package:scheduler/split.dart';
 import 'package:scheduler/work_schedule_inner_view2.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/date.dart';
-import 'package:scheduler/work_schedule_entry.dart';
 
 class DateChangedNotification extends Notification {
   final Date from;
