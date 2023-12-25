@@ -5,9 +5,11 @@ import 'package:scheduler/date.dart';
 import 'dart:math';
 
 class WorkScheduleDateBar extends StatelessWidget {
-  final int _pageOffset;
+  // final int _pageOffset;
+  final Date _fromDate;
+  final Date _toDate;
 
-  WorkScheduleDateBar(this._pageOffset);
+  WorkScheduleDateBar(this._fromDate, this._toDate);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,8 @@ class WorkScheduleDateBar extends StatelessWidget {
             margin: EdgeInsets.only(
                 left: GlobalStyle.summaryCardMargin,
                 right: GlobalStyle.summaryCardMargin),
-            child: CustomPaint(painter: _GridPainter(context, _pageOffset)));
+            child: CustomPaint(
+                painter: _GridPainter(context, _fromDate, _toDate)));
       },
     );
   }
@@ -29,9 +32,10 @@ class _GridPainter extends CustomPainter {
   Paint backgroundPainter = Paint();
   Paint gridPainter = Paint();
   final BuildContext _context;
-  final int _pageOffset;
+  final Date _fromDate;
+  final Date _toDate;
 
-  _GridPainter(this._context, this._pageOffset) {
+  _GridPainter(this._context, this._fromDate, this._toDate) {
     backgroundPainter.color = GlobalStyle.scheduleBackgroundColor(_context);
     backgroundPainter.style = PaintingStyle.fill;
 
@@ -43,6 +47,7 @@ class _GridPainter extends CustomPainter {
   void paintDaily(
       Canvas canvas,
       double lead,
+      double lineLead,
       double canvasWidth,
       double canvasHeight,
       double boxWidth,
@@ -62,15 +67,16 @@ class _GridPainter extends CustomPainter {
 
     gridPainter.strokeWidth = 2;
     gridPainter.color = GlobalStyle.scheduleGridColorFullHour(_context);
-    canvas.drawLine(Offset(lead, gridPainter.strokeWidth / 2),
+    canvas.drawLine(Offset(lineLead, gridPainter.strokeWidth / 2),
         Offset(canvasWidth, gridPainter.strokeWidth / 2), gridPainter);
     canvas.drawLine(
-        Offset(lead, canvasHeight - gridPainter.strokeWidth / 2),
+        Offset(lineLead, canvasHeight - gridPainter.strokeWidth / 2),
         Offset(canvasWidth, canvasHeight - gridPainter.strokeWidth / 2),
         gridPainter);
 
-    int dayOffset = DataUtils.page2DayOffset(
-        _pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+    int dayOffset = 0;
+    //  DataUtils.page2DayOffset(
+    //     _pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     final textPainter = TextPainter(
       textAlign: TextAlign.center,
@@ -81,7 +87,7 @@ class _GridPainter extends CustomPainter {
     end = canvasWidth - boxWidth / 4;
     xOffset = lead + (boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2) / 2;
     while (xOffset < end) {
-      Date day = GlobalContext.fromDateWindow.addDays(dayOffset);
+      Date day = _fromDate.addDays(dayOffset);
       // print("${GlobalContext.fromDateWindow} $day $dayOffset $_pageOffset");
       textPainter.text = TextSpan(
         text: Date.Date2Str(day, style: dateStyle),
@@ -115,6 +121,7 @@ class _GridPainter extends CustomPainter {
   void paintWeekly(
       Canvas canvas,
       double lead,
+      double lineLead,
       double canvasWidth,
       double canvasHeight,
       double boxWidth,
@@ -137,15 +144,16 @@ class _GridPainter extends CustomPainter {
 
     gridPainter.strokeWidth = 2;
     gridPainter.color = GlobalStyle.scheduleGridColorFullHour(_context);
-    canvas.drawLine(Offset(lead, gridPainter.strokeWidth / 2),
+    canvas.drawLine(Offset(lineLead, gridPainter.strokeWidth / 2),
         Offset(canvasWidth, gridPainter.strokeWidth / 2), gridPainter);
     canvas.drawLine(
-        Offset(lead, canvasHeight - gridPainter.strokeWidth / 2),
+        Offset(lineLead, canvasHeight - gridPainter.strokeWidth / 2),
         Offset(canvasWidth, canvasHeight - gridPainter.strokeWidth / 2),
         gridPainter);
 
-    int dayOffset = DataUtils.page2DayOffset(
-        _pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
+    int dayOffset = 0;
+    //  DataUtils.page2DayOffset(
+    //     _pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     final textPainter = TextPainter(
       textAlign: TextAlign.center,
@@ -158,7 +166,7 @@ class _GridPainter extends CustomPainter {
     int maxDay = GlobalContext.fromDateWindow
         .absWindowSizeWith(GlobalContext.toDateWindow);
     while (xOffset < end) {
-      Date fromDay = GlobalContext.fromDateWindow.addDays(dayOffset);
+      Date fromDay = _fromDate.addDays(dayOffset);
       int dOffset = min(dayOffset + wDelta, maxDay);
       int deltaDay = dOffset - dayOffset;
       Date toDay = GlobalContext.fromDateWindow.addDays(dOffset - 1);
@@ -226,10 +234,10 @@ class _GridPainter extends CustomPainter {
     if (ccsbx > 8 * 7) dateStyle = DateStyle.weekly2;
     if (dateStyle != DateStyle.weekly && dateStyle != DateStyle.weekly2) {
       paintDaily(
-          canvas, lead, width, size.height, boxWidth, textStyle, dateStyle);
+          canvas, lead, 0, width, size.height, boxWidth, textStyle, dateStyle);
     } else {
       paintWeekly(
-          canvas, lead, width, size.height, boxWidth, textStyle, dateStyle);
+          canvas, lead, 0, width, size.height, boxWidth, textStyle, dateStyle);
     }
 
     // =========================================================================

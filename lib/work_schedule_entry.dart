@@ -15,10 +15,10 @@ class WorkScheduleEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("build entry");
+    // print("build entry ${_planData!.date}");
     Widget? child;
     if (_planData != null) {
-      child = Text(_planData!.subject.toString());
+      child = Text("${_planData!.subject.toString()}\n${_planData!.date}");
     }
     return Transform(
         transform: Matrix4.translationValues(_x, _y, 0),
