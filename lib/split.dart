@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
-import 'dart:math';
 
 enum SplitDirection { vertical, horizontal }
 

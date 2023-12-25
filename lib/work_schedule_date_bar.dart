@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
-import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/date.dart';
 import 'dart:math';
 
@@ -75,8 +74,6 @@ class _GridPainter extends CustomPainter {
         gridPainter);
 
     int dayOffset = 0;
-    //  DataUtils.page2DayOffset(
-    //     _pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     final textPainter = TextPainter(
       textAlign: TextAlign.center,
@@ -152,8 +149,6 @@ class _GridPainter extends CustomPainter {
         gridPainter);
 
     int dayOffset = 0;
-    //  DataUtils.page2DayOffset(
-    //     _pageOffset, GlobalContext.fromDateWindow, GlobalContext.toDateWindow);
 
     final textPainter = TextPainter(
       textAlign: TextAlign.center,
