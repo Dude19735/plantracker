@@ -405,6 +405,12 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
             _initSelection(xMousePos, ypos);
           });
         },
+        onTapUp: (details) {
+          _verticalDragging = false;
+          // _currentEntry = _getEntry();
+          // if (entry != null) _entries.add(entry);
+          _reset();
+        },
         onVerticalDragUpdate: (details) {
           double localDy = details.localPosition.dy;
           double localDx = details.localPosition.dx;
@@ -437,7 +443,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
             setState(() {
               // print("drag end");
               _verticalDragging = false;
-              _currentEntry = _getEntry();
+              // _currentEntry = _getEntry();
               // if (entry != null) _entries.add(entry);
               _reset();
             });
