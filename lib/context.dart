@@ -81,8 +81,14 @@ class GlobalStyle {
   static Color scheduleGridColorBox(BuildContext context) => Colors.black12;
   static Color scheduleGridColorFullHour(BuildContext context) =>
       Colors.black54;
-  static Color scheduleSelectionColor(BuildContext context) =>
-      Colors.blueGrey.withAlpha(50);
+  static Color scheduleSelectionColor(BuildContext context, bool collision) {
+    if (collision) {
+      return Colors.red.withAlpha(50);
+    } else {
+      return Colors.blueGrey.withAlpha(50);
+    }
+  }
+
   static Color scheduleDateSelectorColor(BuildContext context) =>
       Colors.transparent;
   static Color markerBlue(BuildContext context) =>

@@ -129,8 +129,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
                           GlobalContext.scheduleWindowInlineRect.width,
                           widget._fromDate,
                           widget._toDate),
-                      WorkScheduleSelector(
-                          _scrollController, widget._fromDate, widget._toDate),
+                      WorkScheduleSelector(_scrollController, widget._fromDate,
+                          widget._toDate, container),
                       Container(
                         margin: EdgeInsets.only(
                             left: GlobalStyle.summaryCardMargin,
@@ -194,7 +194,9 @@ class WorkScheduleSelector extends StatefulWidget {
   final ScrollController _scrollController;
   final Date _fromDate;
   final Date _toDate;
-  WorkScheduleSelector(this._scrollController, this._fromDate, this._toDate);
+  final List<List<WorkScheduleEntry>> _container;
+  WorkScheduleSelector(
+      this._scrollController, this._fromDate, this._toDate, this._container);
 
   @override
   State<WorkScheduleSelector> createState() => _WorkScheduleSelector();
@@ -204,6 +206,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     with SingleTickerProviderStateMixin {
   final double _topFrame = 0;
   final double _sideFrame = 0;
+  bool _collision = false;
 
   late Animation<double> _animation;
   late AnimationController _controller;
@@ -234,9 +237,30 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     return ypos;
   }
 
+  int _getDayIndex(double xMousePos) {
+    double day = xMousePos /
+        (GlobalContext.scheduleWindowCell.width +
+            GlobalStyle.scheduleGridStrokeWidth);
+    print(day);
+    return day.floor();
+  }
+
   bool _clampConditions(double xMousePos, double yMousePos) {
-    return !GlobalContext.scheduleWindowInlineRect
+    _collision = true;
+    bool b = !GlobalContext.scheduleWindowInlineRect
         .contains(Offset(xMousePos, yMousePos));
+    if (b) return true;
+
+    // print("${xMousePos} ${_getDayIndex(xMousePos)}");
+    var day = widget._container[_getDayIndex(xMousePos)];
+    for (var c in day) {
+      if (yMousePos >= c.y1() && yMousePos <= c.y2()) {
+        return true;
+      }
+    }
+
+    _collision = false;
+    return false;
   }
 
   void _autoScroll(double dy) {
@@ -463,7 +487,8 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
                     GlobalContext.scheduleWindowSelectionBox!.top,
                     0),
                 child: Container(
-                  color: GlobalStyle.scheduleSelectionColor(context),
+                  color:
+                      GlobalStyle.scheduleSelectionColor(context, _collision),
                   height: GlobalContext.scheduleWindowSelectionBox!.height,
                   width: GlobalContext.scheduleWindowSelectionBox!.width,
                 )),
@@ -512,9 +537,9 @@ class _GridPainter extends CustomPainter {
     gridPainter.strokeWidth = GlobalStyle.scheduleGridStrokeWidth;
     gridPainter.strokeCap = StrokeCap.round;
 
-    rectPainter.style = PaintingStyle.fill;
-    rectPainter.strokeWidth = 1;
-    rectPainter.color = GlobalStyle.scheduleSelectionColor(_context);
+    // rectPainter.style = PaintingStyle.fill;
+    // rectPainter.strokeWidth = 1;
+    // rectPainter.color = GlobalStyle.scheduleSelectionColor(_context);
   }
 
   @override
