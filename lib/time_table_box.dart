@@ -174,8 +174,8 @@ class _TimeTableBox extends State<TimeTableBox>
               .data[widget._subjectId]![widget._date] = TimeTableData({
             ColumnName.subjectId: widget._subjectId,
             ColumnName.date: widget._date,
-            ColumnName.planed: planed,
-            ColumnName.recorded: 0.0,
+            ColumnName.planedTime: planed,
+            ColumnName.recordedTime: 0.0,
             ColumnName.subject:
                 GlobalContext.data.subjectData.data[widget._subjectId]!.subject
           });
@@ -186,8 +186,8 @@ class _TimeTableBox extends State<TimeTableBox>
         widget._date: TimeTableData({
           ColumnName.subjectId: widget._subjectId,
           ColumnName.date: widget._date,
-          ColumnName.planed: planed,
-          ColumnName.recorded: 0.0,
+          ColumnName.planedTime: planed,
+          ColumnName.recordedTime: 0.0,
           ColumnName.subject:
               GlobalContext.data.subjectData.data[widget._subjectId]!.subject
         })

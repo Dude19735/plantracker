@@ -48,12 +48,12 @@ class TimeTableData {
       : subjectId = data[ColumnName.subjectId],
         date = data[ColumnName.date],
         subject = data[ColumnName.subject],
-        planed = data[ColumnName.planed],
-        recorded = data[ColumnName.recorded];
+        planed = data[ColumnName.planedTime],
+        recorded = data[ColumnName.recordedTime];
 
   @override
   String toString() {
-    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.date}: $date\n${ColumnName.subject}: $subject\n${ColumnName.planed}: $planed\n${ColumnName.recorded}: $recorded\n";
+    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.date}: $date\n${ColumnName.subject}: $subject\n${ColumnName.planedTime}: $planed\n${ColumnName.recordedTime}: $recorded\n";
   }
 }
 
@@ -78,8 +78,8 @@ class SchedulePlanData {
       : subjectId = data[ColumnName.subjectId],
         subjectAcronym = data[ColumnName.subjectAcronym],
         subject = data[ColumnName.subject],
-        workTypeId = data[ColumnName.workTypeId],
-        workType = data[ColumnName.workType],
+        workTypeId = data[ColumnName.planUnitTypeId],
+        workType = data[ColumnName.planUnitType],
         seriesId = data[ColumnName.seriesId],
         seriesFromDate = data[ColumnName.seriesFromDate],
         seriesToDate = data[ColumnName.seriesToDate],
@@ -91,7 +91,7 @@ class SchedulePlanData {
 
   @override
   String toString() {
-    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.subjectAcronym}: $subjectAcronym\n${ColumnName.subject}: $subject\n${ColumnName.workTypeId}: $workTypeId\n${ColumnName.workType}: $workType\n${ColumnName.seriesId}: $seriesId\n${ColumnName.seriesFromDate}: $seriesFromDate\n${ColumnName.seriesToDate}: $seriesToDate\n${ColumnName.noteId}: $noteId\n${ColumnName.note}: $note\n${ColumnName.date}: $date\n${ColumnName.fromTime}: $fromTime\n${ColumnName.toTime}: $toTime\n";
+    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.subjectAcronym}: $subjectAcronym\n${ColumnName.subject}: $subject\n${ColumnName.planUnitTypeId}: $workTypeId\n${ColumnName.planUnitType}: $workType\n${ColumnName.seriesId}: $seriesId\n${ColumnName.seriesFromDate}: $seriesFromDate\n${ColumnName.seriesToDate}: $seriesToDate\n${ColumnName.noteId}: $noteId\n${ColumnName.note}: $note\n${ColumnName.date}: $date\n${ColumnName.fromTime}: $fromTime\n${ColumnName.toTime}: $toTime\n";
   }
 }
 
@@ -104,12 +104,12 @@ class SummaryData {
   SummaryData(Map<String, dynamic> data)
       : subjectId = data[ColumnName.subjectId],
         subject = data[ColumnName.subject],
-        planed = data[ColumnName.planed],
-        recorded = data[ColumnName.recorded];
+        planed = data[ColumnName.planedTime],
+        recorded = data[ColumnName.recordedTime];
 
   @override
   String toString() {
-    return "${ColumnName.subject}: $subject\n${ColumnName.planed}: $planed\n${ColumnName.recorded}: $recorded\n";
+    return "${ColumnName.subject}: $subject\n${ColumnName.planedTime}: $planed\n${ColumnName.recordedTime}: $recorded\n";
   }
 }
 
@@ -257,8 +257,8 @@ class GlobalData {
       }
       var pack = {
         ColumnName.subjectId: subjectId,
-        ColumnName.planed: planed,
-        ColumnName.recorded: recorded,
+        ColumnName.planedTime: planed,
+        ColumnName.recordedTime: recorded,
         ColumnName.subject: subjectName
       };
 
@@ -301,8 +301,7 @@ class GlobalData {
     schedulePlanData.data.remove(day.toInt());
   }
 
-  void _delayedLoad(
-      int val, Date from, Date to, ScrollDirection direction) {
+  void _delayedLoad(int val, Date from, Date to, ScrollDirection direction) {
     var adj = DataUtils.getAdjacentTimePeriods(from, to, direction);
     Debugger.data("Delayed load $val from $from to $to with $direction");
     var newFrom = adj["prev_from"];
@@ -316,9 +315,7 @@ class GlobalData {
       // if we get to an idle state
       // avoid rapid database calls on wobbeling
       if (direction == ScrollDirection.idle) {
-        for (Date d = _fromDate;
-            d.compareTo(newFrom) < 0;
-            d = d.addDays(1)) {
+        for (Date d = _fromDate; d.compareTo(newFrom) < 0; d = d.addDays(1)) {
           Debugger.data("prev remove $d");
           _remove(d);
         }
@@ -375,7 +372,11 @@ class GlobalData {
 
   int _token(Date from, Date to) {
     return Object.hash(
-        DateTime.now().toUtc().difference(DateTime(_initTime.year(), _initTime.month(), _initTime.day())).inMicroseconds,
+        DateTime.now()
+            .toUtc()
+            .difference(
+                DateTime(_initTime.year(), _initTime.month(), _initTime.day()))
+            .inMicroseconds,
         from.toInt(),
         to.toInt());
   }

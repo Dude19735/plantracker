@@ -1,22 +1,43 @@
 class ColumnName {
+  // So far used for PlanedWorkUnit, these can be for the WorkUnitEntry
   static const String date = "Date";
+  // So far used for PlanedWorkUnit, these can be for the WorkUnitEntry
   static const String fromTime = "FromTime";
+  // these can be used for the WorkUnitEntry
   static const String toTime = "ToTime";
-  static const String planed = "Planed";
-  static const String recorded = "Recorded";
-  static const String subject = "Subject";
-  static const String subjectAcronym = "SubjectAcronym";
+  // break, work or a rainbow unicorn
+  static const String workUnitType = "WorkUnitType";
+  static const String workUnitGroupId = "WorkUnitGroupId";
+  // planed time in the time table => should be a number typed by the user
+  static const String planedTime = "PlanedTime";
+  // recorded time using stop watch => result of group by and sum
+  static const String recordedTime = "RecordedTime";
+  // from stored data, updatable in settings
   static const String subjectId = "SubjectId";
-  static const String workTypeId = "WorkTypeId";
-  static const String workType = "WorkType";
+  // from stored data, updatable in settings
+  static const String subject = "Subject";
+  // from stored data, updatable in settings
+  static const String subjectAcronym = "SubjectAcronym";
+  // from stored data, updatable in settings??? Maybe not because everything depends on it
+  static const String planUnitTypeId = "PlanUnitTypeId";
+  // free work, lecture, exercise... from stored data
+  static const String planUnitType = "PlanUnitType";
+  // series table?
   static const String seriesId = "SeriesId";
   static const String series = "Series";
+  // maybe this is not necessary => can be determined on the fly
   static const String seriesFromDate = "SeriesFromDate";
+  // maybe this is not necessary => can be determined on the fly
   static const String seriesToDate = "SeriesToDate";
+  // just some suplementary stuff
   static const String noteId = "NoteId";
+  // some suplementary stuff
   static const String note = "Note";
+  // ability to activate or deactivate subjects
   static const String active = "Active";
+  // maybe not necessary, too complicated...
   static const String activeFromDate = "ActiveFromDate";
+  // maybe not necessary, too complicated...
   static const String activeToDate = "ActiveToDate";
 }
 
