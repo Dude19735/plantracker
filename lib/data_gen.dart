@@ -16,34 +16,29 @@ class DataGen {
       double finalTime = ((5.5 + subjectId) * 60 * 60);
       double fromTime = ((3.0 + subjectId) * 60 * 60);
       double toTime = fromTime + 30 * 60;
-      int counter = 0;
       while (fromTime < finalTime) {
-        if (counter >= 0) {
-          res += """{
+        res += """{
             "${ColumnName.workUnitId}": $workUnitId,
             "${ColumnName.subjectId}": $subjectId,
             "${ColumnName.workUnitGroupId}": null,
             "${ColumnName.workUnitType}": ${workUnitType.index}, 
-            "${ColumnName.date}": ${d.toInt()},        
+            "${ColumnName.date}": ${d.toInt()},
             "${ColumnName.fromTime}": $fromTime,
             "${ColumnName.toTime}": $toTime
           },""";
-        }
         workUnitId++;
         fromTime = toTime;
-        toTime += (30 * 60);
-        // if (workUnitType == WorkUnitType.work) {
-        //   toTime = toTime + (30 + rand.nextInt(10) - 5) * 60;
-        // } else {
-        //   toTime = toTime + (10 + rand.nextInt(10) - 5) * 60;
-        // }
+        // toTime += (30 * 60);
+        if (workUnitType == WorkUnitType.pause) {
+          toTime = toTime + (30 + rand.nextInt(10) - 5) * 60;
+        } else {
+          toTime = toTime + (10 + rand.nextInt(3) - 6) * 60;
+        }
         if (workUnitType == WorkUnitType.pause) {
           workUnitType = WorkUnitType.work;
         } else {
           workUnitType = WorkUnitType.pause;
         }
-
-        counter++;
       }
     }
     res = res.substring(0, res.length - 1);

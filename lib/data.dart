@@ -59,24 +59,35 @@ class TimeTableData {
 
 class DataChangedNotificationSchedulePlanData extends DataChangedNotification {}
 
-class ScheduleRecordedData {
-  final int workUnitId;
+class ScheduleData {
   final SubjectData subject;
-  final int? workUnitGroupId;
-  final WorkUnitType workUnitType;
   final int date;
   final double fromTime;
   final double toTime;
 
+  ScheduleData(this.subject, this.date, this.fromTime, this.toTime);
+
+  @override
+  String toString() {
+    return "${ColumnName.date}: $date\n${ColumnName.fromTime}: $fromTime\n${ColumnName.toTime}: $toTime\n";
+  }
+}
+
+class ScheduleRecordedData extends ScheduleData {
+  final int workUnitId;
+  final int? workUnitGroupId;
+  final WorkUnitType workUnitType;
+
   ScheduleRecordedData(
       Map<String, dynamic> data, Data<TSubjectData> subjectData)
       : workUnitId = data[ColumnName.workUnitId],
-        subject = subjectData.data[data[ColumnName.subjectId]]!,
         workUnitGroupId = data[ColumnName.workUnitGroupId],
         workUnitType = WorkUnitType.values[data[ColumnName.workUnitType]],
-        date = data[ColumnName.date],
-        fromTime = data[ColumnName.fromTime],
-        toTime = data[ColumnName.toTime];
+        super(
+            subjectData.data[data[ColumnName.subjectId]]!,
+            data[ColumnName.date],
+            data[ColumnName.fromTime],
+            data[ColumnName.toTime]);
 
   @override
   String toString() {
@@ -84,8 +95,7 @@ class ScheduleRecordedData {
   }
 }
 
-class SchedulePlanData {
-  final SubjectData subject;
+class SchedulePlanData extends ScheduleData {
   final int workTypeId;
   final String workType;
   final int seriesId;
@@ -93,22 +103,20 @@ class SchedulePlanData {
   final int seriesToDate;
   final int noteId;
   final String note;
-  final int date;
-  final double fromTime;
-  final double toTime;
 
   SchedulePlanData(Map<String, dynamic> data, Data<TSubjectData> subjectData)
-      : subject = subjectData.data[data[ColumnName.subjectId]]!,
-        workTypeId = data[ColumnName.planUnitTypeId],
+      : workTypeId = data[ColumnName.planUnitTypeId],
         workType = data[ColumnName.planUnitType],
         seriesId = data[ColumnName.seriesId],
         seriesFromDate = data[ColumnName.seriesFromDate],
         seriesToDate = data[ColumnName.seriesToDate],
         noteId = data[ColumnName.noteId],
         note = data[ColumnName.note],
-        date = data[ColumnName.date],
-        fromTime = data[ColumnName.fromTime],
-        toTime = data[ColumnName.toTime];
+        super(
+            subjectData.data[data[ColumnName.subjectId]]!,
+            data[ColumnName.date],
+            data[ColumnName.fromTime],
+            data[ColumnName.toTime]);
 
   @override
   String toString() {
