@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/work_schedule_date_bar.dart';
-import 'package:scheduler/work_schedule_recorded_entry.dart';
 import 'package:scheduler/work_schedule_time_bar.dart';
 import 'package:scheduler/work_schedule_planed_entry.dart';
+import 'package:scheduler/work_schedule_recorded_entry.dart';
+import 'package:scheduler/data.dart';
 import 'package:scheduler/date.dart';
 
 class WorkScheduleInnerView extends StatefulWidget {
@@ -21,83 +22,68 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
   late ScrollController _scrollController;
   // late List<WorkScheduleEntry> _container;
 
-  List<List<WorkScheduleRecordedEntry>> _getRecordedEntries(double width) {
-    var from = widget._fromDate;
-    var to = widget._toDate;
+  Map<
+          String,
+          Function(
+              double x, double y, double width, double height, Object? data)>
+      _entryFactory = {
+    (WorkSchedulePlanedEntry).toString(): (double x, double y, double width,
+            double height, Object? data) =>
+        WorkSchedulePlanedEntry(x, y, width, height, data as SchedulePlanData?),
+    (WorkScheduleRecordedEntry).toString():
+        (double x, double y, double width, double height, Object? data) =>
+            WorkScheduleRecordedEntry(
+                x, y, width, height, data as ScheduleRecordedData?)
+  };
 
+  MapEntry<double, double> _getFromTo(double fromTime, double toTime) {
     double sm = GlobalStyle.summaryCardMargin;
     double sw = GlobalStyle.scheduleGridStrokeWidth;
 
-    List<List<WorkScheduleRecordedEntry>> records = [];
-    double lastTime = 0;
+    double pxPerSecond = (GlobalStyle.scheduleCellHeightPx + sw) /
+        GlobalSettings.scheduleBoxRangeS;
+
+    double fromPx = fromTime * pxPerSecond + sm - sw;
+    double toPx = toTime * pxPerSecond + sm;
+
+    return MapEntry(fromPx, toPx);
+  }
+
+  List<List<T>> _getEntries<T>(
+      double width, Map<int, List<ScheduleData>> data) {
+    var from = widget._fromDate;
+    var to = widget._toDate;
+
+    List<List<T>> records = [];
     double lastHeight = 0;
     for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
       int key = d.toInt();
 
-      var record = GlobalContext.data.scheduleRecordedData.data[key];
+      var record = data[key];
       int oldDayOffset = -1;
-      double pxPerSecond = (GlobalStyle.scheduleCellHeightPx + sw) /
-          GlobalSettings.scheduleBoxRangeS;
       if (record != null) {
         for (var e in record) {
-          double fromTime = e.fromTime * pxPerSecond + sm;
-          double toTime = e.toTime * pxPerSecond + sm;
+          var px = _getFromTo(e.fromTime, e.toTime);
 
           var date = Date.fromInt(e.date);
+          double height = px.value - px.key;
           int dayOffset = from.absDiff(date);
           if (dayOffset != oldDayOffset) {
             lastHeight = 0;
             records.add([
-              WorkScheduleRecordedEntry(
-                  0, fromTime, width, toTime - fromTime, e)
+              _entryFactory[T.toString()]!(0, px.key, width, height, e) as T
             ]);
           } else {
-            records.last.add(WorkScheduleRecordedEntry(
-                0, fromTime - lastHeight, width, toTime - fromTime, e));
+            records.last.add(_entryFactory[T.toString()]!(
+                0, px.key - lastHeight, width, height, e) as T);
           }
           oldDayOffset = dayOffset;
-          lastTime = toTime;
-          lastHeight += records.last.last.height();
+          lastHeight += height;
         }
       }
     }
 
     return records;
-  }
-
-  List<List<WorkSchedulePlanedEntry>> _getPlanedEntries(double width) {
-    var from = widget._fromDate;
-    var to = widget._toDate;
-
-    double sm = GlobalStyle.summaryCardMargin;
-    double sw = GlobalStyle.scheduleGridStrokeWidth;
-
-    List<List<WorkSchedulePlanedEntry>> entries = [];
-    for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
-      int key = d.toInt();
-
-      var week = GlobalContext.data.schedulePlanData.data[key];
-      int oldDayOffset = -1;
-      double pxPerSecond = (GlobalStyle.scheduleCellHeightPx + sw) /
-          GlobalSettings.scheduleBoxRangeS;
-      if (week != null) {
-        for (var e in week) {
-          double y = e.fromTime * pxPerSecond + sm;
-          double height = (e.toTime - e.fromTime) * pxPerSecond - sw;
-
-          var date = Date.fromInt(e.date);
-          int dayOffset = from.absDiff(date);
-          if (dayOffset != oldDayOffset) {
-            entries.add([WorkSchedulePlanedEntry(0, y, width, height, e)]);
-          } else {
-            entries.last.add(WorkSchedulePlanedEntry(0, y, width, height, e));
-          }
-          oldDayOffset = dayOffset;
-        }
-      }
-    }
-
-    return entries;
   }
 
   @override
@@ -133,24 +119,16 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
             GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
         ccsbx;
 
-    var container = _getPlanedEntries(boxWidth);
-    var records = _getRecordedEntries(boxWidth);
+    var container = _getEntries<WorkSchedulePlanedEntry>(
+        boxWidth, GlobalContext.data.schedulePlanData.data);
+    var records = _getEntries<WorkScheduleRecordedEntry>(
+        boxWidth, GlobalContext.data.scheduleRecordedData.data);
 
-    int width = container.length;
-    List<Container> columns = [
-      for (int i = 0; i < width; i++)
-        Container(width: 50, height: 100, color: Color(i * 20))
-    ];
-
-    // _container = List<Container>.filled(
-    //     ccsbx,
-    //     Container(
-    //         margin: EdgeInsets.only(
-    //             left: GlobalStyle.summaryCardMargin,
-    //             right: GlobalStyle.summaryCardMargin),
-    //         width: boxWidth,
-    //         height: 100,
-    //         color: Colors.yellow));
+    // int width = container.length;
+    // List<Container> columns = [
+    //   for (int i = 0; i < width; i++)
+    //     Container(width: 50, height: 100, color: Color(i * 20))
+    // ];
 
     var view = CustomScrollView(controller: _scrollController, slivers: [
       SliverAppBar(
@@ -182,30 +160,17 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
                             left: GlobalStyle.summaryCardMargin,
                             right: GlobalStyle.summaryCardMargin),
                         child: Row(children:
-                                // for (var day in container)
-                                //   Expanded(
-                                //     child: Column(children: day),
-                                //   ),
-                                [
+                            // for (var day in container)
+                            //   Expanded(
+                            //     child: Column(children: day),
+                            //   ),
+                            [
                           for (var day in records)
                             Expanded(
                                 child: Column(
                               children: day,
                             ))
-                        ]
-                            // columns,
-                            //   [
-                            // Expanded(
-                            //     child: Column(children: [
-                            //   Container(
-                            //       color: Colors.amber,
-                            //       width: boxWidth,
-                            //       height: 250),
-                            //   Container(
-                            //       color: Colors.red, width: boxWidth, height: 250)
-                            // ])),
-                            // ]
-                            ),
+                        ]),
                       )
                     ],
                   ),
