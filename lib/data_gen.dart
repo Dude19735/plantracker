@@ -1,11 +1,54 @@
 import 'dart:math';
+import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/data_columns.dart';
 import 'package:scheduler/date.dart';
 
 class DataGen {
   static String testWorkRecord(Date fromDate, Date toDate) {
-    return "";
+    Random rand = Random();
+
+    String res = "[";
+    int workUnitId = 0;
+    for (var d = fromDate; d.compareTo(toDate) <= 0; d = d.addDays(1)) {
+      int subjectId = d.weekday() - 1;
+      WorkUnitType workUnitType = WorkUnitType.work;
+      double finalTime = ((5.5 + subjectId) * 60 * 60);
+      double fromTime = ((3.0 + subjectId) * 60 * 60);
+      double toTime = fromTime + 30 * 60;
+      int counter = 0;
+      while (fromTime < finalTime) {
+        if (counter >= 0) {
+          res += """{
+            "${ColumnName.workUnitId}": $workUnitId,
+            "${ColumnName.subjectId}": $subjectId,
+            "${ColumnName.workUnitGroupId}": null,
+            "${ColumnName.workUnitType}": ${workUnitType.index}, 
+            "${ColumnName.date}": ${d.toInt()},        
+            "${ColumnName.fromTime}": $fromTime,
+            "${ColumnName.toTime}": $toTime
+          },""";
+        }
+        workUnitId++;
+        fromTime = toTime;
+        toTime += (30 * 60);
+        // if (workUnitType == WorkUnitType.work) {
+        //   toTime = toTime + (30 + rand.nextInt(10) - 5) * 60;
+        // } else {
+        //   toTime = toTime + (10 + rand.nextInt(10) - 5) * 60;
+        // }
+        if (workUnitType == WorkUnitType.pause) {
+          workUnitType = WorkUnitType.work;
+        } else {
+          workUnitType = WorkUnitType.pause;
+        }
+
+        counter++;
+      }
+    }
+    res = res.substring(0, res.length - 1);
+    res += "]";
+    return res;
   }
 
   static String testDateScheduleViewPlan(Date fromDate, Date toDate) {
@@ -18,8 +61,6 @@ class DataGen {
       int subjectId = d.weekday() - 1;
       res += """{
           "${ColumnName.subjectId}": $subjectId,
-          "${ColumnName.subjectAcronym}": "${DataValues.subjectAcronym[subjectId]}",
-          "${ColumnName.subject}": "${DataValues.subjectNames[subjectId]}",
           "${ColumnName.planUnitTypeId}": 1,
           "${ColumnName.planUnitType}": "Free Work",  
           "${ColumnName.seriesId}": -1,    
@@ -43,7 +84,8 @@ class DataGen {
       res += """{
           "${ColumnName.subjectId}": $i,
           "${ColumnName.subjectAcronym}": "${DataValues.subjectNames[i]}",
-          "${ColumnName.subject}": "${DataValues.subjectNames[i]}",
+          "${ColumnName.subjectName}": "${DataValues.subjectNames[i]}",
+          "${ColumnName.subjectColor}": "${DataValues.subjectColor[i]}",
           "${ColumnName.active}": 1,
           "${ColumnName.activeFromDate}": ${fromDate.toInt()},
           "${ColumnName.activeToDate}": ${toDate.toInt()}
@@ -64,8 +106,7 @@ class DataGen {
         ColumnName.subjectId: subjectId,
         ColumnName.date: d.toInt(),
         ColumnName.planedTime: DataValues.planedTime[d.weekday()],
-        ColumnName.recordedTime: DataValues.recordedTime[d.weekday()],
-        ColumnName.subject: DataValues.subjectNames[subjectId]
+        ColumnName.recordedTime: DataValues.recordedTime[d.weekday()]
       });
     }
 

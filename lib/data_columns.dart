@@ -5,6 +5,7 @@ class ColumnName {
   static const String fromTime = "FromTime";
   // these can be used for the WorkUnitEntry
   static const String toTime = "ToTime";
+  static const String workUnitId = "WorkUnitId";
   // break, work or a rainbow unicorn
   static const String workUnitType = "WorkUnitType";
   static const String workUnitGroupId = "WorkUnitGroupId";
@@ -15,7 +16,9 @@ class ColumnName {
   // from stored data, updatable in settings
   static const String subjectId = "SubjectId";
   // from stored data, updatable in settings
-  static const String subject = "Subject";
+  static const String subjectName = "SubjectName";
+  // subject color
+  static const String subjectColor = "SubjectColor";
   // from stored data, updatable in settings
   static const String subjectAcronym = "SubjectAcronym";
   // from stored data, updatable in settings??? Maybe not because everything depends on it
@@ -60,6 +63,16 @@ class DataValues {
     "4_Fr_a",
     "5_Sa_a",
     "6_Su_a"
+  ];
+
+  static const List<String> subjectColor = [
+    "255,0,0,150",
+    "0,255,0,150",
+    "0,0,255,150",
+    "120,0,255,150",
+    "120,120,0,150",
+    "255,255,0,150",
+    "90,255,10,150"
   ];
 
   static const double _maxPlanedTime = 5.0;

@@ -176,9 +176,9 @@ class _TimeTableBox extends State<TimeTableBox>
             ColumnName.date: widget._date,
             ColumnName.planedTime: planed,
             ColumnName.recordedTime: 0.0,
-            ColumnName.subject:
-                GlobalContext.data.subjectData.data[widget._subjectId]!.subject
-          });
+            ColumnName.subjectName: GlobalContext
+                .data.subjectData.data[widget._subjectId]!.subjectName
+          }, GlobalContext.data.subjectData);
         }
       }
     } else if (planed != 0) {
@@ -188,9 +188,9 @@ class _TimeTableBox extends State<TimeTableBox>
           ColumnName.date: widget._date,
           ColumnName.planedTime: planed,
           ColumnName.recordedTime: 0.0,
-          ColumnName.subject:
-              GlobalContext.data.subjectData.data[widget._subjectId]!.subject
-        })
+          ColumnName.subjectName: GlobalContext
+              .data.subjectData.data[widget._subjectId]!.subjectName
+        }, GlobalContext.data.subjectData)
       };
       send = true;
     }

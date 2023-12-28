@@ -1,8 +1,27 @@
 import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:scheduler/date.dart';
 
 class DataUtils {
+  static Color str2Color(String colorStr) {
+    var cl = colorStr.split(',');
+    int r = int.parse(cl[0].trim());
+    int g = int.parse(cl[1].trim());
+    int b = int.parse(cl[2].trim());
+    int a = int.parse(cl[3].trim());
+    assert(r < 256 &&
+        r >= 0 &&
+        g < 256 &&
+        r >= 0 &&
+        g < 256 &&
+        g >= 0 &&
+        a < 256 &&
+        a >= 0);
+    Color res = Colors.black;
+    return res.withRed(r).withGreen(g).withBlue(b).withAlpha(a);
+  }
+
   static double getWorkRatio(double recorded, double planed) {
     double workRatio = 0;
     if (planed != 0) {
