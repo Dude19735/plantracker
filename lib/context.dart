@@ -6,6 +6,8 @@ import 'dart:ui';
 
 import 'package:scheduler/time_table_box.dart';
 
+enum WorkUnitType { work, pause }
+
 class GlobalContext {
   static String currentLocale = 'en-GB';
 
@@ -77,6 +79,7 @@ class GlobalStyle {
   static const double scheduleGridStrokeWidth = 1.0;
   static const double scheduleCellHeightPx = 30;
   static const double scheduleTimeBarWidth = 50;
+  static const double schedulePlanedUnitWithP = 0.7;
 
   static Color scheduleGridColorBox(BuildContext context) => Colors.black12;
   static Color scheduleGridColorFullHour(BuildContext context) =>
@@ -96,6 +99,14 @@ class GlobalStyle {
   static Color markerRed(BuildContext context) =>
       Color.fromARGB(255, 176, 48, 48);
   static Color scheduleBackgroundColor(BuildContext context) => Colors.white;
+  static Color scheduleRecordedColor(
+      BuildContext context, WorkUnitType workUnitType) {
+    if (workUnitType == WorkUnitType.pause) {
+      return Colors.blue;
+    } else {
+      return Colors.red;
+    }
+  }
 
   // ===========================================================================
   // Time table colors and paint settings

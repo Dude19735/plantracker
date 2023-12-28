@@ -16,7 +16,8 @@ class DataChangedNotificationSubjectData extends DataChangedNotification {}
 class SubjectData {
   final int subjectId;
   String subjectAcronym;
-  String subject;
+  String subjectName;
+  Color subjectColor;
   int active;
   int activeFromDate;
   int activeToDate;
@@ -24,45 +25,67 @@ class SubjectData {
   SubjectData(Map<String, dynamic> data)
       : subjectId = data[ColumnName.subjectId],
         subjectAcronym = data[ColumnName.subjectAcronym],
-        subject = data[ColumnName.subject],
+        subjectName = data[ColumnName.subjectName],
+        subjectColor = DataUtils.str2Color(data[ColumnName.subjectColor]),
         active = data[ColumnName.active],
         activeFromDate = data[ColumnName.activeFromDate],
         activeToDate = data[ColumnName.activeToDate];
 
   @override
   String toString() {
-    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.subject}: $subject${ColumnName.active}: $active\n${ColumnName.activeFromDate}: $activeFromDate\n${ColumnName.activeToDate}: $activeToDate\n";
+    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.subjectName}: $subjectName${ColumnName.active}: $active\n${ColumnName.activeFromDate}: $activeFromDate\n${ColumnName.activeToDate}: $activeToDate\n";
   }
 }
 
 class DataChangedNotificationTimeTableData extends DataChangedNotification {}
 
 class TimeTableData {
-  final int subjectId;
+  final SubjectData subject;
   final int date;
   double planed;
   double recorded;
-  final String subject;
 
-  TimeTableData(Map<String, dynamic> data)
-      : subjectId = data[ColumnName.subjectId],
+  TimeTableData(Map<String, dynamic> data, Data<TSubjectData> subjectData)
+      : subject = subjectData.data[data[ColumnName.subjectId]]!,
         date = data[ColumnName.date],
-        subject = data[ColumnName.subject],
         planed = data[ColumnName.planedTime],
         recorded = data[ColumnName.recordedTime];
 
   @override
   String toString() {
-    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.date}: $date\n${ColumnName.subject}: $subject\n${ColumnName.planedTime}: $planed\n${ColumnName.recordedTime}: $recorded\n";
+    return "${ColumnName.subjectId}: ${subject.subjectId}\n${ColumnName.date}: $date\n${ColumnName.subjectName}: ${subject.subjectName}\n${ColumnName.planedTime}: $planed\n${ColumnName.recordedTime}: $recorded\n";
   }
 }
 
 class DataChangedNotificationSchedulePlanData extends DataChangedNotification {}
 
+class ScheduleRecordedData {
+  final int workUnitId;
+  final SubjectData subject;
+  final int? workUnitGroupId;
+  final WorkUnitType workUnitType;
+  final int date;
+  final double fromTime;
+  final double toTime;
+
+  ScheduleRecordedData(
+      Map<String, dynamic> data, Data<TSubjectData> subjectData)
+      : workUnitId = data[ColumnName.workUnitId],
+        subject = subjectData.data[data[ColumnName.subjectId]]!,
+        workUnitGroupId = data[ColumnName.workUnitGroupId],
+        workUnitType = WorkUnitType.values[data[ColumnName.workUnitType]],
+        date = data[ColumnName.date],
+        fromTime = data[ColumnName.fromTime],
+        toTime = data[ColumnName.toTime];
+
+  @override
+  String toString() {
+    return "${ColumnName.workUnitId}: $workUnitId\n${ColumnName.subjectId}: ${subject.subjectId}\n${ColumnName.workUnitGroupId}: $workUnitGroupId\n${ColumnName.workUnitType}: $workUnitType\n${ColumnName.date}: $date\n${ColumnName.fromTime}: $fromTime\n${ColumnName.toTime}: $toTime\n";
+  }
+}
+
 class SchedulePlanData {
-  final int subjectId;
-  final String subjectAcronym;
-  final String subject;
+  final SubjectData subject;
   final int workTypeId;
   final String workType;
   final int seriesId;
@@ -74,10 +97,8 @@ class SchedulePlanData {
   final double fromTime;
   final double toTime;
 
-  SchedulePlanData(Map<String, dynamic> data)
-      : subjectId = data[ColumnName.subjectId],
-        subjectAcronym = data[ColumnName.subjectAcronym],
-        subject = data[ColumnName.subject],
+  SchedulePlanData(Map<String, dynamic> data, Data<TSubjectData> subjectData)
+      : subject = subjectData.data[data[ColumnName.subjectId]]!,
         workTypeId = data[ColumnName.planUnitTypeId],
         workType = data[ColumnName.planUnitType],
         seriesId = data[ColumnName.seriesId],
@@ -91,7 +112,7 @@ class SchedulePlanData {
 
   @override
   String toString() {
-    return "${ColumnName.subjectId}: $subjectId\n${ColumnName.subjectAcronym}: $subjectAcronym\n${ColumnName.subject}: $subject\n${ColumnName.planUnitTypeId}: $workTypeId\n${ColumnName.planUnitType}: $workType\n${ColumnName.seriesId}: $seriesId\n${ColumnName.seriesFromDate}: $seriesFromDate\n${ColumnName.seriesToDate}: $seriesToDate\n${ColumnName.noteId}: $noteId\n${ColumnName.note}: $note\n${ColumnName.date}: $date\n${ColumnName.fromTime}: $fromTime\n${ColumnName.toTime}: $toTime\n";
+    return "${ColumnName.subjectId}: ${subject.subjectId}\n${ColumnName.subjectAcronym}: ${subject.subjectAcronym}\n${ColumnName.subjectName}: ${subject.subjectName}\n${ColumnName.planUnitTypeId}: $workTypeId\n${ColumnName.planUnitType}: $workType\n${ColumnName.seriesId}: $seriesId\n${ColumnName.seriesFromDate}: $seriesFromDate\n${ColumnName.seriesToDate}: $seriesToDate\n${ColumnName.noteId}: $noteId\n${ColumnName.note}: $note\n${ColumnName.date}: $date\n${ColumnName.fromTime}: $fromTime\n${ColumnName.toTime}: $toTime\n";
   }
 }
 
@@ -103,13 +124,13 @@ class SummaryData {
 
   SummaryData(Map<String, dynamic> data)
       : subjectId = data[ColumnName.subjectId],
-        subject = data[ColumnName.subject],
+        subject = data[ColumnName.subjectName],
         planed = data[ColumnName.planedTime],
         recorded = data[ColumnName.recordedTime];
 
   @override
   String toString() {
-    return "${ColumnName.subject}: $subject\n${ColumnName.planedTime}: $planed\n${ColumnName.recordedTime}: $recorded\n";
+    return "${ColumnName.subjectName}: $subject\n${ColumnName.planedTime}: $planed\n${ColumnName.recordedTime}: $recorded\n";
   }
 }
 
@@ -119,6 +140,7 @@ typedef TSummaryData = List<SummaryData>;
 typedef TTimeTableData = Map<int, Map<int, TimeTableData>>;
 // map by Date
 typedef TSchedulePlanData = Map<int, List<SchedulePlanData>>;
+typedef TScheduleRecordedData = Map<int, List<ScheduleRecordedData>>;
 
 class Data<D> {
   late final D data;
@@ -135,12 +157,15 @@ class Data<D> {
     } else if (D == TSchedulePlanData) {
       // ignore: prefer_collection_literals
       data = <int, List<SchedulePlanData>>{} as D;
+    } else if (D == TScheduleRecordedData) {
+      // ignore: prefer_collection_literals
+      data = <int, List<ScheduleRecordedData>>{} as D;
     } else {
       throw Exception("Message type [$D] not defined in data parser");
     }
   }
 
-  Data.fromJsonStr(String jsonStr) {
+  Data.fromJsonStr(String jsonStr, Data<TSubjectData>? subjectData) {
     List<dynamic> json = jsonDecode(jsonStr);
     if (D == TSummaryData) {
       // data = TSummaryData.empty() as D;
@@ -149,8 +174,9 @@ class Data<D> {
     } else if (D == TTimeTableData) {
       data = <int, Map<int, TimeTableData>>{} as D;
 
-      List<TimeTableData> d = json.map((item) => TimeTableData(item)).toList();
-      var temp = groupBy(d, (TimeTableData elem) => elem.subjectId);
+      List<TimeTableData> d =
+          json.map((item) => TimeTableData(item, subjectData!)).toList();
+      var temp = groupBy(d, (TimeTableData elem) => elem.subject.subjectId);
       for (var subjectId in temp.keys) {
         var t = groupBy(temp[subjectId] as List<TimeTableData>,
             (TimeTableData elem) => elem.date);
@@ -166,8 +192,13 @@ class Data<D> {
       }
     } else if (D == TSchedulePlanData) {
       List<SchedulePlanData> d =
-          json.map((item) => SchedulePlanData(item)).toList();
+          json.map((item) => SchedulePlanData(item, subjectData!)).toList();
       data = groupBy(d, (SchedulePlanData elem) => elem.date) as D;
+      // data = json.map((item) => SchedulePlanData(item)).toList() as D;
+    } else if (D == TScheduleRecordedData) {
+      List<ScheduleRecordedData> d =
+          json.map((item) => ScheduleRecordedData(item, subjectData!)).toList();
+      data = groupBy(d, (ScheduleRecordedData elem) => elem.date) as D;
       // data = json.map((item) => SchedulePlanData(item)).toList() as D;
     } else if (D == TSubjectData) {
       List<SubjectData> temp = json.map((item) => SubjectData(item)).toList();
@@ -178,7 +209,8 @@ class Data<D> {
       }
       data = temp3 as D;
     } else {
-      throw Exception("Message type [$D] not defined in data parser");
+      throw Exception(
+          "Message type [$D] not defined in data parser\n(This is my own exception inside Data.fromJsonStr(String jsonStr) constructor ;-))");
     }
   }
 
@@ -198,10 +230,11 @@ class _GlobalDataItem {
 
 class GlobalData {
   Map<int, double> minSubjectTextHeight = {};
+  late Data<TSubjectData> subjectData;
   late Data<TSummaryData> summaryData;
   late Data<TTimeTableData> timeTableData;
   late Data<TSchedulePlanData> schedulePlanData;
-  late Data<TSubjectData> subjectData;
+  late Data<TScheduleRecordedData> scheduleRecordedData;
   Queue<MapEntry<int, _GlobalDataItem>> _queue = Queue();
   int _val = 0;
   Date _initTime = Date.today();
@@ -212,22 +245,22 @@ class GlobalData {
   GlobalData() {
     timeTableData = Data();
     schedulePlanData = Data();
+    scheduleRecordedData = Data();
     summaryData = Data();
 
     // current week
     var from = GlobalContext.fromDateWindow;
     var to = GlobalContext.toDateWindow;
-    _load(from, to);
 
     var adj = DataUtils.getAdjacentTimePeriods(from, to, ScrollDirection.idle);
-    _load(adj["prev_from"], adj["prev_to"]);
-    _load(adj["next_from"], adj["next_to"]);
-
     _fromDate = adj["prev_from"];
     _toDate = adj["next_to"];
+    _subjects(_fromDate, _toDate);
+    _load(from, to, subjectData);
+    _load(adj["prev_from"], adj["prev_to"], subjectData);
+    _load(adj["next_from"], adj["next_to"], subjectData);
 
     summaryFT(from, to);
-    _subjects(_fromDate, _toDate);
   }
 
   void setSummaryTextHeight(TextStyle style, double summaryWidth) {
@@ -249,7 +282,7 @@ class GlobalData {
       var subject = timeTableData.data[subjectId]!;
       for (var date in subject.keys) {
         if (subjectName == "") {
-          subjectName = subject[date]!.subject;
+          subjectName = subject[date]!.subject.subjectName;
         }
         if (date < fromDate || date > toDate) continue;
         planed += subject[date]!.planed;
@@ -259,7 +292,7 @@ class GlobalData {
         ColumnName.subjectId: subjectId,
         ColumnName.planedTime: planed,
         ColumnName.recordedTime: recorded,
-        ColumnName.subject: subjectName
+        ColumnName.subjectName: subjectName
       };
 
       summaryData.data.add(SummaryData(pack));
@@ -276,12 +309,13 @@ class GlobalData {
 
   void _subjects(Date fromDate, Date toDate) {
     subjectData = Data<TSubjectData>.fromJsonStr(
-        DataGen.testDataSubjects(fromDate, toDate));
+        DataGen.testDataSubjects(fromDate, toDate), null);
+    print("hello");
   }
 
-  void _load(Date fromDate, Date toDate) {
+  void _load(Date fromDate, Date toDate, Data<TSubjectData> subjectData) {
     var ttimeTableData = Data<TTimeTableData>.fromJsonStr(
-        DataGen.testDataTimeTableView(fromDate, toDate));
+        DataGen.testDataTimeTableView(fromDate, toDate), subjectData);
 
     for (var subjectId in ttimeTableData.data.keys) {
       if (timeTableData.data[subjectId] != null) {
@@ -292,8 +326,12 @@ class GlobalData {
     }
 
     var tschedulePlanData = Data<TSchedulePlanData>.fromJsonStr(
-        DataGen.testDateScheduleViewPlan(fromDate, toDate));
+        DataGen.testDateScheduleViewPlan(fromDate, toDate), subjectData);
     schedulePlanData.data.addAll(tschedulePlanData.data);
+
+    var tscheduleRecordedData = Data<TScheduleRecordedData>.fromJsonStr(
+        DataGen.testWorkRecord(fromDate, toDate), subjectData);
+    scheduleRecordedData.data.addAll(tscheduleRecordedData.data);
   }
 
   void _remove(Date day) {
@@ -304,11 +342,14 @@ class GlobalData {
   void _delayedLoad(int val, Date from, Date to, ScrollDirection direction) {
     var adj = DataUtils.getAdjacentTimePeriods(from, to, direction);
     Debugger.data("Delayed load $val from $from to $to with $direction");
+
+    _subjects(_fromDate, _toDate);
+
     var newFrom = adj["prev_from"];
     if (newFrom.compareTo(_fromDate) < 0) {
       // add new data on this side
       Debugger.data("prev load $newFrom to $_fromDate");
-      _load(newFrom, _fromDate.subtractDays(1));
+      _load(newFrom, _fromDate.subtractDays(1), subjectData);
       _fromDate = newFrom;
     } else if (newFrom.compareTo(_fromDate) > 0) {
       // remove unused data on this side
@@ -340,12 +381,11 @@ class GlobalData {
     } else if (newTo.compareTo(_toDate) > 0) {
       // add new data on this side
       Debugger.data("next load $_toDate to $newTo");
-      _load(_toDate.addDays(1), newTo);
+      _load(_toDate.addDays(1), newTo, subjectData);
       _toDate = newTo;
     }
 
     summaryFT(from, to);
-    _subjects(_fromDate, _toDate);
     Debugger.data("""###################################################
       fromDate: $_fromDate, toDate: $_toDate
       ###################################################""");

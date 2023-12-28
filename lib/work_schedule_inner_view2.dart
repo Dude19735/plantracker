@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/work_schedule_date_bar.dart';
+import 'package:scheduler/work_schedule_recorded_entry.dart';
 import 'package:scheduler/work_schedule_time_bar.dart';
-import 'package:scheduler/work_schedule_entry.dart';
+import 'package:scheduler/work_schedule_planed_entry.dart';
 import 'package:scheduler/date.dart';
 
 class WorkScheduleInnerView extends StatefulWidget {
@@ -20,38 +21,76 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
   late ScrollController _scrollController;
   // late List<WorkScheduleEntry> _container;
 
-  List<List<WorkScheduleEntry>> _getEntries(double width) {
+  List<List<WorkScheduleRecordedEntry>> _getRecordedEntries(double width) {
     var from = widget._fromDate;
     var to = widget._toDate;
 
     double sm = GlobalStyle.summaryCardMargin;
+    double sw = GlobalStyle.scheduleGridStrokeWidth;
 
-    List<List<WorkScheduleEntry>> entries = [];
-    int oldDayOffset = -1;
+    List<List<WorkScheduleRecordedEntry>> records = [];
+    double lastTime = 0;
+    double lastHeight = 0;
     for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
       int key = d.toInt();
-      var week = GlobalContext.data.schedulePlanData.data[key];
 
-      if (week != null) {
-        for (var e in week) {
-          double y = e.fromTime *
-                  (GlobalStyle.scheduleCellHeightPx +
-                      GlobalStyle.scheduleGridStrokeWidth) /
-                  GlobalSettings.scheduleBoxRangeS +
-              sm;
-
-          double height = (e.toTime - e.fromTime) *
-                  (GlobalStyle.scheduleCellHeightPx +
-                      GlobalStyle.scheduleGridStrokeWidth) /
-                  GlobalSettings.scheduleBoxRangeS -
-              GlobalStyle.scheduleGridStrokeWidth;
+      var record = GlobalContext.data.scheduleRecordedData.data[key];
+      int oldDayOffset = -1;
+      double pxPerSecond = (GlobalStyle.scheduleCellHeightPx + sw) /
+          GlobalSettings.scheduleBoxRangeS;
+      if (record != null) {
+        for (var e in record) {
+          double fromTime = e.fromTime * pxPerSecond + sm;
+          double toTime = e.toTime * pxPerSecond + sm;
 
           var date = Date.fromInt(e.date);
           int dayOffset = from.absDiff(date);
           if (dayOffset != oldDayOffset) {
-            entries.add([WorkScheduleEntry(0, y, width, height, e)]);
+            lastHeight = 0;
+            records.add([
+              WorkScheduleRecordedEntry(
+                  0, fromTime, width, toTime - fromTime, e)
+            ]);
           } else {
-            entries.last.add(WorkScheduleEntry(0, y, width, height, e));
+            records.last.add(WorkScheduleRecordedEntry(
+                0, fromTime - lastHeight, width, toTime - fromTime, e));
+          }
+          oldDayOffset = dayOffset;
+          lastTime = toTime;
+          lastHeight += records.last.last.height();
+        }
+      }
+    }
+
+    return records;
+  }
+
+  List<List<WorkSchedulePlanedEntry>> _getPlanedEntries(double width) {
+    var from = widget._fromDate;
+    var to = widget._toDate;
+
+    double sm = GlobalStyle.summaryCardMargin;
+    double sw = GlobalStyle.scheduleGridStrokeWidth;
+
+    List<List<WorkSchedulePlanedEntry>> entries = [];
+    for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
+      int key = d.toInt();
+
+      var week = GlobalContext.data.schedulePlanData.data[key];
+      int oldDayOffset = -1;
+      double pxPerSecond = (GlobalStyle.scheduleCellHeightPx + sw) /
+          GlobalSettings.scheduleBoxRangeS;
+      if (week != null) {
+        for (var e in week) {
+          double y = e.fromTime * pxPerSecond + sm;
+          double height = (e.toTime - e.fromTime) * pxPerSecond - sw;
+
+          var date = Date.fromInt(e.date);
+          int dayOffset = from.absDiff(date);
+          if (dayOffset != oldDayOffset) {
+            entries.add([WorkSchedulePlanedEntry(0, y, width, height, e)]);
+          } else {
+            entries.last.add(WorkSchedulePlanedEntry(0, y, width, height, e));
           }
           oldDayOffset = dayOffset;
         }
@@ -94,7 +133,14 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
             GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
         ccsbx;
 
-    List<List<WorkScheduleEntry>> container = _getEntries(boxWidth);
+    var container = _getPlanedEntries(boxWidth);
+    var records = _getRecordedEntries(boxWidth);
+
+    int width = container.length;
+    List<Container> columns = [
+      for (int i = 0; i < width; i++)
+        Container(width: 50, height: 100, color: Color(i * 20))
+    ];
 
     // _container = List<Container>.filled(
     //     ccsbx,
@@ -135,14 +181,31 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
                         margin: EdgeInsets.only(
                             left: GlobalStyle.summaryCardMargin,
                             right: GlobalStyle.summaryCardMargin),
-                        child: Row(
-                          children: [
-                            for (var day in container)
-                              Expanded(
-                                child: Column(children: day),
-                              )
-                          ],
-                        ),
+                        child: Row(children:
+                                // for (var day in container)
+                                //   Expanded(
+                                //     child: Column(children: day),
+                                //   ),
+                                [
+                          for (var day in records)
+                            Expanded(
+                                child: Column(
+                              children: day,
+                            ))
+                        ]
+                            // columns,
+                            //   [
+                            // Expanded(
+                            //     child: Column(children: [
+                            //   Container(
+                            //       color: Colors.amber,
+                            //       width: boxWidth,
+                            //       height: 250),
+                            //   Container(
+                            //       color: Colors.red, width: boxWidth, height: 250)
+                            // ])),
+                            // ]
+                            ),
                       )
                     ],
                   ),
@@ -194,7 +257,7 @@ class WorkScheduleSelector extends StatefulWidget {
   final ScrollController _scrollController;
   final Date _fromDate;
   final Date _toDate;
-  final List<List<WorkScheduleEntry>> _container;
+  final List<List<WorkSchedulePlanedEntry>> _container;
   WorkScheduleSelector(
       this._scrollController, this._fromDate, this._toDate, this._container);
 
@@ -214,7 +277,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
   late double _curYPos;
   bool _animBackwards = false;
   bool _verticalDragging = false;
-  WorkScheduleEntry? _currentEntry;
+  WorkSchedulePlanedEntry? _currentEntry;
 
   double _roundToVFrame(double xval) {
     double xpos = (xval - _sideFrame) -
@@ -241,7 +304,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     double day = xMousePos /
         (GlobalContext.scheduleWindowCell.width +
             GlobalStyle.scheduleGridStrokeWidth);
-    print(day);
+    // print(day);
     return day.floor();
   }
 
@@ -318,14 +381,14 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
         x, y, width, rHeight, secondsFrom, secondsTo, year.toInt());
   }
 
-  WorkScheduleEntry? _getEntry() {
+  WorkSchedulePlanedEntry? _getEntry() {
     if (GlobalContext.scheduleWindowSelectionBox == null) return null;
     if (GlobalContext.scheduleWindowSelectionBox!.height < 0) return null;
 
     var t = _getSelectedTime();
     // print(t.toString());
     // print(t["secondsFrom"]! / 60);
-    return WorkScheduleEntry(t.x, t.y, t.width, t.height, null);
+    return WorkSchedulePlanedEntry(t.x, t.y, t.width, t.height, null);
   }
 
   bool _resetConditions(double dy) {
