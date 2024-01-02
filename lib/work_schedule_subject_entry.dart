@@ -3,29 +3,32 @@ import 'package:scheduler/work_schedule_entry.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data.dart';
 
-class WorkScheduleRecordedEntry
-    extends WorkScheduleEntry<ScheduleRecordedData> {
-  WorkScheduleRecordedEntry(double x, double y, double width, this._height,
-      ScheduleRecordedData? data)
-      : super(x, y, width, _height, data);
+class WorkScheduleSubjectEntry extends WorkScheduleEntry<ScheduleRecordedData> {
+  final List<int> _linkedEntries;
 
-  double _height;
+  WorkScheduleSubjectEntry(double x, double y, double width, double height,
+      List<ScheduleRecordedData> linkedData)
+      : _linkedEntries = [for (var ld in linkedData) ld.workUnitId],
+        super(x, y, width, height, linkedData.last);
 
-  @override
-  double height() => _height;
+  // WorkScheduleSubjectEntry.fromRect(
+  //     Rect rect, List<ScheduleRecordedData> linkedData)
+  //     : _linkedEntries = [for (var ld in linkedData) ld.workUnitId],
+  //       super(rect.left, rect.top, rect.width, rect.height, linkedData.last);
 
-  void updateHeight(double dh) {
-    _height += dh;
-  }
+  List<int> linkedEntries() => _linkedEntries;
 
   @override
   Widget build(BuildContext context) {
     // print("build entry ${_planData!.date}");
     // Widget? child;
-    Color color =
-        GlobalStyle.scheduleRecordedColor(context, data()!.workUnitType);
-    if (data() != null && data()!.workUnitType != WorkUnitType.pause) {
-      // child = Text("${data()!.subject.subjectName}\n${data()!.date}");
+    // Color color = Colors.blue;
+    // if (data() != null) {
+    //   child = Text("${data()!.subject.subjectName}\n${data()!.date}");
+    //   color = data()!.subject.subjectColor;
+    // }
+    Color color = Colors.blue;
+    if (data() != null) {
       color = data()!.subject.subjectColor;
     }
     return Transform(

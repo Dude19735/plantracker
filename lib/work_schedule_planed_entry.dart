@@ -23,8 +23,8 @@ class WorkSchedulePlanedEntry extends WorkScheduleEntry<SchedulePlanData> {
           alignment: Alignment.topLeft,
           child: Container(
             color: color,
+            width: width(),
             height: height(),
-            width: width() * GlobalStyle.schedulePlanedUnitWithP,
             child: child,
           ),
         ));
