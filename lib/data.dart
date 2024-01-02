@@ -318,7 +318,7 @@ class GlobalData {
   void _subjects(Date fromDate, Date toDate) {
     subjectData = Data<TSubjectData>.fromJsonStr(
         DataGen.testDataSubjects(fromDate, toDate), null);
-    print("hello");
+    // print("hello");
   }
 
   void _load(Date fromDate, Date toDate, Data<TSubjectData> subjectData) {

@@ -1,9 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/work_schedule_date_bar.dart';
 import 'package:scheduler/work_schedule_time_bar.dart';
 import 'package:scheduler/work_schedule_planed_entry.dart';
 import 'package:scheduler/work_schedule_recorded_entry.dart';
+import 'package:scheduler/work_schedule_subject_entry.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/date.dart';
 
@@ -20,6 +23,11 @@ class WorkScheduleInnerView extends StatefulWidget {
 
 class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
   late ScrollController _scrollController;
+  final double _sm = GlobalStyle.summaryCardMargin;
+  final double _sw = GlobalStyle.scheduleGridStrokeWidth;
+  final double _pxPerSecond =
+      (GlobalStyle.scheduleCellHeightPx + GlobalStyle.scheduleGridStrokeWidth) /
+          GlobalSettings.scheduleBoxRangeS;
   // late List<WorkScheduleEntry> _container;
 
   Map<
@@ -37,24 +45,213 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
   };
 
   MapEntry<double, double> _getFromTo(double fromTime, double toTime) {
-    double sm = GlobalStyle.summaryCardMargin;
-    double sw = GlobalStyle.scheduleGridStrokeWidth;
-
-    double pxPerSecond = (GlobalStyle.scheduleCellHeightPx + sw) /
-        GlobalSettings.scheduleBoxRangeS;
-
-    double fromPx = fromTime * pxPerSecond + sm - sw;
-    double toPx = toTime * pxPerSecond + sm;
+    double fromPx = fromTime * _pxPerSecond + _sm - _sw;
+    double toPx = toTime * _pxPerSecond + _sm;
 
     return MapEntry(fromPx, toPx);
   }
 
-  List<List<T>> _getEntries<T>(
-      double width, Map<int, List<ScheduleData>> data) {
+  List<Widget> _getColumns(int num, double width, double height) {
+    double spacerWidth = 5;
+    double entryWidth = width - spacerWidth;
+    var container = _getEntries<WorkSchedulePlanedEntry>(
+        0.65 * entryWidth, 0, GlobalContext.data.schedulePlanData.data);
+    var subjects = _getSubjectBars(0.09 * entryWidth, 0.69 * entryWidth,
+        GlobalContext.data.scheduleRecordedData.data);
+    var records = _getEntries<WorkScheduleRecordedEntry>(0.21 * entryWidth,
+        0.69 * entryWidth, GlobalContext.data.scheduleRecordedData.data);
+
+    List<Widget> res = [];
+    for (int i = 0; i < num; ++i) {
+      res.add(Expanded(
+        child: Stack(children: [
+          // Container(
+          //   height: height,
+          // ),
+          container[i] == null ? Column() : Column(children: container[i]!),
+          // subjects[i] == null ? Column() : Column(children: subjects[i]!),
+          records[i] == null ? Column() : Column(children: records[i]!),
+        ]),
+      ));
+      res.add(
+        Container(color: Colors.green, width: spacerWidth),
+      );
+    }
+
+    return res;
+  }
+
+  Map<int, List<WorkScheduleSubjectEntry>> _getSubjectBars(
+      double width, double xOffset, Map<int, List<ScheduleRecordedData>> data) {
     var from = widget._fromDate;
     var to = widget._toDate;
 
-    List<List<T>> records = [];
+    Map<int, List<double>> recordLimits = {};
+    Map<int, List<int>> recordLimitSubjects = {};
+    List<List<ScheduleRecordedData>> entryData = [];
+    for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
+      int key = d.toInt();
+      var record = data[key];
+      // MapEntry<double, double> lastPx = MapEntry(0.0, 0.0);
+      if (record != null) {
+        List<double> entries = [];
+        List<int> subjectIds = [];
+        List<ScheduleRecordedData> eData = [];
+        // int oldSubjectId = record.first.subject.subjectId;
+        // var date = Date.fromInt(record.first.date);
+        // int dayOffset = from.absDiff(date);
+        // var px = _getFromTo(record.first.fromTime, record.first.toTime);
+
+        // Rect? next = Rect.fromLTWH(xOffset, px.key, width, 0);
+        for (var e in record) {
+          //   // px.value - px.key - lastHeight, record.first);
+          //   date = Date.fromInt(e.date);
+          //   dayOffset = from.absDiff(date);
+          int subjectId = e.subject.subjectId;
+          var px = _getFromTo(e.fromTime, e.toTime);
+
+          if (subjectIds.isNotEmpty &&
+              subjectIds.last == subjectId &&
+              px.key - entries.last < 5) {
+            entries.removeLast();
+            entries.add(px.value);
+          } else {
+            if (subjectIds.isNotEmpty) {
+              entryData.add(eData);
+              eData = [];
+            }
+            subjectIds.add(subjectId);
+            entries.add(px.key);
+            entries.add(px.value);
+          }
+          eData.add(e);
+
+          //   if (next == null) {
+          //     next = Rect.fromLTWH(
+          //         xOffset, px.key - lastHeight, width, px.value - px.key);
+          //   } else {
+          //     next = Rect.fromLTWH(next.left, next.top, next.width,
+          //         next.height + (px.value - px.key));
+          //   }
+          //   if (subjectId != oldSubjectId ||
+          //       px.key > lastPx.value + 60 * _pxPerSecond && lastPx.value > 0) {
+          //     if (records.keys.contains(dayOffset)) {
+          //       records[dayOffset]!.add(WorkScheduleSubjectEntry.fromRect(next));
+          //     } else {
+          //       records[dayOffset] = [WorkScheduleSubjectEntry.fromRect(next)];
+          //     }
+          //     lastHeight += next.height;
+          //     next = null;
+          //   }
+          //   lastPx = px;
+          //   oldSubjectId = subjectId;
+          // print("hello world");
+        }
+
+        if (entries.isNotEmpty) {
+          recordLimits[key] = entries;
+        }
+        if (subjectIds.isNotEmpty) {
+          recordLimitSubjects[key] = subjectIds;
+        }
+        if (eData.isNotEmpty) {
+          entryData.add(eData);
+        }
+
+        // print("hello world");
+
+        // if (next != null) {
+        //   if (records.keys.contains(dayOffset)) {
+        //     records[dayOffset]!.add(WorkScheduleSubjectEntry.fromRect(next));
+        //   } else {
+        //     records[dayOffset] = [WorkScheduleSubjectEntry.fromRect(next)];
+        //   }
+        //   next = null;
+        // }
+      }
+    }
+
+    int eInd = 0;
+    Map<int, List<WorkScheduleSubjectEntry>> records = {};
+    for (var day in recordLimits.entries) {
+      var date = Date.fromInt(day.key);
+      int dayOffset = from.absDiff(date);
+      if (!records.containsKey(day.key)) {
+        records[dayOffset] = [];
+      }
+
+      double lastHeight = 0;
+      var recList = day.value;
+      for (int i = 1; i < recList.length; i += 2) {
+        records[dayOffset]!.add(WorkScheduleSubjectEntry(
+            xOffset,
+            recList[i - 1] - lastHeight,
+            width,
+            recList[i] - recList[i - 1],
+            entryData[eInd]));
+        lastHeight += recList[i] - recList[i - 1];
+        eInd++;
+      }
+
+      // var e = record.first;
+      // var date = Date.fromInt(e.date);
+      // int dayOffset = from.absDiff(date);
+      // var px = _getFromTo(e.fromTime, e.toTime);
+      // records[dayOffset] = [
+      //   WorkScheduleSubjectEntry(xOffset, px.key, width, 200, e)
+      // ];
+      // int oldDayOffset = -1;
+      // int oldSubjectId = record.first.subject.subjectId;
+      // double fullHeight = 0;
+      // for (var e in record) {
+      //   var date = Date.fromInt(e.date);
+      // int dayOffset = from.absDiff(date);
+      // int subjectInd = e.subject.subjectId;
+      //   var px = _getFromTo(e.fromTime, e.toTime);
+
+      // if (oldSubjectId != subjectInd) {
+      //   if (oldDayOffset != dayOffset) {
+      //     records[dayOffset] = [
+      //       WorkScheduleSubjectEntry(0, px.key, width, fullHeight, e)
+      //     ];
+      //   } else {
+      //     records[dayOffset]!.add(WorkScheduleSubjectEntry(
+      //         0, px.key - lastHeight, width, fullHeight, e));
+      //   }
+      //   fullHeight = 0;
+      // } else {
+      //   fullHeight += px.value - px.key;
+      // }
+
+      // double height = px.value - px.key;
+      // if (dayOffset != oldDayOffset || subjectInd != oldSubject) {
+      //   lastHeight = 0;
+      //   fullHeight = height;
+      //   records[dayOffset] = [
+      //     WorkScheduleSubjectEntry(0, px.key, width, height, e)
+      //   ];
+      // } else {
+      //   fullHeight += height;
+      //   records[dayOffset]!.add(WorkScheduleSubjectEntry(
+      //       0, px.key - lastHeight, width, height, e));
+      // }
+      // oldSubjectId = subjectInd;
+      // oldDayOffset = dayOffset;
+      // oldSubject = subjectInd;
+      // lastHeight += height;
+      // }
+      // }
+    }
+
+    return records;
+  }
+
+  Map<int, List<T>> _getEntries<T>(
+      double width, double xOffset, Map<int, List<ScheduleData>> data) {
+    var from = widget._fromDate;
+    var to = widget._toDate;
+
+    Map<int, List<T>> records = {};
     double lastHeight = 0;
     for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
       int key = d.toInt();
@@ -70,12 +267,13 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
           int dayOffset = from.absDiff(date);
           if (dayOffset != oldDayOffset) {
             lastHeight = 0;
-            records.add([
-              _entryFactory[T.toString()]!(0, px.key, width, height, e) as T
-            ]);
+            records[dayOffset] = [
+              _entryFactory[T.toString()]!(xOffset, px.key, width, height, e)
+                  as T
+            ];
           } else {
-            records.last.add(_entryFactory[T.toString()]!(
-                0, px.key - lastHeight, width, height, e) as T);
+            records[dayOffset]!.add(_entryFactory[T.toString()]!(
+                xOffset, px.key - lastHeight, width, height, e) as T);
           }
           oldDayOffset = dayOffset;
           lastHeight += height;
@@ -115,20 +313,33 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
     //(numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth +
     // GlobalStyle.scheduleDateBarHeight);
 
-    double boxWidth = (GlobalContext.scheduleWindowInlineRect.width -
-            GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
-        ccsbx;
+    // double boxWidth = (GlobalContext.scheduleWindowInlineRect.width -
+    //         GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
+    //     ccsbx;
 
-    var container = _getEntries<WorkSchedulePlanedEntry>(
-        boxWidth, GlobalContext.data.schedulePlanData.data);
-    var records = _getEntries<WorkScheduleRecordedEntry>(
-        boxWidth, GlobalContext.data.scheduleRecordedData.data);
+    double boxWidth = GlobalContext.scheduleWindowInlineRect.width / ccsbx;
+
+    var columns = _getColumns(
+        ccsbx, boxWidth, GlobalContext.scheduleWindowInlineRect.height);
 
     // int width = container.length;
     // List<Container> columns = [
     //   for (int i = 0; i < width; i++)
     //     Container(width: 50, height: 100, color: Color(i * 20))
     // ];
+
+    // List<Expanded> entries = [];
+    // for (int dInd = 0; dInd < ccsbx; dInd++) {
+    //   entries.add(Expanded(
+    //       child: container[dInd] == null
+    //           ? Column()
+    //           : Column(children: container[dInd]!)));
+
+    // entries.add(Expanded(
+    //   child:
+    //       records[dInd] == null ? Column() : Column(children: records[dInd]!),
+    // ));
+    // }
 
     var view = CustomScrollView(controller: _scrollController, slivers: [
       SliverAppBar(
@@ -143,41 +354,26 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
       SliverList(
         delegate: SliverChildBuilderDelegate(
           (BuildContext context, int index) {
-            return Row(
-              children: [
-                WorkScheduleTimeBar(),
-                Expanded(
+            return Row(children: [
+              WorkScheduleTimeBar(),
+              Expanded(
                   child: Stack(
-                    children: [
-                      WorkScheduleGrid(
-                          GlobalContext.scheduleWindowInlineRect.width,
-                          widget._fromDate,
-                          widget._toDate),
-                      WorkScheduleSelector(_scrollController, widget._fromDate,
-                          widget._toDate, container),
-                      Container(
-                        margin: EdgeInsets.only(
-                            left: GlobalStyle.summaryCardMargin,
-                            right: GlobalStyle.summaryCardMargin),
-                        child: Row(children:
-                            // for (var day in container)
-                            //   Expanded(
-                            //     child: Column(children: day),
-                            //   ),
-                            [
-                          for (var day in records)
-                            Expanded(
-                                child: Column(
-                              children: day,
-                            ))
-                        ]),
-                      )
-                    ],
+                children: [
+                  WorkScheduleGrid(GlobalContext.scheduleWindowInlineRect.width,
+                      widget._fromDate, widget._toDate),
+                  WorkScheduleSelector(
+                      _scrollController, widget._fromDate, widget._toDate),
+                  Container(
+                    margin: EdgeInsets.only(
+                        left: GlobalStyle.summaryCardMargin,
+                        right: GlobalStyle.summaryCardMargin),
+                    child: Row(
+                      children: columns,
+                    ),
                   ),
-                ),
-                // ),
-              ],
-            );
+                ],
+              ))
+            ]);
           },
           childCount: 1,
         ),
@@ -222,9 +418,7 @@ class WorkScheduleSelector extends StatefulWidget {
   final ScrollController _scrollController;
   final Date _fromDate;
   final Date _toDate;
-  final List<List<WorkSchedulePlanedEntry>> _container;
-  WorkScheduleSelector(
-      this._scrollController, this._fromDate, this._toDate, this._container);
+  WorkScheduleSelector(this._scrollController, this._fromDate, this._toDate);
 
   @override
   State<WorkScheduleSelector> createState() => _WorkScheduleSelector();
@@ -280,12 +474,14 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     if (b) return true;
 
     // print("${xMousePos} ${_getDayIndex(xMousePos)}");
-    var day = widget._container[_getDayIndex(xMousePos)];
-    for (var c in day) {
-      if (yMousePos >= c.y1() && yMousePos <= c.y2()) {
-        return true;
-      }
-    }
+    // var day = widget._container[_getDayIndex(xMousePos)];
+    // if (day != null) {
+    //   for (var c in day) {
+    //     if (yMousePos >= c.y1() && yMousePos <= c.y2()) {
+    //       return true;
+    //     }
+    //   }
+    // }
 
     _collision = false;
     return false;

@@ -16,16 +16,18 @@ class DataGen {
       double finalTime = ((5.5 + subjectId) * 60 * 60);
       double fromTime = ((3.0 + subjectId) * 60 * 60);
       double toTime = fromTime + 30 * 60;
+      int index = 0;
       while (fromTime < finalTime) {
         res += """{
             "${ColumnName.workUnitId}": $workUnitId,
-            "${ColumnName.subjectId}": $subjectId,
+            "${ColumnName.subjectId}": ${subjectId == 1 && index > 4 ? subjectId + 1 : subjectId},
             "${ColumnName.workUnitGroupId}": null,
             "${ColumnName.workUnitType}": ${workUnitType.index}, 
             "${ColumnName.date}": ${d.toInt()},
             "${ColumnName.fromTime}": $fromTime,
             "${ColumnName.toTime}": $toTime
           },""";
+        index++;
         workUnitId++;
         fromTime = toTime;
         // toTime += (30 * 60);
@@ -41,6 +43,39 @@ class DataGen {
         }
       }
     }
+
+    for (var d = fromDate; d.compareTo(toDate) <= 0; d = d.addDays(1)) {
+      int subjectId = d.weekday() - 1;
+      WorkUnitType workUnitType = WorkUnitType.work;
+      double finalTime = ((8.3 + subjectId) * 60 * 60);
+      double fromTime = ((7.0 + subjectId) * 60 * 60);
+      double toTime = fromTime + 25 * 60;
+      while (fromTime < finalTime) {
+        res += """{
+            "${ColumnName.workUnitId}": $workUnitId,
+            "${ColumnName.subjectId}": $subjectId,
+            "${ColumnName.workUnitGroupId}": null,
+            "${ColumnName.workUnitType}": ${workUnitType.index},
+            "${ColumnName.date}": ${d.toInt()},
+            "${ColumnName.fromTime}": $fromTime,
+            "${ColumnName.toTime}": $toTime
+          },""";
+        workUnitId++;
+        fromTime = toTime;
+        // toTime += (30 * 60);
+        if (workUnitType == WorkUnitType.pause) {
+          toTime = toTime + (25 + rand.nextInt(10) - 5) * 60;
+        } else {
+          toTime = toTime + (10 + rand.nextInt(3) - 6) * 60;
+        }
+        if (workUnitType == WorkUnitType.pause) {
+          workUnitType = WorkUnitType.work;
+        } else {
+          workUnitType = WorkUnitType.pause;
+        }
+      }
+    }
+
     res = res.substring(0, res.length - 1);
     res += "]";
     return res;
@@ -54,6 +89,7 @@ class DataGen {
     String res = "[";
     for (var d = fromDate; d.compareTo(toDate) <= 0; d = d.addDays(1)) {
       int subjectId = d.weekday() - 1;
+      double fromTime = (3.0 + subjectId) * 60 * 60;
       res += """{
           "${ColumnName.subjectId}": $subjectId,
           "${ColumnName.planUnitTypeId}": 1,
@@ -64,7 +100,7 @@ class DataGen {
           "${ColumnName.noteId}": 1,
           "${ColumnName.note}": "Note-S1-1",      
           "${ColumnName.date}": ${d.toInt()},        
-          "${ColumnName.fromTime}": ${(3.0 + subjectId) * 60 * 60},
+          "${ColumnName.fromTime}": $fromTime,
           "${ColumnName.toTime}": ${(4.5 + subjectId) * 60 * 60}
         },""";
     }
