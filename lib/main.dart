@@ -277,7 +277,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                       child: Row(children: [
-                    SizedBox(
+                    /**
+                     * This one is the placeholder for the stack so that
+                     * the left sidebar doesn't overlap the tab view
+                     */
+                    Container(
+                        // color: Colors.red,
                         width: GlobalStyle.clockBarWidth +
                             GlobalStyle.clockBarToTabViewSpacer),
                     Column(
@@ -285,6 +290,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                         Align(
                           alignment: Alignment.topLeft,
                           child: Container(
+                            /**
+                             * This is the container that contains the buttons
+                             * of the tab view on the top left side
+                             */
+                            // color: Colors.red,
                             margin: EdgeInsets.only(
                                 right: constraints.maxWidth -
                                     GlobalStyle.clockBarWidth -
@@ -292,6 +302,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                     GlobalStyle.clockBarToTabViewSpacer),
                             height: GlobalStyle.appBarHeight,
                             child: TabBar(
+                              tabAlignment: TabAlignment.start,
                               padding: EdgeInsets.zero,
                               labelPadding: EdgeInsets.zero,
                               controller: _controller,
@@ -344,11 +355,18 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               Row(children: [
                 DragToMoveArea(
                   child: Material(
+                    /**
+                     * This is the entire left sidebar
+                     */
                     clipBehavior: Clip.none,
                     elevation: 20,
                     child: Column(
                       children: [
+                        /**
+                         * This is the tiny widget with the light/dark theme switch
+                         */
                         SizedBox(
+                            // color: Colors.red,
                             width: GlobalStyle.clockBarWidth -
                                 GlobalStyle.clockBarPadding / 2,
                             height: GlobalStyle.appBarHeight,
@@ -376,6 +394,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                 ),
                               ],
                             )),
+                        /**
+                         * This is the content of the left side bar with the watch and
+                         * timing buttons
+                         */
                         Expanded(
                             child: WatchManager(GlobalStyle.clockBarWidth -
                                 2 * GlobalStyle.clockBarPadding)),
@@ -383,12 +405,22 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+                /**
+                 * This is the thin line between the sidebar and the shadow
+                 * of the sidebar
+                 */
                 VerticalDivider(
+                  // color: Colors.orange,
                   thickness: GlobalStyle.appBarSeparatorWidth,
                   width: GlobalStyle.appBarSeparatorWidth,
                 ),
               ]),
+              /**
+               * This is the overlay-edge around the entire program window
+               * that allows grabbing and resizing
+               */
               const DragToResizeArea(
+                // resizeEdgeColor: Colors.red,
                 enableResizeEdges: [
                   ResizeEdge.topLeft,
                   ResizeEdge.top,
