@@ -10,6 +10,10 @@ import 'package:scheduler/work_schedule_subject_entry.dart';
 import 'package:scheduler/data.dart';
 import 'package:scheduler/date.dart';
 
+class BeginDraggingNotification extends Notification {}
+
+class EndDraggingNotification extends Notification {}
+
 class WorkScheduleInnerView extends StatefulWidget {
   // final int _pageDaysOffset;
   final BoxConstraints _constraints;
@@ -487,13 +491,18 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     return false;
   }
 
-  void _autoScroll(double dy) {
+  void _autoScroll(double delta, double dy) {
     if (!_verticalDragging) return;
+    double jumpHeight = GlobalContext.scheduleWindowOutlineRect.height / 2;
 
+    if (dy < GlobalSettings.workScheduleAutoScrollHeightTop && delta < 0) {
+      widget._scrollController
+          .jumpTo(widget._scrollController.offset - jumpHeight);
+    }
     double diff = GlobalContext.scheduleWindowOutlineRect.height - dy;
-    if (diff < GlobalStyle.scheduleCellHeightPx) {
-      widget._scrollController.jumpTo(
-          widget._scrollController.offset + GlobalStyle.scheduleCellHeightPx);
+    if (diff < GlobalSettings.workScheduleAutoScrollHeightTop && delta > 0) {
+      widget._scrollController
+          .jumpTo(widget._scrollController.offset + jumpHeight);
     }
   }
 
@@ -609,7 +618,8 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
         duration:
             Duration(milliseconds: GlobalSettings.animationScheduleSelectorMS),
         vsync: this);
-    _animation = Tween<double>(begin: 0, end: 1).animate(_controller)
+    // _animation = Tween<double>(begin: 0, end: 1).animate(_controller)
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.linear)
       ..addListener(() {
         setState(() {
           if (GlobalContext.scheduleWindowSelectionBox != null) {
@@ -639,6 +649,8 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
           _currentEntry = null;
 
           _verticalDragging = true;
+          BeginDraggingNotification().dispatch(context);
+
           double localDy = details.localPosition.dy;
           double localDx = details.localPosition.dx;
           setState(() {
@@ -655,6 +667,8 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
         },
         onTapUp: (details) {
           _verticalDragging = false;
+          EndDraggingNotification().dispatch(context);
+
           // _currentEntry = _getEntry();
           // if (entry != null) _entries.add(entry);
           _reset();
@@ -667,7 +681,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
             setState(() {
               // print("drag update");
 
-              _autoScroll(localDy - widget._scrollController.offset);
+              _autoScroll(ddy, localDy - widget._scrollController.offset);
 
               if (_resetSelection(ddy)) return;
 
@@ -675,7 +689,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
               double xMousePos = _roundToVFrame(localDx);
 
               if (_clampConditions(xMousePos, yMousePos)) return;
-
+              // print("$localDy");
               double ypos = _roundToHFrame(yMousePos);
               _continueSelection(xMousePos, ypos, ddy);
             });
@@ -691,6 +705,8 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
             setState(() {
               // print("drag end");
               _verticalDragging = false;
+              EndDraggingNotification().dispatch(context);
+
               // _currentEntry = _getEntry();
               // if (entry != null) _entries.add(entry);
               _reset();

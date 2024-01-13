@@ -55,6 +55,10 @@ class GlobalSettings {
   // animation timers
   static const int animationFocusScrollTimeTableMS = 250;
   static const int animationScheduleSelectorMS = 125;
+
+  // autoscroll region height
+  static const double workScheduleAutoScrollHeightTop = 75;
+  static const double workScheduleAutoScrollHeightBottom = 75;
 }
 
 class GlobalStyle {

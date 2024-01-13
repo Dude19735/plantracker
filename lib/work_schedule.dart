@@ -26,6 +26,7 @@ class WorkSchedule extends StatefulWidget {
 }
 
 class _WorkSchedule extends State<WorkSchedule> {
+  bool _verticalDragging = false;
   _WorkSchedule();
 
   Widget innerViewBuilder(int pageOffset) {
@@ -46,7 +47,57 @@ class _WorkSchedule extends State<WorkSchedule> {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       // _entries = _getEntries(constraints);
-      return WorkScheduleInnerView(fromDate, toDate, constraints);
+      return Stack(children: [
+        WorkScheduleInnerView(fromDate, toDate, constraints),
+        if (_verticalDragging)
+          Transform(
+              transform: Matrix4.translationValues(
+                  0,
+                  GlobalStyle.scheduleDateBarHeight -
+                      GlobalStyle.summaryCardMargin,
+                  0),
+              child: Container(
+                  margin: EdgeInsets.only(
+                      left: GlobalStyle.summaryCardMargin / 2.0,
+                      right: GlobalStyle.summaryCardMargin / 2.0),
+                  width: double.infinity,
+                  height: GlobalSettings.workScheduleAutoScrollHeightTop,
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.grey.withAlpha(0),
+                      Colors.grey.withAlpha(128),
+                    ],
+                  )))),
+        if (_verticalDragging)
+          Transform(
+            transform: Matrix4.translationValues(
+                0,
+                constraints.maxHeight -
+                    GlobalSettings.workScheduleAutoScrollHeightBottom -
+                    GlobalStyle.summaryCardMargin,
+                // GlobalStyle.scheduleDateBarHeight -
+                //     2 * GlobalStyle.summaryCardMargin,
+                0),
+            child: Container(
+                margin: EdgeInsets.only(
+                    left: GlobalStyle.summaryCardMargin / 2.0,
+                    right: GlobalStyle.summaryCardMargin / 2.0),
+                width: double.infinity,
+                height: GlobalSettings.workScheduleAutoScrollHeightTop,
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.grey.withAlpha(128),
+                    Colors.grey.withAlpha(0),
+                  ],
+                ))),
+          )
+      ]);
     });
   }
 
@@ -220,10 +271,50 @@ class _WorkSchedule extends State<WorkSchedule> {
                 context, innerViewBuilder, SplitControllerLocation.top)),
       ],
     );
-    return Padding(
-      padding:
-          const EdgeInsets.only(right: GlobalStyle.splitterVGrabberSize / 2),
-      child: view,
-    );
+    return NotificationListener(
+        onNotification: (notification) {
+          if (notification is BeginDraggingNotification) {
+            // print("begin dragging");
+            setState(() {
+              _verticalDragging = true;
+            });
+          } else if (notification is EndDraggingNotification) {
+            // print("end dragging");
+            setState(() {
+              _verticalDragging = false;
+            });
+          }
+          return false;
+        },
+        child:
+            // Stack(children: [
+            Padding(
+          padding: const EdgeInsets.only(
+              right: GlobalStyle.splitterVGrabberSize / 2),
+          child: view,
+        )
+        //   ,
+        //   Container(
+        //     color: Colors.red.withAlpha(128),
+        //     width: double.infinity,
+        //     height: GlobalStyle.scheduleDateBarHeight +
+        //         GlobalStyle.scheduleDateSelectorHeight,
+        //   ),
+        //   if (_verticalDragging)
+        //     Transform(
+        //       transform: Matrix4.translationValues(
+        //           0,
+        //           GlobalStyle.scheduleDateBarHeight +
+        //               GlobalStyle.scheduleDateSelectorHeight,
+        //           0),
+        //       child: Container(
+        //         color: Colors.grey.withAlpha(128),
+        //         width: double.infinity,
+        //         height: GlobalSettings.workScheduleAutoScrollHeightTop,
+        //       ),
+        //     )
+        // ]
+        // ),
+        );
   }
 }
