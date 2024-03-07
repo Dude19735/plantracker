@@ -491,19 +491,30 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     return false;
   }
 
-  void _autoScroll(double delta, double dy) {
-    if (!_verticalDragging) return;
-    double jumpHeight = GlobalContext.scheduleWindowOutlineRect.height / 2;
+  bool _autoScroll(double delta, double dy) {
+    if (!_verticalDragging) return false;
+    // double jumpHeight = GlobalContext.scheduleWindowOutlineRect.height / 2;
 
-    if (dy < GlobalSettings.workScheduleAutoScrollHeightTop && delta < 0) {
-      widget._scrollController
-          .jumpTo(widget._scrollController.offset - jumpHeight);
-    }
+    // jump backwards ever? maybe no?...
+    // if (dy < GlobalSettings.workScheduleAutoScrollHeightTop && delta < 0) {
+    //   widget._scrollController
+    //       .jumpTo(widget._scrollController.offset - jumpHeight);
+    // }
+
+    // accelerate forwards speed...
     double diff = GlobalContext.scheduleWindowOutlineRect.height - dy;
-    if (diff < GlobalSettings.workScheduleAutoScrollHeightTop && delta > 0) {
-      widget._scrollController
-          .jumpTo(widget._scrollController.offset + jumpHeight);
+    if (diff < GlobalSettings.workScheduleAutoScrollHeightTop) {
+      print("################################### truetruetrue");
+      print("################################################");
     }
+    if (diff < GlobalSettings.workScheduleAutoScrollHeightTop && delta > 0) {
+      return true;
+      // widget._scrollController
+      //     .jumpTo(widget._scrollController.offset + 10);
+      // return 10;
+    }
+
+    return false;
   }
 
   bool _resetSelection(double dy) {
@@ -648,6 +659,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
           GlobalContext.scheduleWindowSelectionBox = null;
           _currentEntry = null;
 
+          // print("vertical drag start");
           _verticalDragging = true;
           BeginDraggingNotification().dispatch(context);
 
@@ -674,16 +686,30 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
           _reset();
         },
         onVerticalDragUpdate: (details) {
-          double localDy = details.localPosition.dy;
-          double localDx = details.localPosition.dx;
+          // vertical scroll offset delta
           double ddy = details.delta.dy;
           if (_verticalDragging) {
             setState(() {
               // print("drag update");
 
-              _autoScroll(ddy, localDy - widget._scrollController.offset);
-
               if (_resetSelection(ddy)) return;
+
+              double localDy = details.localPosition.dy;
+              double localDx = details.localPosition.dx;
+              // print(widget._scrollController.offset);
+              print(
+                  "$_topFrame ${details.localPosition} ${details.globalPosition}");
+              // print(
+              //     "localDy: $localDy, ddy: $ddy, localDy - widget._scrollController.offset: ${localDy - widget._scrollController.offset}");
+              if (_autoScroll(ddy, localDy - widget._scrollController.offset)) {
+                widget._scrollController
+                    .jumpTo(widget._scrollController.offset + 10);
+                // localDy += 10;
+                // print("autoscroll");
+              }
+              // print("localDy: $localDy, ddy: $ddy");
+              // ddy -= jumpDy;
+              // print("$localDy ${widget._scrollController.offset}");
 
               double yMousePos = localDy; // + widget._scrollController.offset;
               double xMousePos = _roundToVFrame(localDx);
@@ -735,6 +761,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
           if (_currentEntry != null) _currentEntry!
         ]));
 
+    // print(GlobalContext.scheduleWindowOutlineRect);
     return view;
   }
 }

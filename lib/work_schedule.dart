@@ -49,28 +49,28 @@ class _WorkSchedule extends State<WorkSchedule> {
       // _entries = _getEntries(constraints);
       return Stack(children: [
         WorkScheduleInnerView(fromDate, toDate, constraints),
-        if (_verticalDragging)
-          Transform(
-              transform: Matrix4.translationValues(
-                  0,
-                  GlobalStyle.scheduleDateBarHeight -
-                      GlobalStyle.summaryCardMargin,
-                  0),
-              child: Container(
-                  margin: EdgeInsets.only(
-                      left: GlobalStyle.summaryCardMargin / 2.0,
-                      right: GlobalStyle.summaryCardMargin / 2.0),
-                  width: double.infinity,
-                  height: GlobalSettings.workScheduleAutoScrollHeightTop,
-                  decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.grey.withAlpha(0),
-                      Colors.grey.withAlpha(128),
-                    ],
-                  )))),
+        // if (_verticalDragging)
+        //   Transform(
+        //       transform: Matrix4.translationValues(
+        //           0,
+        //           GlobalStyle.scheduleDateBarHeight -
+        //               GlobalStyle.summaryCardMargin,
+        //           0),
+        //       child: Container(
+        //           margin: EdgeInsets.only(
+        //               left: GlobalStyle.summaryCardMargin / 2.0,
+        //               right: GlobalStyle.summaryCardMargin / 2.0),
+        //           width: double.infinity,
+        //           height: GlobalSettings.workScheduleAutoScrollHeightTop,
+        //           decoration: BoxDecoration(
+        //               gradient: LinearGradient(
+        //             begin: Alignment.topCenter,
+        //             end: Alignment.bottomCenter,
+        //             colors: [
+        //               Colors.grey.withAlpha(0),
+        //               Colors.grey.withAlpha(128),
+        //             ],
+        //           )))),
         if (_verticalDragging)
           Transform(
             transform: Matrix4.translationValues(
