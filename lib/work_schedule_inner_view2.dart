@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:scheduler/context.dart';
@@ -308,8 +309,8 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
             2 * GlobalStyle.summaryCardMargin);
 
     GlobalContext.scheduleWindowInlineRect = Rect.fromLTWH(
-        0,
-        0,
+        GlobalStyle.summaryCardMargin,
+        GlobalStyle.summaryCardMargin,
         widget._constraints.maxWidth,
         (GlobalStyle.scheduleCellHeightPx +
                 GlobalStyle.scheduleGridStrokeWidth) *
@@ -438,6 +439,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
   late AnimationController _controller;
   late double _curXPos;
   late double _curYPos;
+  double _localDy = 0;
   bool _animBackwards = false;
   bool _verticalDragging = false;
   WorkSchedulePlanedEntry? _currentEntry;
@@ -453,7 +455,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
   }
 
   double _roundToHFrame(double yval) {
-    double yvalOffset = yval - _topFrame;
+    double yvalOffset = yval - _topFrame + _localDy;
     double ypos = yvalOffset -
         yvalOffset %
             (GlobalStyle.scheduleCellHeightPx +
@@ -491,8 +493,8 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     return false;
   }
 
-  bool _autoScroll(double delta, double dy) {
-    if (!_verticalDragging) return false;
+  double _autoScroll(double delta, double dy) {
+    if (!_verticalDragging) return 0;
     // double jumpHeight = GlobalContext.scheduleWindowOutlineRect.height / 2;
 
     // jump backwards ever? maybe no?...
@@ -503,18 +505,27 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
 
     // accelerate forwards speed...
     double diff = GlobalContext.scheduleWindowOutlineRect.height - dy;
-    if (diff < GlobalSettings.workScheduleAutoScrollHeightTop) {
-      print("################################### truetruetrue");
-      print("################################################");
-    }
+    // if (diff < GlobalSettings.workScheduleAutoScrollHeightTop) {
+    //   print(
+    //       "################################### truetruetrue $diff ${GlobalContext.scheduleWindowOutlineRect.height} ${GlobalSettings.workScheduleAutoScrollHeightBottom - diff}");
+    //   print("################################################");
+    // }
+    // print(
+    //     "${widget._scrollController.offset} ${GlobalContext.scheduleWindowOutlineRect.height} ${widget._scrollController.offset + GlobalContext.scheduleWindowOutlineRect.height}");
     if (diff < GlobalSettings.workScheduleAutoScrollHeightTop && delta > 0) {
-      return true;
+      // print(widget._scrollController.offset);
+      // print(
+      //     "${widget._scrollController.offset + GlobalContext.scheduleWindowOutlineRect.height - 2 * GlobalStyle.summaryCardMargin} ${GlobalContext.scheduleWindowInlineRect.height}");
+      double newOffset =
+          pow(GlobalSettings.workScheduleAutoScrollHeightBottom - diff, 2.0) /
+              GlobalSettings.workScheduleAutoScrollHeightBottom;
+      return 0;
       // widget._scrollController
       //     .jumpTo(widget._scrollController.offset + 10);
       // return 10;
     }
 
-    return false;
+    return 0;
   }
 
   bool _resetSelection(double dy) {
@@ -529,6 +540,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     GlobalContext.scheduleWindowSelectionBox = null;
     _curYPos = -1;
     _curXPos = -1;
+    _localDy = 0;
     _animBackwards = false;
   }
 
@@ -599,6 +611,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
 
   void _continueSelection(double xpos, double ypos, double dy) {
     if (_curYPos != ypos) {
+      // print("step...");
       _curYPos = ypos;
       _curXPos = xpos; //xMousePos;
       GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
@@ -613,6 +626,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
       _controller.reset();
       _animBackwards ? _controller.reverse(from: 1) : _controller.forward();
     } else if (_curXPos != xpos) {
+      print("$_curXPos $xpos");
       GlobalContext.scheduleWindowSelectionBox = GlobalContext
           .scheduleWindowSelectionBox!
           .translate(xpos - _curXPos, 0);
@@ -670,7 +684,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
 
             double yMousePos = localDy; // + widget._scrollController.offset;
             double xMousePos = _roundToVFrame(localDx);
-
+            print("start: $xMousePos");
             if (_clampConditions(xMousePos, yMousePos)) return;
 
             double ypos = _roundToHFrame(yMousePos);
@@ -697,13 +711,33 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
               double localDy = details.localPosition.dy;
               double localDx = details.localPosition.dx;
               // print(widget._scrollController.offset);
-              print(
-                  "$_topFrame ${details.localPosition} ${details.globalPosition}");
+
+              // print(
+              //     "$_topFrame ${details.localPosition} ${details.globalPosition}");
+
               // print(
               //     "localDy: $localDy, ddy: $ddy, localDy - widget._scrollController.offset: ${localDy - widget._scrollController.offset}");
-              if (_autoScroll(ddy, localDy - widget._scrollController.offset)) {
-                widget._scrollController
-                    .jumpTo(widget._scrollController.offset + 10);
+              double offset = _autoScroll(
+                  ddy, localDy + _localDy - widget._scrollController.offset);
+
+              if (offset > 0) {
+                // print(localDy - widget._scrollController.offset);
+                // print(
+                //     "${widget._scrollController.offset + offset} ${GlobalContext.scheduleWindowInlineRect.height}");
+
+                if (widget._scrollController.offset + offset >
+                    GlobalContext.scheduleWindowInlineRect.height) {
+                  _localDy += (widget._scrollController.offset +
+                      offset -
+                      GlobalContext.scheduleWindowInlineRect.height);
+                  widget._scrollController
+                      .jumpTo(GlobalContext.scheduleWindowInlineRect.height);
+                } else {
+                  _localDy += offset;
+                  widget._scrollController
+                      .jumpTo(widget._scrollController.offset + offset);
+                }
+
                 // localDy += 10;
                 // print("autoscroll");
               }
@@ -713,6 +747,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
 
               double yMousePos = localDy; // + widget._scrollController.offset;
               double xMousePos = _roundToVFrame(localDx);
+              print("continue: $xMousePos");
 
               if (_clampConditions(xMousePos, yMousePos)) return;
               // print("$localDy");
@@ -724,6 +759,9 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
 
             widget._scrollController
                 .jumpTo(widget._scrollController.offset - ddy);
+
+            // print(
+            //     "${widget._scrollController.offset + GlobalSettings.workScheduleAutoScrollHeightBottom} ${GlobalContext.scheduleWindowInlineRect.height}");
           }
         },
         onVerticalDragEnd: (details) {
