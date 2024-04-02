@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split.dart';
@@ -76,21 +77,35 @@ class _WorkSchedule extends State<WorkSchedule> {
             transform: Matrix4.translationValues(
                 0,
                 constraints.maxHeight -
-                    GlobalSettings.workScheduleAutoScrollHeightBottom -
-                    GlobalStyle.summaryCardMargin,
-                // GlobalStyle.scheduleDateBarHeight -
-                //     2 * GlobalStyle.summaryCardMargin,
+                    GlobalSettings.workScheduleAutoScrollHeightBottom,
                 0),
             child: Container(
-                margin: EdgeInsets.only(
-                    left: GlobalStyle.summaryCardMargin / 2.0,
-                    right: GlobalStyle.summaryCardMargin / 2.0),
                 width: double.infinity,
-                height: GlobalSettings.workScheduleAutoScrollHeightTop,
+                height: GlobalSettings.workScheduleAutoScrollHeightBottom,
                 decoration: BoxDecoration(
                     gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.grey.withAlpha(128),
+                    Colors.grey.withAlpha(0),
+                  ],
+                ))),
+          ),
+        if (_verticalDragging)
+          Transform(
+            transform: Matrix4.translationValues(
+                0,
+                -(GlobalSettings.workScheduleAutoScrollHeightTop -
+                    GlobalStyle.scheduleDateBarHeight),
+                0),
+            child: Container(
+                width: double.infinity,
+                height: GlobalSettings.workScheduleAutoScrollHeightTop,
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
                   colors: [
                     Colors.grey.withAlpha(128),
                     Colors.grey.withAlpha(0),
@@ -106,164 +121,171 @@ class _WorkSchedule extends State<WorkSchedule> {
     Debugger.workSchedule(" ========> rebuild work schedule");
     var view = Column(
       children: [
-        Container(
-          color: GlobalStyle.scheduleDateSelectorColor(context),
-          width: double.infinity,
-          height: GlobalStyle.scheduleDateSelectorHeight,
-          child: Flex(
-            direction: Axis.horizontal,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                  onPressed: () {
-                    StartChangeSplitControllerPageNotification(
-                            ScrollDirection.reverse)
-                        .dispatch(context);
-                  },
-                  icon: Icon(Icons.chevron_left)),
-              VerticalDivider(),
-              Spacer(),
-              IconButton(
-                  onPressed: () {
-                    DateChangedNotification(
-                            GlobalContext.fromDateWindow.subtractDays(1),
-                            GlobalContext.toDateWindow)
-                        .dispatch(context);
-                  },
-                  icon: Icon(Icons.remove)),
-              SizedBox(
-                width: 150,
-                child: ElevatedButton.icon(
-                    label:
-                        Text(GlobalContext.fromDateWindow.toFormatedString()),
-                    style: ElevatedButton.styleFrom(elevation: 0),
+        AbsorbPointer(
+          absorbing: _verticalDragging,
+          child: Container(
+            color: GlobalStyle.scheduleDateSelectorColor(context),
+            width: double.infinity,
+            height: GlobalStyle.scheduleDateSelectorHeight,
+            child: Flex(
+              direction: Axis.horizontal,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
                     onPressed: () {
-                      Future<DateTime?> res = showDatePicker(
-                          context: context,
-                          initialDate:
-                              GlobalContext.fromDateWindow.toDateTime(),
-                          firstDate: GlobalSettings.earliestDate,
-                          lastDate: GlobalContext.toDateWindow.toDateTime(),
-                          locale: GlobalSettings
-                              .locals[GlobalContext.currentLocale]);
-
-                      res.then((value) {
-                        if (value != null) {
-                          DateChangedNotification(Date.fromDateTime(value),
-                                  GlobalContext.toDateWindow)
-                              .dispatch(context);
-                        }
-                      });
+                      StartChangeSplitControllerPageNotification(
+                              ScrollDirection.reverse)
+                          .dispatch(context);
                     },
-                    icon: Icon(Icons.calendar_month_outlined)),
-              ),
-              IconButton(
-                  onPressed: () {
-                    if (GlobalContext.fromDateWindow
-                            .compareTo(GlobalContext.toDateWindow) <
-                        0) {
+                    icon: Icon(Icons.chevron_left)),
+                VerticalDivider(),
+                Spacer(),
+                IconButton(
+                    onPressed: () {
                       DateChangedNotification(
-                              GlobalContext.fromDateWindow.addDays(1),
+                              GlobalContext.fromDateWindow.subtractDays(1),
                               GlobalContext.toDateWindow)
                           .dispatch(context);
-                    }
-                  },
-                  icon: Icon(
-                    Icons.add,
-                    color: (GlobalContext.fromDateWindow
-                                .compareTo(GlobalContext.toDateWindow) <
-                            0
-                        ? Colors.black
-                        : Colors.black12),
-                  )),
-              VerticalDivider(),
-              IconButton(
-                onPressed: () {
-                  Future<DateTimeRange?> res = showDateRangePicker(
-                      context: context,
-                      initialDateRange: DateTimeRange(
-                          start: GlobalContext.fromDateWindow.toDateTime(),
-                          end: GlobalContext.toDateWindow.toDateTime()),
-                      firstDate: GlobalContext.fromDateWindow.toDateTime(),
-                      lastDate: GlobalSettings.latestDate,
-                      locale:
-                          GlobalSettings.locals[GlobalContext.currentLocale]);
+                    },
+                    icon: Icon(Icons.remove)),
+                SizedBox(
+                  width: 150,
+                  child: ElevatedButton.icon(
+                      label:
+                          Text(GlobalContext.fromDateWindow.toFormatedString()),
+                      style: ElevatedButton.styleFrom(elevation: 0),
+                      onPressed: () {
+                        Future<DateTime?> res = showDatePicker(
+                            context: context,
+                            initialDate:
+                                GlobalContext.fromDateWindow.toDateTime(),
+                            firstDate: GlobalSettings.earliestDate,
+                            lastDate: GlobalContext.toDateWindow.toDateTime(),
+                            locale: GlobalSettings
+                                .locals[GlobalContext.currentLocale]);
 
-                  res.then((value) {
-                    if (value != null) {
-                      DateChangedNotification(Date.fromDateTime(value.start),
-                              Date.fromDateTime(value.end))
-                          .dispatch(context);
-                    }
-                  });
-                },
-                icon: Icon(Icons.date_range),
-              ),
-              VerticalDivider(),
-              IconButton(
+                        res.then((value) {
+                          if (value != null) {
+                            DateChangedNotification(Date.fromDateTime(value),
+                                    GlobalContext.toDateWindow)
+                                .dispatch(context);
+                          }
+                        });
+                      },
+                      icon: Icon(Icons.calendar_month_outlined)),
+                ),
+                IconButton(
+                    onPressed: () {
+                      if (GlobalContext.fromDateWindow
+                              .compareTo(GlobalContext.toDateWindow) <
+                          0) {
+                        DateChangedNotification(
+                                GlobalContext.fromDateWindow.addDays(1),
+                                GlobalContext.toDateWindow)
+                            .dispatch(context);
+                      }
+                    },
+                    icon: Icon(
+                      Icons.add,
+                      color: (GlobalContext.fromDateWindow
+                                  .compareTo(GlobalContext.toDateWindow) <
+                              0
+                          ? Colors.black
+                          : Colors.black12),
+                    )),
+                VerticalDivider(),
+                IconButton(
                   onPressed: () {
-                    if (GlobalContext.toDateWindow
-                            .compareTo(GlobalContext.fromDateWindow) >
-                        0) {
+                    Future<DateTimeRange?> res = showDateRangePicker(
+                        context: context,
+                        initialDateRange: DateTimeRange(
+                            start: GlobalContext.fromDateWindow.toDateTime(),
+                            end: GlobalContext.toDateWindow.toDateTime()),
+                        firstDate: GlobalContext.fromDateWindow.toDateTime(),
+                        lastDate: GlobalSettings.latestDate,
+                        locale:
+                            GlobalSettings.locals[GlobalContext.currentLocale]);
+
+                    res.then((value) {
+                      if (value != null) {
+                        DateChangedNotification(Date.fromDateTime(value.start),
+                                Date.fromDateTime(value.end))
+                            .dispatch(context);
+                      }
+                    });
+                  },
+                  icon: Icon(Icons.date_range),
+                ),
+                VerticalDivider(),
+                IconButton(
+                    onPressed: () {
+                      if (GlobalContext.toDateWindow
+                              .compareTo(GlobalContext.fromDateWindow) >
+                          0) {
+                        DateChangedNotification(
+                                GlobalContext.fromDateWindow,
+                                GlobalContext.toDateWindow =
+                                    GlobalContext.toDateWindow.subtractDays(1))
+                            .dispatch(context);
+                      }
+                    },
+                    icon: Icon(
+                      Icons.remove,
+                      color: (GlobalContext.toDateWindow
+                                  .compareTo(GlobalContext.fromDateWindow) >
+                              0
+                          ? Colors.black
+                          : Colors.black12),
+                    )),
+                SizedBox(
+                  width: 150,
+                  child: ElevatedButton.icon(
+                      label:
+                          Text(GlobalContext.toDateWindow.toFormatedString()),
+                      style: ElevatedButton.styleFrom(elevation: 0),
+                      onPressed: () {
+                        Future<DateTime?> res = showDatePicker(
+                            context: context,
+                            initialDate:
+                                GlobalContext.toDateWindow.toDateTime(),
+                            firstDate:
+                                GlobalContext.fromDateWindow.toDateTime(),
+                            lastDate: GlobalSettings.latestDate,
+                            locale: GlobalSettings
+                                .locals[GlobalContext.currentLocale]);
+
+                        res.then((value) {
+                          if (value != null) {
+                            DateChangedNotification(
+                                    GlobalContext.fromDateWindow,
+                                    Date.fromDateTime(value))
+                                .dispatch(context);
+                          }
+                        });
+                      },
+                      icon: Icon(Icons.calendar_month_outlined)),
+                ),
+                IconButton(
+                    onPressed: () {
                       DateChangedNotification(
                               GlobalContext.fromDateWindow,
                               GlobalContext.toDateWindow =
-                                  GlobalContext.toDateWindow.subtractDays(1))
+                                  GlobalContext.toDateWindow.addDays(1))
                           .dispatch(context);
-                    }
-                  },
-                  icon: Icon(
-                    Icons.remove,
-                    color: (GlobalContext.toDateWindow
-                                .compareTo(GlobalContext.fromDateWindow) >
-                            0
-                        ? Colors.black
-                        : Colors.black12),
-                  )),
-              SizedBox(
-                width: 150,
-                child: ElevatedButton.icon(
-                    label: Text(GlobalContext.toDateWindow.toFormatedString()),
-                    style: ElevatedButton.styleFrom(elevation: 0),
-                    onPressed: () {
-                      Future<DateTime?> res = showDatePicker(
-                          context: context,
-                          initialDate: GlobalContext.toDateWindow.toDateTime(),
-                          firstDate: GlobalContext.fromDateWindow.toDateTime(),
-                          lastDate: GlobalSettings.latestDate,
-                          locale: GlobalSettings
-                              .locals[GlobalContext.currentLocale]);
-
-                      res.then((value) {
-                        if (value != null) {
-                          DateChangedNotification(GlobalContext.fromDateWindow,
-                                  Date.fromDateTime(value))
-                              .dispatch(context);
-                        }
-                      });
                     },
-                    icon: Icon(Icons.calendar_month_outlined)),
-              ),
-              IconButton(
+                    icon: Icon(Icons.add)),
+                Spacer(),
+                VerticalDivider(),
+                IconButton(
                   onPressed: () {
-                    DateChangedNotification(
-                            GlobalContext.fromDateWindow,
-                            GlobalContext.toDateWindow =
-                                GlobalContext.toDateWindow.addDays(1))
+                    StartChangeSplitControllerPageNotification(
+                            ScrollDirection.forward)
                         .dispatch(context);
                   },
-                  icon: Icon(Icons.add)),
-              Spacer(),
-              VerticalDivider(),
-              IconButton(
-                onPressed: () {
-                  StartChangeSplitControllerPageNotification(
-                          ScrollDirection.forward)
-                      .dispatch(context);
-                },
-                icon: Icon(Icons.chevron_right),
-              ),
-            ],
+                  icon: Icon(Icons.chevron_right),
+                ),
+              ],
+            ),
           ),
         ),
         Expanded(

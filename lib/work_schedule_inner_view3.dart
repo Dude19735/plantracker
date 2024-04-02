@@ -389,7 +389,7 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
       double newOffset =
           pow(GlobalSettings.workScheduleAutoScrollHeightBottom - diff, 2.0) /
               GlobalSettings.workScheduleAutoScrollHeightBottom;
-      return 0;
+      return newOffset;
     }
 
     return 0;
@@ -563,18 +563,21 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
               double offset = _autoScroll(
                   ddy, localDy + _localDy - widget._scrollController.offset);
 
+              if (offset <
+                  GlobalSettings.workScheduleAutoScrollHeightBottom * 0.85) {
+                offset = 0.5 * offset;
+              }
+
+              double maxOffset =
+                  widget._scrollController.position.maxScrollExtent;
+              double curOffset = widget._scrollController.offset;
               if (offset > 0) {
-                if (widget._scrollController.offset + offset >
-                    GlobalContext.scheduleWindowInlineRect.height) {
-                  _localDy += (widget._scrollController.offset +
-                      offset -
-                      GlobalContext.scheduleWindowInlineRect.height);
-                  widget._scrollController
-                      .jumpTo(GlobalContext.scheduleWindowInlineRect.height);
+                if (curOffset + offset > maxOffset) {
+                  _localDy += maxOffset - curOffset;
+                  widget._scrollController.jumpTo(maxOffset);
                 } else {
                   _localDy += offset;
-                  widget._scrollController
-                      .jumpTo(widget._scrollController.offset + offset);
+                  widget._scrollController.jumpTo(curOffset + offset);
                 }
               }
 

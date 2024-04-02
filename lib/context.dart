@@ -58,7 +58,9 @@ class GlobalSettings {
   static const int animationScheduleSelectorMS = 125;
 
   // autoscroll region height
-  static const double workScheduleAutoScrollHeightTop = 75;
+  static const double workScheduleAutoScrollHeightTop =
+      GlobalStyle.scheduleDateBarHeight +
+          GlobalStyle.scheduleDateSelectorHeight;
   static const double workScheduleAutoScrollHeightBottom = 75;
 }
 
