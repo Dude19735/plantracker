@@ -16,7 +16,6 @@ class BeginDraggingNotification extends Notification {}
 class EndDraggingNotification extends Notification {}
 
 class WorkScheduleInnerView extends StatefulWidget {
-  // final int _pageDaysOffset;
   final BoxConstraints _constraints;
   final Date _fromDate;
   final Date _toDate;
@@ -33,7 +32,6 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
   final double _pxPerSecond =
       (GlobalStyle.scheduleCellHeightPx + GlobalStyle.scheduleGridStrokeWidth) /
           GlobalSettings.scheduleBoxRangeS;
-  // late List<WorkScheduleEntry> _container;
 
   Map<
           String,
@@ -70,11 +68,7 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
     for (int i = 0; i < num; ++i) {
       res.add(Expanded(
         child: Stack(children: [
-          // Container(
-          //   height: height,
-          // ),
           container[i] == null ? Column() : Column(children: container[i]!),
-          // subjects[i] == null ? Column() : Column(children: subjects[i]!),
           records[i] == null ? Column() : Column(children: records[i]!),
         ]),
       ));
@@ -97,21 +91,13 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
     for (var d = from; d.compareTo(to) <= 0; d = d.addDays(1)) {
       int key = d.toInt();
       var record = data[key];
-      // MapEntry<double, double> lastPx = MapEntry(0.0, 0.0);
+
       if (record != null) {
         List<double> entries = [];
         List<int> subjectIds = [];
         List<ScheduleRecordedData> eData = [];
-        // int oldSubjectId = record.first.subject.subjectId;
-        // var date = Date.fromInt(record.first.date);
-        // int dayOffset = from.absDiff(date);
-        // var px = _getFromTo(record.first.fromTime, record.first.toTime);
 
-        // Rect? next = Rect.fromLTWH(xOffset, px.key, width, 0);
         for (var e in record) {
-          //   // px.value - px.key - lastHeight, record.first);
-          //   date = Date.fromInt(e.date);
-          //   dayOffset = from.absDiff(date);
           int subjectId = e.subject.subjectId;
           var px = _getFromTo(e.fromTime, e.toTime);
 
@@ -130,27 +116,6 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
             entries.add(px.value);
           }
           eData.add(e);
-
-          //   if (next == null) {
-          //     next = Rect.fromLTWH(
-          //         xOffset, px.key - lastHeight, width, px.value - px.key);
-          //   } else {
-          //     next = Rect.fromLTWH(next.left, next.top, next.width,
-          //         next.height + (px.value - px.key));
-          //   }
-          //   if (subjectId != oldSubjectId ||
-          //       px.key > lastPx.value + 60 * _pxPerSecond && lastPx.value > 0) {
-          //     if (records.keys.contains(dayOffset)) {
-          //       records[dayOffset]!.add(WorkScheduleSubjectEntry.fromRect(next));
-          //     } else {
-          //       records[dayOffset] = [WorkScheduleSubjectEntry.fromRect(next)];
-          //     }
-          //     lastHeight += next.height;
-          //     next = null;
-          //   }
-          //   lastPx = px;
-          //   oldSubjectId = subjectId;
-          // print("hello world");
         }
 
         if (entries.isNotEmpty) {
@@ -162,17 +127,6 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
         if (eData.isNotEmpty) {
           entryData.add(eData);
         }
-
-        // print("hello world");
-
-        // if (next != null) {
-        //   if (records.keys.contains(dayOffset)) {
-        //     records[dayOffset]!.add(WorkScheduleSubjectEntry.fromRect(next));
-        //   } else {
-        //     records[dayOffset] = [WorkScheduleSubjectEntry.fromRect(next)];
-        //   }
-        //   next = null;
-        // }
       }
     }
 
@@ -197,55 +151,6 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
         lastHeight += recList[i] - recList[i - 1];
         eInd++;
       }
-
-      // var e = record.first;
-      // var date = Date.fromInt(e.date);
-      // int dayOffset = from.absDiff(date);
-      // var px = _getFromTo(e.fromTime, e.toTime);
-      // records[dayOffset] = [
-      //   WorkScheduleSubjectEntry(xOffset, px.key, width, 200, e)
-      // ];
-      // int oldDayOffset = -1;
-      // int oldSubjectId = record.first.subject.subjectId;
-      // double fullHeight = 0;
-      // for (var e in record) {
-      //   var date = Date.fromInt(e.date);
-      // int dayOffset = from.absDiff(date);
-      // int subjectInd = e.subject.subjectId;
-      //   var px = _getFromTo(e.fromTime, e.toTime);
-
-      // if (oldSubjectId != subjectInd) {
-      //   if (oldDayOffset != dayOffset) {
-      //     records[dayOffset] = [
-      //       WorkScheduleSubjectEntry(0, px.key, width, fullHeight, e)
-      //     ];
-      //   } else {
-      //     records[dayOffset]!.add(WorkScheduleSubjectEntry(
-      //         0, px.key - lastHeight, width, fullHeight, e));
-      //   }
-      //   fullHeight = 0;
-      // } else {
-      //   fullHeight += px.value - px.key;
-      // }
-
-      // double height = px.value - px.key;
-      // if (dayOffset != oldDayOffset || subjectInd != oldSubject) {
-      //   lastHeight = 0;
-      //   fullHeight = height;
-      //   records[dayOffset] = [
-      //     WorkScheduleSubjectEntry(0, px.key, width, height, e)
-      //   ];
-      // } else {
-      //   fullHeight += height;
-      //   records[dayOffset]!.add(WorkScheduleSubjectEntry(
-      //       0, px.key - lastHeight, width, height, e));
-      // }
-      // oldSubjectId = subjectInd;
-      // oldDayOffset = dayOffset;
-      // oldSubject = subjectInd;
-      // lastHeight += height;
-      // }
-      // }
     }
 
     return records;
@@ -291,7 +196,6 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
 
   @override
   Widget build(BuildContext context) {
-    // print("build boxes ${widget._fromDate} - ${widget._toDate}");
     _scrollController = ScrollController(
         initialScrollOffset: GlobalContext.scheduleWindowScrollOffset,
         keepScrollOffset: true);
@@ -315,36 +219,11 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
         (GlobalStyle.scheduleCellHeightPx +
                 GlobalStyle.scheduleGridStrokeWidth) *
             numBoxes);
-    //(numBoxes - 1) * GlobalStyle.scheduleGridStrokeWidth +
-    // GlobalStyle.scheduleDateBarHeight);
-
-    // double boxWidth = (GlobalContext.scheduleWindowInlineRect.width -
-    //         GlobalStyle.scheduleGridStrokeWidth * (ccsbx - 1)) /
-    //     ccsbx;
 
     double boxWidth = GlobalContext.scheduleWindowInlineRect.width / ccsbx;
 
     var columns = _getColumns(
         ccsbx, boxWidth, GlobalContext.scheduleWindowInlineRect.height);
-
-    // int width = container.length;
-    // List<Container> columns = [
-    //   for (int i = 0; i < width; i++)
-    //     Container(width: 50, height: 100, color: Color(i * 20))
-    // ];
-
-    // List<Expanded> entries = [];
-    // for (int dInd = 0; dInd < ccsbx; dInd++) {
-    //   entries.add(Expanded(
-    //       child: container[dInd] == null
-    //           ? Column()
-    //           : Column(children: container[dInd]!)));
-
-    // entries.add(Expanded(
-    //   child:
-    //       records[dInd] == null ? Column() : Column(children: records[dInd]!),
-    // ));
-    // }
 
     var view = CustomScrollView(controller: _scrollController, slivers: [
       SliverAppBar(
@@ -391,7 +270,6 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
     return NotificationListener(
         onNotification: (notification) {
           if (notification is ScrollNotification) {
-            // print("get scroll notification  ${notification.metrics.pixels}");
             GlobalContext.scheduleWindowScrollOffset =
                 notification.metrics.pixels;
             return true; // cut event propagation
@@ -420,8 +298,6 @@ class _SelectedBox {
 }
 
 class WorkScheduleSelector extends StatefulWidget {
-  // final int _pageDaysOffset;
-  // final BoxConstraints _constraints;
   final ScrollController _scrollController;
   final Date _fromDate;
   final Date _toDate;
@@ -471,7 +347,6 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     double day = xMousePos /
         (GlobalContext.scheduleWindowCell.width +
             GlobalStyle.scheduleGridStrokeWidth);
-    // print(day);
     return day.floor();
   }
 
@@ -481,50 +356,20 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
         .contains(Offset(xMousePos, yMousePos));
     if (b) return true;
 
-    // print("${xMousePos} ${_getDayIndex(xMousePos)}");
-    // var day = widget._container[_getDayIndex(xMousePos)];
-    // if (day != null) {
-    //   for (var c in day) {
-    //     if (yMousePos >= c.y1() && yMousePos <= c.y2()) {
-    //       return true;
-    //     }
-    //   }
-    // }
-
     _collision = false;
     return false;
   }
 
   double _autoScroll(double delta, double dy) {
     if (!_verticalDragging) return 0;
-    // double jumpHeight = GlobalContext.scheduleWindowOutlineRect.height / 2;
-
-    // jump backwards ever? maybe no?...
-    // if (dy < GlobalSettings.workScheduleAutoScrollHeightTop && delta < 0) {
-    //   widget._scrollController
-    //       .jumpTo(widget._scrollController.offset - jumpHeight);
-    // }
 
     // accelerate forwards speed...
     double diff = GlobalContext.scheduleWindowOutlineRect.height - dy;
-    // if (diff < GlobalSettings.workScheduleAutoScrollHeightTop) {
-    //   print(
-    //       "################################### truetruetrue $diff ${GlobalContext.scheduleWindowOutlineRect.height} ${GlobalSettings.workScheduleAutoScrollHeightBottom - diff}");
-    //   print("################################################");
-    // }
-    // print(
-    //     "${widget._scrollController.offset} ${GlobalContext.scheduleWindowOutlineRect.height} ${widget._scrollController.offset + GlobalContext.scheduleWindowOutlineRect.height}");
     if (diff < GlobalSettings.workScheduleAutoScrollHeightTop && delta > 0) {
-      // print(widget._scrollController.offset);
-      // print(
-      //     "${widget._scrollController.offset + GlobalContext.scheduleWindowOutlineRect.height - 2 * GlobalStyle.summaryCardMargin} ${GlobalContext.scheduleWindowInlineRect.height}");
       double newOffset =
           pow(GlobalSettings.workScheduleAutoScrollHeightBottom - diff, 2.0) /
               GlobalSettings.workScheduleAutoScrollHeightBottom;
       return 0;
-      // widget._scrollController
-      //     .jumpTo(widget._scrollController.offset + 10);
-      // return 10;
     }
 
     return 0;
@@ -581,8 +426,6 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     if (GlobalContext.scheduleWindowSelectionBox!.height < 0) return null;
 
     var t = _getSelectedTime();
-    // print(t.toString());
-    // print(t["secondsFrom"]! / 60);
     return WorkSchedulePlanedEntry(t.x, t.y, t.width, t.height, null);
   }
 
@@ -596,7 +439,6 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
   }
 
   void _initSelection(double xpos, double ypos) {
-    // if (_curYPos != ypos) {
     _curYPos = ypos;
     _curXPos = xpos; //xMousePos;
     GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
@@ -606,14 +448,10 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
         GlobalStyle.scheduleCellHeightPx);
 
     _animBackwards = false;
-    // _controller.reset();
-    // _controller.forward();
-    // }
   }
 
   void _continueSelection(double xpos, double ypos, double dy) {
     if (_curYPos != ypos) {
-      // print("step...");
       _curYPos = ypos;
       _curXPos = xpos; //xMousePos;
       GlobalContext.scheduleWindowSelectionBox = Rect.fromLTWH(
@@ -628,7 +466,6 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
       _controller.reset();
       _animBackwards ? _controller.reverse(from: 1) : _controller.forward();
     } else if (_curXPos != xpos) {
-      // print("$_curXPos $xpos");
       GlobalContext.scheduleWindowSelectionBox = GlobalContext
           .scheduleWindowSelectionBox!
           .translate(xpos - _curXPos, 0);
@@ -645,7 +482,6 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
         duration:
             Duration(milliseconds: GlobalSettings.animationScheduleSelectorMS),
         vsync: this);
-    // _animation = Tween<double>(begin: 0, end: 1).animate(_controller)
     _animation = CurvedAnimation(parent: _controller, curve: Curves.linear)
       ..addListener(() {
         setState(() {
@@ -675,18 +511,14 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
           GlobalContext.scheduleWindowSelectionBox = null;
           _currentEntry = null;
 
-          // print("vertical drag start");
           _verticalDragging = true;
           BeginDraggingNotification().dispatch(context);
 
           double localDy = details.localPosition.dy;
           double localDx = details.localPosition.dx;
           setState(() {
-            // print("drag update");
-
-            double yMousePos = localDy; // + widget._scrollController.offset;
+            double yMousePos = localDy;
             double xMousePos = _roundToVFrame(localDx);
-            // print("start: $xMousePos");
             if (_clampConditions(xMousePos, yMousePos)) return;
 
             double ypos = _roundToHFrame(yMousePos);
@@ -697,8 +529,6 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
           _verticalDragging = false;
           EndDraggingNotification().dispatch(context);
 
-          // _currentEntry = _getEntry();
-          // if (entry != null) _entries.add(entry);
           _reset();
         },
         onVerticalDragUpdate: (details) {
@@ -706,27 +536,14 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
           double ddy = details.delta.dy;
           if (_verticalDragging) {
             setState(() {
-              // print("drag update");
-
               if (_resetSelection(ddy)) return;
 
               double localDy = details.localPosition.dy;
               double localDx = details.localPosition.dx;
-              // print(widget._scrollController.offset);
-
-              // print(
-              //     "$_topFrame ${details.localPosition} ${details.globalPosition}");
-
-              // print(
-              //     "localDy: $localDy, ddy: $ddy, localDy - widget._scrollController.offset: ${localDy - widget._scrollController.offset}");
               double offset = _autoScroll(
                   ddy, localDy + _localDy - widget._scrollController.offset);
 
               if (offset > 0) {
-                // print(localDy - widget._scrollController.offset);
-                // print(
-                //     "${widget._scrollController.offset + offset} ${GlobalContext.scheduleWindowInlineRect.height}");
-
                 if (widget._scrollController.offset + offset >
                     GlobalContext.scheduleWindowInlineRect.height) {
                   _localDy += (widget._scrollController.offset +
@@ -739,42 +556,27 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
                   widget._scrollController
                       .jumpTo(widget._scrollController.offset + offset);
                 }
-
-                // localDy += 10;
-                // print("autoscroll");
               }
-              // print("localDy: $localDy, ddy: $ddy");
-              // ddy -= jumpDy;
-              // print("$localDy ${widget._scrollController.offset}");
 
-              double yMousePos = localDy; // + widget._scrollController.offset;
+              double yMousePos = localDy;
               double xMousePos = _roundToVFrame(localDx);
-              // print("continue: $xMousePos");
 
               if (_clampConditions(xMousePos, yMousePos)) return;
-              // print("$localDy");
+
               double ypos = _roundToHFrame(yMousePos);
               _continueSelection(xMousePos, ypos, ddy);
             });
           } else {
-            // print(widget._scrollController.offset);
-
             widget._scrollController
                 .jumpTo(widget._scrollController.offset - ddy);
-
-            // print(
-            //     "${widget._scrollController.offset + GlobalSettings.workScheduleAutoScrollHeightBottom} ${GlobalContext.scheduleWindowInlineRect.height}");
           }
         },
         onVerticalDragEnd: (details) {
           if (_verticalDragging) {
             setState(() {
-              // print("drag end");
               _verticalDragging = false;
               EndDraggingNotification().dispatch(context);
 
-              // _currentEntry = _getEntry();
-              // if (entry != null) _entries.add(entry);
               _reset();
             });
           }
@@ -801,11 +603,6 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
           if (_currentEntry != null) _currentEntry!
         ]));
 
-    // print(GlobalContext.scheduleWindowOutlineRect);
     return view;
   }
 }
-
-// #########################################################################################3
-
-

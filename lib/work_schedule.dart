@@ -3,7 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:scheduler/context.dart';
 import 'package:scheduler/data_utils.dart';
 import 'package:scheduler/split.dart';
-import 'package:scheduler/work_schedule_inner_view2.dart';
+import 'package:scheduler/work_schedule_inner_view3.dart';
 import 'package:scheduler/split_controller.dart';
 import 'package:scheduler/date.dart';
 
