@@ -11,14 +11,15 @@ class WorkScheduleGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.all(GlobalStyle.summaryCardMargin),
-      width: _maxWidth -
-          GlobalStyle.scheduleTimeBarWidth -
-          2 * GlobalStyle.summaryCardMargin,
-      height: GlobalContext.scheduleWindowInlineRect.height,
-      child: CustomPaint(painter: _GridPainter(context, _fromDate, _toDate)),
-    );
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      return Container(
+          margin: EdgeInsets.zero,
+          width: constraints.maxWidth,
+          height: GlobalContext.scheduleWindowInlineRect.height,
+          child:
+              CustomPaint(painter: _GridPainter(context, _fromDate, _toDate)));
+    });
   }
 }
 
@@ -37,15 +38,10 @@ class _GridPainter extends CustomPainter {
     gridPainter.style = PaintingStyle.stroke;
     gridPainter.strokeWidth = GlobalStyle.scheduleGridStrokeWidth;
     gridPainter.strokeCap = StrokeCap.round;
-
-    // rectPainter.style = PaintingStyle.fill;
-    // rectPainter.strokeWidth = 1;
-    // rectPainter.color = GlobalStyle.scheduleSelectionColor(_context);
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    // print("paint canvas");
     int ccsbx = _fromDate.absWindowSizeWith(_toDate);
 
     double boxWidth =

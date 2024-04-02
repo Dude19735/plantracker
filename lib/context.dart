@@ -18,6 +18,7 @@ class GlobalContext {
   static bool showSubjectsInSummary = true;
   static GlobalData data = GlobalData();
 
+  static Rect scheduleDateBarOutlineRect = Rect.fromLTWH(0, 0, 1, 1);
   static Rect scheduleWindowOutlineRect = Rect.fromLTWH(0, 0, 1, 1);
   static Rect scheduleWindowInlineRect = Rect.fromLTWH(0, 0, 1, 1);
   static Rect scheduleWindowCell = Rect.fromLTWH(0, 0, 1, 1);

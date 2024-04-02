@@ -27,7 +27,7 @@ class WorkScheduleInnerView extends StatefulWidget {
 
 class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
   late ScrollController _scrollController;
-  final double _sm = GlobalStyle.summaryCardMargin;
+  final double _sm = 0; //GlobalStyle.summaryCardMargin;
   final double _sw = GlobalStyle.scheduleGridStrokeWidth;
   final double _pxPerSecond =
       (GlobalStyle.scheduleCellHeightPx + GlobalStyle.scheduleGridStrokeWidth) /
@@ -72,9 +72,9 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
           records[i] == null ? Column() : Column(children: records[i]!),
         ]),
       ));
-      res.add(
-        Container(color: Colors.green, width: spacerWidth),
-      );
+      // res.add(
+      //   Container(color: Colors.green, width: spacerWidth),
+      // );
     }
 
     return res;
@@ -204,21 +204,28 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
 
     double numBoxes = 24 * (3600 / GlobalSettings.scheduleBoxRangeS);
 
+    GlobalContext.scheduleDateBarOutlineRect = Rect.fromLTRB(
+        GlobalStyle.summaryCardMargin,
+        0,
+        widget._constraints.maxWidth - GlobalStyle.summaryCardMargin,
+        GlobalStyle.scheduleDateBarHeight);
+
     GlobalContext.scheduleWindowOutlineRect = Rect.fromLTRB(
-        0,
-        0,
-        widget._constraints.maxWidth,
+        GlobalStyle.summaryCardMargin,
+        GlobalStyle.summaryCardMargin,
+        widget._constraints.maxWidth - GlobalStyle.summaryCardMargin,
         widget._constraints.maxHeight -
-            GlobalStyle.scheduleDateBarHeight +
-            2 * GlobalStyle.summaryCardMargin);
+            GlobalStyle.scheduleDateBarHeight -
+            GlobalStyle.summaryCardMargin);
 
     GlobalContext.scheduleWindowInlineRect = Rect.fromLTWH(
         GlobalStyle.summaryCardMargin,
         GlobalStyle.summaryCardMargin,
-        widget._constraints.maxWidth,
+        widget._constraints.maxWidth - GlobalStyle.summaryCardMargin,
         (GlobalStyle.scheduleCellHeightPx +
-                GlobalStyle.scheduleGridStrokeWidth) *
-            numBoxes);
+                    GlobalStyle.scheduleGridStrokeWidth) *
+                numBoxes -
+            GlobalStyle.summaryCardMargin);
 
     double boxWidth = GlobalContext.scheduleWindowInlineRect.width / ccsbx;
 
@@ -227,44 +234,57 @@ class _WorkScheduleInnerView extends State<WorkScheduleInnerView> {
 
     var view = CustomScrollView(controller: _scrollController, slivers: [
       SliverAppBar(
-        pinned: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        foregroundColor: Colors.transparent,
-        shadowColor: Colors.black,
-        flexibleSpace: WorkScheduleDateBar(widget._fromDate, widget._toDate),
-      ),
+          pinned: true,
+          toolbarHeight: GlobalStyle.scheduleDateBarHeight,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: Colors.transparent,
+          shadowColor: Colors.black,
+          flexibleSpace: Container(
+              color: Colors.blue,
+              margin: EdgeInsets.only(
+                  left: GlobalContext.scheduleDateBarOutlineRect.left,
+                  top: GlobalContext.scheduleDateBarOutlineRect.top),
+              child: WorkScheduleDateBar(widget._fromDate, widget._toDate))
+          // flexibleSpace: WorkScheduleDateBar(widget._fromDate, widget._toDate),
+          ),
       SliverList(
         delegate: SliverChildBuilderDelegate(
           (BuildContext context, int index) {
-            return Row(children: [
-              WorkScheduleTimeBar(),
-              Expanded(
-                  child: Stack(
-                children: [
-                  WorkScheduleGrid(GlobalContext.scheduleWindowInlineRect.width,
-                      widget._fromDate, widget._toDate),
-                  WorkScheduleSelector(
-                      _scrollController, widget._fromDate, widget._toDate),
-                  Container(
-                    // margin: EdgeInsets.zero,
-                    margin: EdgeInsets.only(
-                        left: GlobalStyle.summaryCardMargin,
-                        right: GlobalStyle.summaryCardMargin),
-                    child: Row(
-                      children:
-                          columns, // these are the loaded, colored entries of the schedule, NOT the background
-                    ),
-                  ),
-                ],
-              ))
-            ]);
+            return Container(
+                color: Colors.red,
+                margin: EdgeInsets.only(
+                    left: GlobalContext.scheduleWindowInlineRect.left,
+                    top: GlobalContext.scheduleWindowInlineRect.top,
+                    right: widget._constraints.maxWidth -
+                        GlobalContext.scheduleWindowInlineRect.right),
+                height: GlobalContext.scheduleWindowInlineRect.height,
+                child: Row(children: [
+                  WorkScheduleTimeBar(),
+                  Expanded(
+                      child: Stack(
+                    children: [
+                      WorkScheduleGrid(
+                          GlobalContext.scheduleWindowInlineRect.width,
+                          widget._fromDate,
+                          widget._toDate),
+                      WorkScheduleSelector(
+                          _scrollController, widget._fromDate, widget._toDate),
+                      Container(
+                        margin: EdgeInsets.zero,
+                        child: Row(
+                          children:
+                              columns, // these are the loaded, colored entries of the schedule, NOT the background
+                        ),
+                      ),
+                    ],
+                  ))
+                ]));
           },
           childCount: 1,
         ),
       ),
-      // )
     ]);
 
     return NotificationListener(
@@ -326,8 +346,8 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     double xpos = (xval - _sideFrame) -
         (xval - _sideFrame) %
             (GlobalContext.scheduleWindowCell.width +
-                GlobalStyle.scheduleGridStrokeWidth) +
-        GlobalStyle.summaryCardMargin;
+                GlobalStyle.scheduleGridStrokeWidth); // +
+    // GlobalStyle.summaryCardMargin;
 
     return xpos;
   }
@@ -337,8 +357,8 @@ class _WorkScheduleSelector extends State<WorkScheduleSelector>
     double ypos = yvalOffset -
         yvalOffset %
             (GlobalStyle.scheduleCellHeightPx +
-                GlobalStyle.scheduleGridStrokeWidth) +
-        GlobalStyle.summaryCardMargin;
+                GlobalStyle.scheduleGridStrokeWidth); // +
+    // GlobalStyle.summaryCardMargin;
 
     return ypos;
   }

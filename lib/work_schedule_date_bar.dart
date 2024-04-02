@@ -4,7 +4,6 @@ import 'package:scheduler/date.dart';
 import 'dart:math';
 
 class WorkScheduleDateBar extends StatelessWidget {
-  // final int _pageOffset;
   final Date _fromDate;
   final Date _toDate;
 
@@ -15,11 +14,10 @@ class WorkScheduleDateBar extends StatelessWidget {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Container(
+            color: Colors.orange,
             height: constraints.maxHeight,
             width: constraints.maxWidth,
-            margin: EdgeInsets.only(
-                left: GlobalStyle.summaryCardMargin,
-                right: GlobalStyle.summaryCardMargin),
+            margin: EdgeInsets.zero,
             child: CustomPaint(
                 painter: _GridPainter(context, _fromDate, _toDate)));
       },
@@ -85,7 +83,6 @@ class _GridPainter extends CustomPainter {
     xOffset = lead + (boxWidth + GlobalStyle.scheduleGridStrokeWidth / 2) / 2;
     while (xOffset < end) {
       Date day = _fromDate.addDays(dayOffset);
-      // print("${GlobalContext.fromDateWindow} $day $dayOffset $_pageOffset");
       textPainter.text = TextSpan(
         text: Date.Date2Str(day, style: dateStyle),
         style: textStyle,
